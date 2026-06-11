@@ -128,3 +128,8 @@ usa `expo-camera` y cámara frontal.
 En Expo managed no se incluyó ML Kit: la foto queda
 `profilePhotoFaceValidated=false` y requiere revisión manual. No hay reconocimiento de
 identidad ni comparación con el documento.
+
+Al crear una solicitud se pueden tomar fotos con la cámara o elegir varias desde la
+galería. La categoría se compacta después de seleccionarla. Las notificaciones
+conservan `route` y `requestId`: términos abre la pantalla legal, `NEW_REQUEST` abre
+solicitudes disponibles y los mensajes abren el chat.

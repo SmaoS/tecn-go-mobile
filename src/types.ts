@@ -98,8 +98,11 @@ export interface UserNotification {
   type: 'NEW_REQUEST' | 'NEW_QUOTE' | 'QUOTE_ACCEPTED' | 'REQUEST_ACCEPTED'
     | 'TECHNICIAN_ON_THE_WAY' | 'TECHNICIAN_ARRIVED' | 'SERVICE_STARTED'
     | 'SERVICE_COMPLETED' | 'NEW_CHAT_MESSAGE' | 'NEW_RATING' | 'SERVICE_STATUS_CHANGED'
+    | 'LEGAL_ACCEPTANCE_REQUIRED'
   read: boolean
   createdAt: string
+  route?: string
+  requestId?: string
 }
 
 export interface UnreadCount {

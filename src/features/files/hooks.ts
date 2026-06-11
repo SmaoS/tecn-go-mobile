@@ -11,7 +11,7 @@ export const useDocumentUpload = () => useMutation({
   mutationFn: (kind: 'DOCUMENT' | 'CERTIFICATE' = 'DOCUMENT') => pickAndUploadEvidence(kind),
 })
 export const useServiceImagePicker = () => useMutation({
-  mutationFn: (max: number) => pickServiceImages(max),
+  mutationFn: (input: { source: 'camera' | 'gallery'; max: number }) => pickServiceImages(input),
 })
 export const useServiceImageUpload = () => useMutation({
   mutationFn: ({ requestId, asset }: {

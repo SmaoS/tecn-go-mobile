@@ -16,15 +16,19 @@ async function upload(asset: UploadAsset, kind: 'PROFILE' | 'DOCUMENT' | 'CERTIF
 
 export const uploadProfileAsset = (asset: UploadAsset) => upload(asset, 'PROFILE')
 
-export async function pickServiceImages(max = 5) {
-  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
-  if (!permission.granted) throw new Error('Permiso de galería denegado')
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ['images'],
-    allowsMultipleSelection: true,
-    selectionLimit: max,
-    quality: 0.8,
-  })
+export async function pickServiceImages({ source, max = 5 }: { source: 'camera' | 'gallery'; max?: number }) {
+  const permission = source === 'camera'
+    ? await ImagePicker.requestCameraPermissionsAsync()
+    : await ImagePicker.requestMediaLibraryPermissionsAsync()
+  if (!permission.granted) throw new Error(source === 'camera' ? 'Permiso de cámara denegado' : 'Permiso de galería denegado')
+  const result = source === 'camera'
+    ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 })
+    : await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsMultipleSelection: true,
+      selectionLimit: max,
+      quality: 0.8,
+    })
   if (result.canceled) return []
   return result.assets.slice(0, max).map((asset) => ({
     uri: asset.uri,

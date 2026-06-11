@@ -9,6 +9,7 @@ import { ClientNavigator } from './ClientNavigator'
 import { navigationRef } from './navigationRef'
 import { StaffNavigator } from './StaffNavigator'
 import { TechnicianNavigator } from './TechnicianNavigator'
+import { openNotification } from './notificationNavigation'
 
 const theme = {
   ...DarkTheme,
@@ -21,11 +22,11 @@ export function AppNavigator() {
     if (!session) return
     return addNotificationListeners((data) => {
       if (!navigationRef.isReady()) return
-      const route = typeof data.route === 'string' ? data.route : ''
-      const requestId = typeof data.requestId === 'string' ? data.requestId : ''
-      if (route === 'Chat' && requestId) navigationRef.navigate('Chat', { requestId })
-      else if (route === 'AvailableRequests' && session.role === 'TECHNICIAN') navigationRef.navigate('AvailableRequests')
-      else if (session.role === 'CLIENT' || session.role === 'TECHNICIAN') navigationRef.navigate('Notifications')
+      openNotification(navigationRef, session.role, {
+        route: typeof data.route === 'string' ? data.route : undefined,
+        requestId: typeof data.requestId === 'string' ? data.requestId : undefined,
+        type: typeof data.type === 'string' ? data.type as import('../types').UserNotification['type'] : 'SERVICE_STATUS_CHANGED',
+      })
     })
   }, [session])
 

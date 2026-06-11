@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Image, Pressable, ScrollView, Text } from 'react-native'
+import { Alert, Image, Pressable, ScrollView, Text } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, Card, Field, styles, colors } from '../../../components/UI'
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
@@ -17,13 +17,24 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
   const location = useCurrentLocation()
   const picker = useServiceImagePicker()
   const create = useCreateRequest(() => navigation.replace('Home'))
+  const selectedCategory = categories.data?.find((item) => item.id === form.categoryId)
   async function useGps() {
     const coordinates = await location.getCurrent()
     if (coordinates) setForm({ ...form, latitude: String(coordinates.latitude), longitude: String(coordinates.longitude) })
   }
+  function chooseImageSource() {
+    const remaining = Math.max(1, 5 - images.length)
+    Alert.alert('Agregar foto', 'Elige el origen de la imagen.', [
+      { text: 'Cámara', onPress: () => picker.mutate({ source: 'camera', max: 1 }, { onSuccess: (items) => setImages([...images, ...items].slice(0, 5)) }) },
+      { text: 'Galería', onPress: () => picker.mutate({ source: 'gallery', max: remaining }, { onSuccess: (items) => setImages([...images, ...items].slice(0, 5)) }) },
+      { text: 'Cancelar', style: 'cancel' },
+    ])
+  }
   return <KeyboardAwareScreen><Text style={styles.title}>Nuevo servicio</Text><Text style={styles.label}>Categoría</Text>
     <QueryState pending={categories.isPending} error={categories.error}>
-      <>{categories.data?.map((item) => <Pressable key={item.id} onPress={() => setForm({ ...form, categoryId: item.id })}><Card><Text style={[styles.cardTitle, form.categoryId === item.id && { color: colors.brand }]}>{item.name}</Text><Text style={styles.muted}>{item.description}</Text></Card></Pressable>)}</>
+      <>{selectedCategory
+        ? <Card><Text style={[styles.cardTitle, { color: colors.brand }]}>{selectedCategory.name}</Text><Text style={styles.muted}>{selectedCategory.description}</Text><Button title="Ver categorías" onPress={() => setForm({ ...form, categoryId: '' })} /></Card>
+        : categories.data?.map((item) => <Pressable key={item.id} onPress={() => setForm({ ...form, categoryId: item.id })}><Card><Text style={styles.cardTitle}>{item.name}</Text><Text style={styles.muted}>{item.description}</Text></Card></Pressable>)}</>
     </QueryState>
     <Field multiline placeholder="Describe el problema" value={form.description} onChangeText={(description) => setForm({ ...form, description })} />
     <Field placeholder="Dirección" value={form.address} onChangeText={(address) => setForm({ ...form, address })} />
@@ -31,7 +42,7 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
     <Field keyboardType="numeric" placeholder="Longitud" value={form.longitude} onChangeText={(longitude) => setForm({ ...form, longitude })} />
     <Button title="Usar ubicación GPS" onPress={useGps} loading={location.isLocating} />
     <Field keyboardType="numeric" placeholder="Presupuesto estimado (opcional)" value={form.estimatedPrice} onChangeText={(estimatedPrice) => setForm({ ...form, estimatedPrice })} />
-    <Button title={images.length ? `${images.length} imágenes seleccionadas` : 'Subir imágenes opcionales'} onPress={() => picker.mutate(5, { onSuccess: setImages })} loading={picker.isPending} />
+    <Button title={images.length ? `Agregar foto (${images.length}/5)` : 'Tomar foto o elegir de galería'} onPress={chooseImageSource} loading={picker.isPending} />
     {images.length > 0 && <ScrollView horizontal>{images.map((image) => <Image key={image.uri} source={{ uri: image.uri }} style={{ width: 100, height: 100, borderRadius: 12, marginRight: 8 }} />)}</ScrollView>}
     {(location.error || picker.error || create.error) && <Text style={styles.error}>{location.error || apiMessage(picker.error ?? create.error)}</Text>}
     <Button title="Crear solicitud" onPress={() => create.mutate({ payload: {

@@ -16,7 +16,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>()
 
 export function TechnicianNavigator() {
   const { session, logout } = useSession()
-  return <Stack.Navigator>
+  return <Stack.Navigator initialRouteName="AvailableRequests">
     <Stack.Screen name="TechnicianHome" component={TechnicianHomeScreen} options={{ headerShown: false }} />
     <Stack.Screen name="TechnicianProfile" component={TechnicianProfileScreen} options={{ title: 'Perfil técnico' }} />
     <Stack.Screen name="AvailableRequests" component={AvailableRequestsScreen} options={{ title: 'Disponibles' }} />
