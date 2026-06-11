@@ -14,6 +14,8 @@ async function upload(asset: UploadAsset, kind: 'PROFILE' | 'DOCUMENT' | 'CERTIF
   return data.url
 }
 
+export const uploadProfileAsset = (asset: UploadAsset) => upload(asset, 'PROFILE')
+
 export async function pickServiceImages(max = 5) {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
   if (!permission.granted) throw new Error('Permiso de galería denegado')

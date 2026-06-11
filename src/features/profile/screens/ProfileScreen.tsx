@@ -1,29 +1,30 @@
-import * as Location from 'expo-location'
 import { useState } from 'react'
 import { Text } from 'react-native'
 import { Button, Card, Field, styles, colors } from '../../../components/UI'
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
-import { pickAndUploadEvidence, pickAndUploadImage } from '../../../services/files'
 import { apiMessage } from '../../../shared/apiMessage'
 import { QueryState } from '../../../shared/QueryState'
 import type { Session, UserProfile } from '../../../types'
-import { profileApi } from '../api'
-import { useProfile, useSaveProfile } from '../hooks'
+import { useProfile, useSaveProfile, useVerifyEmail } from '../hooks'
+import { useDocumentUpload, useProfileImageUpload } from '../../files/hooks'
+import { useCurrentLocation } from '../../location/hooks'
 
-export function ProfileScreen({ session, onLogout }: { session: Session; onLogout: () => void }) {
+export function ProfileScreen({ session, onLogout, navigation }: { session: Session; onLogout: () => void; navigation?: { navigate: (screen: 'CaptureProfilePhoto' | 'Legal') => void } }) {
   const profile = useProfile()
   const save = useSaveProfile()
   const [draft, setDraft] = useState<UserProfile | null>(null)
   const [notice, setNotice] = useState('')
+  const location = useCurrentLocation()
+  const profileImage = useProfileImageUpload()
+  const document = useDocumentUpload()
+  const verifyEmail = useVerifyEmail()
   const current = draft ?? profile.data
   function update(value: Partial<UserProfile>) {
     if (current) setDraft({ ...current, ...value })
   }
   async function useHomeGps() {
-    const permission = await Location.requestForegroundPermissionsAsync()
-    if (!permission.granted) { setNotice('Permiso de ubicación denegado'); return }
-    const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High })
-    update({ homeLatitude: location.coords.latitude, homeLongitude: location.coords.longitude })
+    const coordinates = await location.getCurrent()
+    if (coordinates) update({ homeLatitude: coordinates.latitude, homeLongitude: coordinates.longitude })
   }
   function submit() {
     if (!current?.documentPhotoUrl) { setNotice('El documento es obligatorio'); return }
@@ -45,11 +46,13 @@ export function ProfileScreen({ session, onLogout }: { session: Session; onLogou
       <Field placeholder="Barrio" value={current.homeNeighborhood ?? ''} onChangeText={(homeNeighborhood) => update({ homeNeighborhood })} />
       <Field keyboardType="numeric" placeholder="Latitud domicilio" value={String(current.homeLatitude ?? '')} onChangeText={(value) => update({ homeLatitude: Number(value) })} />
       <Field keyboardType="numeric" placeholder="Longitud domicilio" value={String(current.homeLongitude ?? '')} onChangeText={(value) => update({ homeLongitude: Number(value) })} />
-      <Button title="Usar ubicación actual" onPress={useHomeGps} />
-      <Button title={current.profilePhotoUrl ? 'Foto de perfil cargada' : 'Subir foto de perfil'} onPress={async () => update({ profilePhotoUrl: await pickAndUploadImage() ?? current.profilePhotoUrl })} />
-      <Button title={current.documentPhotoUrl ? 'Documento cargado' : 'Subir documento obligatorio'} onPress={async () => update({ documentPhotoUrl: await pickAndUploadEvidence() ?? current.documentPhotoUrl })} />
-      {(notice || save.error) && <Text style={save.error ? styles.error : styles.muted}>{save.error ? apiMessage(save.error) : notice}</Text>}
+      <Button title="Usar ubicación actual" onPress={useHomeGps} loading={location.isLocating} />
+      <Button title={current.profilePhotoUrl ? 'Foto de perfil cargada' : 'Subir foto de perfil'} onPress={() => profileImage.mutate(undefined, { onSuccess: (url) => update({ profilePhotoUrl: url ?? current.profilePhotoUrl }) })} loading={profileImage.isPending} />
+      {navigation && <Button title="Tomar foto de perfil con cámara" onPress={() => navigation.navigate('CaptureProfilePhoto')} />}
+      <Button title={current.documentPhotoUrl ? 'Documento cargado' : 'Subir documento obligatorio'} onPress={() => document.mutate('DOCUMENT', { onSuccess: (url) => update({ documentPhotoUrl: url ?? current.documentPhotoUrl }) })} loading={document.isPending} />
+      {(notice || location.error || save.error || profileImage.error || document.error) && <Text style={(save.error || profileImage.error || document.error) ? styles.error : styles.muted}>{save.error || profileImage.error || document.error ? apiMessage(save.error ?? profileImage.error ?? document.error) : location.error || notice}</Text>}
       <Button title="Guardar perfil" onPress={submit} loading={save.isPending} />
-      {!current.emailVerified && <Button title="Verificar correo" onPress={() => profileApi.verifyEmail().then(() => setNotice('Correo de verificación enviado')).catch((error) => setNotice(apiMessage(error)))} />}</>}
+      {navigation && <Button title="Seguridad, términos y datos" onPress={() => navigation.navigate('Legal')} />}
+      {!current.emailVerified && <Button title="Verificar correo" loading={verifyEmail.isPending} onPress={() => verifyEmail.mutate(undefined, { onSuccess: () => setNotice('Correo de verificación enviado'), onError: (error) => setNotice(apiMessage(error)) })} />}</>}
   </QueryState><Button title="Cerrar sesión" onPress={onLogout} /></KeyboardAwareScreen>
 }

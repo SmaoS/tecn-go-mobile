@@ -118,3 +118,13 @@ eas build --platform all --profile production
 
 `eas.json` incluye perfiles de desarrollo, preview y tiendas. Un `401` elimina la
 sesión persistida y devuelve la navegación al login.
+
+## Evidencias y captura de perfil
+
+`ServiceSupportScreen` usa hooks para evidencias, comprobantes y denuncias. Las
+pantallas legales permiten aceptar cada versión activa. `CaptureProfilePhotoScreen`
+usa `expo-camera` y cámara frontal.
+
+En Expo managed no se incluyó ML Kit: la foto queda
+`profilePhotoFaceValidated=false` y requiere revisión manual. No hay reconocimiento de
+identidad ni comparación con el documento.

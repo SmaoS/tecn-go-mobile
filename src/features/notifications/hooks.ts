@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { notificationsApi } from './api'
 
 export const notificationKeys = {
@@ -19,5 +19,20 @@ export function useUnreadNotifications() {
     queryKey: notificationKeys.unread,
     queryFn: notificationsApi.unread,
     refetchInterval: 10_000,
+  })
+}
+
+export function useMarkNotificationRead() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: async (item: { id: string; read: boolean }) => {
+      if (!item.read) await notificationsApi.read(item.id)
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: notificationKeys.all }),
+        client.invalidateQueries({ queryKey: notificationKeys.unread }),
+      ])
+    },
   })
 }

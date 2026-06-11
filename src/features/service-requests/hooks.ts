@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ServiceRequest } from '../../types'
 import { serviceRequestApi } from './api'
+import { uploadServiceImage } from '../../services/files'
 
 export const requestKeys = {
   client: ['service-requests', 'client'] as const,
@@ -76,7 +77,16 @@ export function useTechnicianLocation(request: ServiceRequest) {
 export function useRequestAction(requestId: string) {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (run: () => Promise<unknown>) => run(),
+    mutationFn: async (input:
+      | { kind: 'confirmQuote'; quoteId: string }
+      | { kind: 'rejectQuote'; quoteId: string }
+      | { kind: 'status'; status: string }
+      | { kind: 'payCash' }) => {
+      if (input.kind === 'confirmQuote') await serviceRequestApi.confirmQuote(requestId, input.quoteId)
+      else if (input.kind === 'rejectQuote') await serviceRequestApi.rejectQuote(requestId, input.quoteId)
+      else if (input.kind === 'status') await serviceRequestApi.status(requestId, input.status)
+      else await serviceRequestApi.payCash(requestId)
+    },
     onSuccess: async () => {
       await Promise.all([
         client.invalidateQueries({ queryKey: requestKeys.detail(requestId) }),
@@ -85,5 +95,32 @@ export function useRequestAction(requestId: string) {
         client.invalidateQueries({ queryKey: requestKeys.assigned }),
       ])
     },
+  })
+}
+
+export function useCreateRequest(onSuccess: () => void) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ payload, images }: {
+      payload: object
+      images: { uri: string; name: string; mimeType: string }[]
+    }) => {
+      const request = await serviceRequestApi.create(payload)
+      for (const image of images) await uploadServiceImage(request.id, image)
+      return request
+    },
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: requestKeys.client })
+      onSuccess()
+    },
+  })
+}
+
+export function useAdvanceRequest() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ requestId, status }: { requestId: string; status: string }) =>
+      serviceRequestApi.status(requestId, status),
+    onSuccess: () => client.invalidateQueries({ queryKey: requestKeys.assigned }),
   })
 }

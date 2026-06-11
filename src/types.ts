@@ -152,6 +152,10 @@ export interface UserProfile {
   homeLongitude?: number
   homeCity?: string
   homeNeighborhood?: string
+  accountStatus?: 'ACTIVE' | 'INACTIVE_PAYMENT' | 'INACTIVE_REPORT' | 'INACTIVE_ADMIN' | 'BLOCKED' | 'DELETED_LOGICAL'
+  inactiveReason?: string
+  inactiveComment?: string
+  profilePhotoFaceValidated?: boolean
 }
 
 export interface UserVerification {
@@ -180,6 +184,9 @@ export type RootStackParamList = {
   TechnicianHome: undefined
   TechnicianProfile: undefined
   AvailableRequests: undefined
+  ServiceSupport: { requestId: string }
+  Legal: undefined
+  CaptureProfilePhoto: undefined
 }
 
 export interface Payment {

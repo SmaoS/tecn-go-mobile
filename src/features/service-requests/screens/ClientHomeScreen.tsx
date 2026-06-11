@@ -15,6 +15,7 @@ export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStac
       <Pressable onPress={() => navigation.navigate('NearbyTechnicians')}><Text style={styles.link}>Técnicos cercanos</Text></Pressable>
       <Pressable onPress={() => navigation.navigate('Profile')}><Text style={styles.link}>Mi perfil</Text></Pressable>
       <Pressable onPress={() => navigation.navigate('Notifications')}><Text style={styles.link}>Notificaciones{(unread.data ?? 0) > 0 ? ` (${unread.data})` : ''}</Text></Pressable>
+      <Pressable onPress={() => navigation.navigate('Legal')}><Text style={styles.link}>Seguridad</Text></Pressable>
     </View>
     <Text style={styles.label}>Solicitudes recientes</Text>
     <QueryState pending={requests.isPending} error={requests.error ?? unread.error} empty={requests.data?.length === 0} emptyText="Aún no tienes solicitudes.">

@@ -6,3 +6,7 @@ export function apiMessage(error: unknown) {
   if (error.response) return error.response.data?.message ?? `La API respondió con estado ${error.response.status}`
   return `No fue posible conectar con TecnGo en ${api.defaults.baseURL}`
 }
+
+export function hasApiStatus(error: unknown, status: number) {
+  return axios.isAxiosError(error) && error.response?.status === status
+}
