@@ -6,6 +6,17 @@ asignado. La edición de parámetros permanece solo en Web Admin.
 
 Aplicación móvil del MVP construida con React Native 0.81, Expo SDK 54 y TypeScript.
 
+## Arquitectura
+
+- `src/navigation`: navegadores `Auth`, `Client`, `Technician` y `Staff`.
+- `src/features`: pantallas, APIs, hooks y componentes agrupados por funcionalidad.
+- `src/context`: sesión, restauración del JWT y cierre de sesión.
+- `src/shared`: estados remotos y manejo común de errores.
+- `src/components`: componentes visuales reutilizables.
+
+TanStack Query administra caché, polling, loading, errores e invalidaciones. Las
+pantallas conservan localmente únicamente formularios y estado de interacción.
+
 ## Pantallas
 
 - Login y registro básico conectados a la API
@@ -88,9 +99,8 @@ debe probarse en un development build con Firebase configurado; Expo Go no cubre
 flujo FCM nativo completo. Al pulsar una notificación de chat se abre el chat, y una
 nueva solicitud dirige al técnico a solicitudes disponibles.
 
-Las pantallas activas usan polling con cleanup automático: solicitudes y
-notificaciones cada 10 segundos, chat cada 5 segundos. El polling se detiene cuando la
-pantalla pierde el foco.
+TanStack Query actualiza solicitudes y notificaciones cada 10 segundos y el chat cada
+5 segundos. Al cerrar sesión se limpia completamente el caché remoto.
 
 ## EAS y producción
 

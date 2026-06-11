@@ -1,0 +1,16 @@
+import { api } from '../../api/client'
+import type { Category, ServiceQuote, ServiceRequest, TechnicianLocation } from '../../types'
+
+export const serviceRequestApi = {
+  categories: () => api.get<Category[]>('/v1/services').then(({ data }) => data),
+  clientRequests: () => api.get<ServiceRequest[]>('/v1/service-requests/my').then(({ data }) => data),
+  assigned: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned').then(({ data }) => data),
+  available: (radiusKm: string) => api.get<ServiceRequest[]>(`/v1/service-requests/available?radiusKm=${radiusKm}`).then(({ data }) => data),
+  quotes: (requestId: string) => api.get<ServiceQuote[]>(`/v1/service-requests/${requestId}/quotes`).then(({ data }) => data),
+  technicianLocation: (requestId: string) => api.get<TechnicianLocation>(`/v1/service-requests/${requestId}/technician-location`).then(({ data }) => data),
+  create: (payload: object) => api.post<ServiceRequest>('/v1/service-requests', payload).then(({ data }) => data),
+  status: (requestId: string, status: string) => api.put<ServiceRequest>(`/v1/service-requests/${requestId}/status`, { status }).then(({ data }) => data),
+  confirmQuote: (requestId: string, quoteId: string) => api.put<ServiceRequest>(`/v1/service-requests/${requestId}/confirm-quote`, { quoteId }).then(({ data }) => data),
+  rejectQuote: (requestId: string, quoteId: string) => api.put(`/v1/service-requests/${requestId}/quotes/${quoteId}/reject`),
+  payCash: (requestId: string) => api.post(`/v1/service-requests/${requestId}/payment/cash`),
+}

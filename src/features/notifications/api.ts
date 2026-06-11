@@ -1,0 +1,8 @@
+import { api } from '../../api/client'
+import type { UnreadCount, UserNotification } from '../../types'
+
+export const notificationsApi = {
+  all: () => api.get<UserNotification[]>('/v1/notifications').then(({ data }) => data),
+  unread: () => api.get<UnreadCount>('/v1/notifications/unread-count').then(({ data }) => data.count),
+  read: (id: string) => api.put(`/v1/notifications/${id}/read`),
+}
