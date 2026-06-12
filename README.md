@@ -69,10 +69,14 @@ dispositivo físico, cambia `EXPO_PUBLIC_API_URL` por la IP LAN del equipo, por 
 ## Mapas y notificaciones
 
 - Define `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` antes de generar un build nativo.
+  `app.config.ts` la configura para Google Maps en Android y iOS.
 - Descarga `google-services.json` desde Firebase para la app Android
   `com.tecngo` y configura `GOOGLE_SERVICES_JSON` con su ruta.
 - `src/services/notifications.ts` solicita permisos, crea el canal Android, registra el
   token FCM y maneja notificaciones foreground y pulsaciones.
+- `app.config.ts` enlaza `GOOGLE_SERVICES_JSON` con `android.googleServicesFile` para
+  builds EAS. Debe configurarse como variable de tipo archivo con el
+  `google-services.json` de la app Android `com.tecngo`.
 - Configura `EAS_PROJECT_ID`; las credenciales Firebase deben permanecer fuera de Git.
 - Expo Go permite probar la interfaz, pero mapas y push deben verificarse finalmente en
   un development build.

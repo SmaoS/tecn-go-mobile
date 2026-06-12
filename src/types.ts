@@ -96,6 +96,8 @@ export interface UserNotification {
   title: string
   message: string
   type: 'NEW_REQUEST' | 'NEW_QUOTE' | 'QUOTE_ACCEPTED' | 'REQUEST_ACCEPTED'
+    | 'QUOTE_REJECTED' | 'PAYMENT_PROOF_UPLOADED' | 'SERVICE_EVIDENCE_UPLOADED'
+    | 'PAYMENT_PROOF_VERIFIED'
     | 'TECHNICIAN_ON_THE_WAY' | 'TECHNICIAN_ARRIVED' | 'SERVICE_STARTED'
     | 'SERVICE_COMPLETED' | 'NEW_CHAT_MESSAGE' | 'NEW_RATING' | 'SERVICE_STATUS_CHANGED'
     | 'LEGAL_ACCEPTANCE_REQUIRED'
@@ -180,6 +182,7 @@ export type RootStackParamList = {
   RequestService: undefined
   NearbyTechnicians: undefined
   RequestDetail: { request: ServiceRequest }
+  NotificationRequest: { requestId: string }
   Chat: { requestId: string }
   Notifications: undefined
   Rating: { requestId: string }

@@ -56,6 +56,14 @@ export function useRequestDetail(initial: ServiceRequest) {
   })
 }
 
+export function useNotificationRequest(requestId: string) {
+  return useQuery({
+    queryKey: requestKeys.detail(requestId),
+    queryFn: () => serviceRequestApi.detail(requestId),
+    refetchInterval: 10_000,
+  })
+}
+
 export function useRequestQuotes(requestId: string) {
   return useQuery({
     queryKey: requestKeys.quotes(requestId),

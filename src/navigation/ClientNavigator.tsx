@@ -7,6 +7,7 @@ import { ClientHomeScreen } from '../features/service-requests/screens/ClientHom
 import { CreateRequestScreen } from '../features/service-requests/screens/CreateRequestScreen'
 import { NearbyTechniciansScreen } from '../features/service-requests/screens/NearbyTechniciansScreen'
 import { RequestDetailScreen } from '../features/service-requests/screens/RequestDetailScreen'
+import { NotificationRequestScreen } from '../features/service-requests/screens/NotificationRequestScreen'
 import type { RootStackParamList } from '../types'
 import { useSession } from '../context/useSession'
 import { ServiceSupportScreen } from '../features/service-support/screens/ServiceSupportScreen'
@@ -22,6 +23,7 @@ export function ClientNavigator() {
     <Stack.Screen name="RequestService" component={CreateRequestScreen} options={{ title: 'Solicitar servicio' }} />
     <Stack.Screen name="NearbyTechnicians" component={NearbyTechniciansScreen} options={{ title: 'Cerca de ti' }} />
     <Stack.Screen name="RequestDetail" component={RequestDetailScreen} options={{ title: 'Solicitud' }} />
+    <Stack.Screen name="NotificationRequest" component={NotificationRequestScreen} options={{ title: 'Solicitud' }} />
     <Stack.Screen name="Chat" component={ChatScreen} />
     <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ title: 'Notificaciones' }} />
     <Stack.Screen name="Rating" component={RatingScreen} options={{ title: 'Calificación' }} />

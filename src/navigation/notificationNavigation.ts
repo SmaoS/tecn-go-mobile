@@ -14,6 +14,10 @@ export function openNotification(
     navigation.navigate('AvailableRequests')
   } else if (route === 'Chat' && notification.requestId) {
     navigation.navigate('Chat', { requestId: notification.requestId })
+  } else if (route === 'ServiceSupport' && notification.requestId) {
+    navigation.navigate('ServiceSupport', { requestId: notification.requestId })
+  } else if (notification.requestId) {
+    navigation.navigate('NotificationRequest', { requestId: notification.requestId })
   } else if (role === 'CLIENT') {
     navigation.navigate('Home')
   } else if (role === 'TECHNICIAN') {

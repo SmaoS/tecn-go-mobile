@@ -4,6 +4,7 @@ import type { Category, NearbyTechnician, ServiceQuote, ServiceRequest, Technici
 export const serviceRequestApi = {
   categories: () => api.get<Category[]>('/v1/services').then(({ data }) => data),
   clientRequests: () => api.get<ServiceRequest[]>('/v1/service-requests/my').then(({ data }) => data),
+  detail: (requestId: string) => api.get<ServiceRequest>(`/v1/service-requests/${requestId}`).then(({ data }) => data),
   assigned: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned').then(({ data }) => data),
   available: (radiusKm: string) => api.get<ServiceRequest[]>(`/v1/service-requests/available?radiusKm=${radiusKm}`).then(({ data }) => data),
   quotes: (requestId: string) => api.get<ServiceQuote[]>(`/v1/service-requests/${requestId}/quotes`).then(({ data }) => data),
