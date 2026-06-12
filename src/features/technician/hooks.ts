@@ -36,3 +36,10 @@ export function useSendQuote(radiusKm: string) {
     onSuccess: () => client.invalidateQueries({ queryKey: requestKeys.available(radiusKm) }),
   })
 }
+
+export function useTechnicianReferrals() {
+  const code = useQuery({ queryKey: ['referrals', 'code'], queryFn: technicianApi.referralCode })
+  const referrals = useQuery({ queryKey: ['referrals', 'registrations'], queryFn: technicianApi.referrals })
+  const rewards = useQuery({ queryKey: ['referrals', 'rewards'], queryFn: technicianApi.referralRewards })
+  return { code, referrals, rewards }
+}

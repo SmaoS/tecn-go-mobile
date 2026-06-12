@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ActivityIndicator, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native'
+import { ActivityIndicator, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native'
 
 export const colors = { bg: '#020617', card: '#0f172a', border: '#1e293b', text: '#f8fafc', muted: '#94a3b8', brand: '#22d3ee', dark: '#083344', danger: '#fb7185' }
 
@@ -19,8 +19,8 @@ export function LoadingOverlay({ visible, text = 'Procesando...' }: { visible: b
   return <Modal transparent visible={visible} animationType="fade"><View style={styles.overlay}><View style={styles.loadingCard}><ActivityIndicator size="large" color={colors.brand} /><Text style={{ color: colors.text, marginTop: 12, fontWeight: '700' }}>{text}</Text></View></View></Modal>
 }
 
-export function Card({ children }: { children: ReactNode }) {
-  return <View style={styles.card}>{children}</View>
+export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  return <View style={[styles.card, style]}>{children}</View>
 }
 
 export const styles = StyleSheet.create({

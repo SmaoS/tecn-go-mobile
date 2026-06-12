@@ -6,6 +6,7 @@ import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
 import { apiMessage } from '../../../shared/apiMessage'
 import type { RootStackParamList, Session } from '../../../types'
 import { useLogin, useRegister } from '../hooks'
+import { authApi } from '../api'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login' | 'Register'> & {
   onSession: (session: Session) => void
@@ -26,6 +27,8 @@ export function LoginScreen({ navigation, onSession }: Props) {
 export function RegisterScreen({ navigation, onSession }: Props) {
   const [form, setForm] = useState({ fullName: '', email: '', password: '' })
   const [role, setRole] = useState<'CLIENT' | 'TECHNICIAN'>('CLIENT')
+  const [referralCode, setReferralCode] = useState('')
+  const [referralMessage, setReferralMessage] = useState('')
   const register = useRegister(onSession)
   return <KeyboardAwareScreen><Text style={styles.title}>Crea tu cuenta</Text><Text style={styles.subtitle}>Solicita tu primer servicio en minutos.</Text>
     <Text style={styles.label}>Tipo de cuenta</Text>
@@ -34,8 +37,12 @@ export function RegisterScreen({ navigation, onSession }: Props) {
     <Field placeholder="Nombre completo" value={form.fullName} onChangeText={(fullName) => setForm({ ...form, fullName })} />
     <Field autoCapitalize="none" keyboardType="email-address" placeholder="Correo" value={form.email} onChangeText={(email) => setForm({ ...form, email })} />
     <Field secureTextEntry placeholder="Contraseña" value={form.password} onChangeText={(password) => setForm({ ...form, password })} />
+    <Field autoCapitalize="characters" placeholder="Código de referido (opcional)" value={referralCode} onChangeText={(value) => { setReferralCode(value.toUpperCase()); setReferralMessage('') }} onBlur={() => {
+      if (referralCode.trim()) void authApi.validateReferral(referralCode.trim()).then((value) => setReferralMessage(value.message)).catch(() => setReferralMessage('No fue posible validar el código.'))
+    }} />
+    {referralMessage && <Text style={styles.muted}>{referralMessage}</Text>}
     <Text style={styles.muted}>Al ingresar podrás completar el perfil y subir el documento para verificación.</Text>
-    {register.error && <Text style={styles.error}>{apiMessage(register.error)}</Text>}<Button title="Registrarme" onPress={() => register.mutate({ ...form, role })} loading={register.isPending} />
+    {register.error && <Text style={styles.error}>{apiMessage(register.error)}</Text>}<Button title="Registrarme" onPress={() => register.mutate({ ...form, role, referralCode: referralCode.trim() || undefined })} loading={register.isPending} />
     <Pressable onPress={() => navigation.navigate('Login')}><Text style={styles.link}>Ya tengo cuenta</Text></Pressable>
   </KeyboardAwareScreen>
 }

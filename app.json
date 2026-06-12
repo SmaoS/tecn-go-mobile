@@ -34,7 +34,7 @@
       "icon": "./assets/icon.png"
     },
     "android": {
-      "package": "com.tecngo.app",
+      "package": "com.tecngo",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"

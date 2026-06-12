@@ -1,7 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native'
 import { colors } from './UI'
+import type { NearbyTechnician } from '../types'
+import type { Coordinates } from '../features/location/hooks'
 
-export function NearbyMap() {
+export function NearbyMap(_: { client?: Coordinates; technicians: NearbyTechnician[] }) {
   return (
     <View style={styles.placeholder}>
       <Text style={styles.title}>Mapa disponible en Android y iOS</Text>

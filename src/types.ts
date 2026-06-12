@@ -185,11 +185,13 @@ export type RootStackParamList = {
   Rating: { requestId: string }
   Profile: undefined
   TechnicianHome: undefined
+  TechnicianEntry: undefined
   TechnicianProfile: undefined
   AvailableRequests: undefined
   ServiceSupport: { requestId: string }
   Legal: undefined
   CaptureProfilePhoto: undefined
+  TechnicianReferrals: undefined
 }
 
 export interface Payment {
@@ -216,10 +218,64 @@ export interface TechnicianLocation {
   updatedAt: string
 }
 
+export interface NearbyTechnician {
+  technicianId: string
+  technicianName: string
+  profilePhotoUrl?: string
+  averageRating: number
+  completedServicesCount: number
+  latitude: number
+  longitude: number
+  distanceKm: number
+  updatedAt: string
+}
+
 export interface FinancialSummary {
   totalAmount: number
   totalPlatformFee: number
   totalTechnicianAmount: number
   paymentCount: number
   payments: Payment[]
+}
+
+export interface ReferralCode {
+  id: string
+  technicianId: string
+  technicianName: string
+  code: string
+  active: boolean
+  createdAt: string
+  registered: number
+  qualified: number
+  availableRewards: number
+  usedRewards: number
+}
+
+export interface ReferralRegistration {
+  id: string
+  referredUserId: string
+  referredUserName: string
+  referredUserRole: 'CLIENT' | 'TECHNICIAN'
+  status: 'REGISTERED' | 'QUALIFIED' | 'REWARD_GRANTED' | 'CANCELLED'
+  createdAt: string
+}
+
+export interface ReferralReward {
+  id: string
+  rewardType: 'FREE_COMMISSION_SERVICE'
+  status: 'AVAILABLE' | 'USED' | 'EXPIRED' | 'CANCELLED'
+  createdAt: string
+  usedAt?: string
+  expiresAt?: string
+}
+
+export interface AppVersionCheck {
+  platform: 'ANDROID' | 'IOS'
+  currentVersion: string
+  latestVersion: string
+  minimumSupportedVersion: string
+  updateRequired: boolean
+  forceUpdate: boolean
+  updateUrl: string
+  message: string
 }

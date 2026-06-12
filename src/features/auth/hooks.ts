@@ -7,6 +7,6 @@ export const useLogin = (onSuccess: (session: Session) => void) => useMutation({
   onSuccess,
 })
 export const useRegister = (onSuccess: (session: Session) => void) => useMutation({
-  mutationFn: (payload: { fullName: string; email: string; password: string; role: 'CLIENT' | 'TECHNICIAN' }) => authApi.register(payload),
+  mutationFn: (payload: { fullName: string; email: string; password: string; role: 'CLIENT' | 'TECHNICIAN'; referralCode?: string }) => authApi.register(payload),
   onSuccess,
 })

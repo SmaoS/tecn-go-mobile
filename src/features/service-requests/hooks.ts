@@ -10,6 +10,8 @@ export const requestKeys = {
   detail: (requestId: string) => ['service-requests', 'detail', requestId] as const,
   quotes: (requestId: string) => ['service-requests', 'quotes', requestId] as const,
   location: (requestId: string) => ['service-requests', 'location', requestId] as const,
+  nearbyTechnicians: (latitude: number, longitude: number) => ['technicians', 'nearby', latitude, longitude] as const,
+  recentQuotes: (requestIds: string[]) => ['service-requests', 'recent-quotes', ...requestIds] as const,
 }
 
 export function useClientRequests() {
@@ -58,6 +60,29 @@ export function useRequestQuotes(requestId: string) {
   return useQuery({
     queryKey: requestKeys.quotes(requestId),
     queryFn: () => serviceRequestApi.quotes(requestId),
+    refetchInterval: 10_000,
+  })
+}
+
+export function useRecentClientQuotes(requests: ServiceRequest[]) {
+  const pending = requests.filter((item) => item.status === 'QUOTE_PENDING')
+  return useQuery({
+    queryKey: requestKeys.recentQuotes(pending.map((item) => item.id)),
+    enabled: pending.length > 0,
+    refetchInterval: 10_000,
+    queryFn: async () => (await Promise.all(pending.map(async (request) =>
+      (await serviceRequestApi.quotes(request.id))
+        .filter((quote) => quote.status === 'PENDING')
+        .map((quote) => ({ request, quote })),
+    ))).flat().sort((a, b) => Date.parse(b.quote.createdAt) - Date.parse(a.quote.createdAt)),
+  })
+}
+
+export function useNearbyTechnicians(latitude?: number, longitude?: number) {
+  return useQuery({
+    queryKey: requestKeys.nearbyTechnicians(latitude ?? 0, longitude ?? 0),
+    queryFn: () => serviceRequestApi.nearbyTechnicians(latitude!, longitude!),
+    enabled: latitude != null && longitude != null,
     refetchInterval: 10_000,
   })
 }

@@ -70,7 +70,7 @@ dispositivo físico, cambia `EXPO_PUBLIC_API_URL` por la IP LAN del equipo, por 
 
 - Define `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` antes de generar un build nativo.
 - Descarga `google-services.json` desde Firebase para la app Android
-  `com.tecngo.app` y configura `GOOGLE_SERVICES_JSON` con su ruta.
+  `com.tecngo` y configura `GOOGLE_SERVICES_JSON` con su ruta.
 - `src/services/notifications.ts` solicita permisos, crea el canal Android, registra el
   token FCM y maneja notificaciones foreground y pulsaciones.
 - Configura `EAS_PROJECT_ID`; las credenciales Firebase deben permanecer fuera de Git.
@@ -133,3 +133,13 @@ Al crear una solicitud se pueden tomar fotos con la cámara o elegir varias desd
 galería. La categoría se compacta después de seleccionarla. Las notificaciones
 conservan `route` y `requestId`: términos abre la pantalla legal, `NEW_REQUEST` abre
 solicitudes disponibles y los mensajes abren el chat.
+
+## Referidos y actualización obligatoria
+
+El técnico dispone de **Invita y gana**, con copia y Share API. El registro acepta un
+código opcional y lo valida contra el backend.
+
+Al iniciar, `AppVersionGate` consulta `/v1/app-version/check` usando
+`Constants.expoConfig.version`. Una actualización obligatoria bloquea la navegación y
+abre la URL configurada por ADMIN; una recomendada permite continuar. Los fallos de red
+se registran localmente y nunca bloquean el acceso.
