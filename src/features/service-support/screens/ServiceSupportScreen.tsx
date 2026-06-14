@@ -34,7 +34,15 @@ export function ServiceSupportScreen({ route }: NativeStackScreenProps<RootStack
       }} />
       <Field value={description} onChangeText={setDescription} placeholder="Descripción" />
       <Button title="Elegir y subir evidencia" loading={action.isPending} onPress={() => action.mutate({ kind: 'evidence', evidenceType, description })} />
-      {evidences.data?.map((item) => <Text key={item.id} style={styles.muted}>{item.description || evidenceLabels[item.evidenceType]} · {item.uploadedByName}</Text>)}
+      {evidences.data?.map((item) => <Card key={item.id}>
+        <Text style={styles.muted}>{item.description || evidenceLabels[item.evidenceType]} · {item.uploadedByName}</Text>
+        {item.contentAssetId && <Button title="Reportar contenido" onPress={() =>
+          action.mutate({
+            kind: 'contentReport',
+            contentAssetId: item.contentAssetId!,
+            reason: 'Contenido inapropiado reportado desde la aplicación móvil',
+          })} />}
+      </Card>)}
     </Card>
     <Card><Text style={styles.cardTitle}>Comprobante de pago</Text>
       <Field keyboardType="numeric" value={amount} onChangeText={setAmount} placeholder="Monto" />

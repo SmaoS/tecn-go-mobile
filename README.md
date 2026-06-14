@@ -147,3 +147,10 @@ Al iniciar, `AppVersionGate` consulta `/v1/app-version/check` usando
 `Constants.expoConfig.version`. Una actualización obligatoria bloquea la navegación y
 abre la URL configurada por ADMIN; una recomendada permite continuar. Los fallos de red
 se registran localmente y nunca bloquean el acceso.
+
+Los perfiles EAS `development` y `preview` configuran
+`EXPO_PUBLIC_ENFORCE_VERSION_CHECK=false`, por lo que los APK internos no quedan
+bloqueados por una versión que todavía no existe en Google Play. El perfil
+`production` mantiene el control activo. Para probar un AAB de producción antes de
+publicarlo, configure temporalmente en el panel web `APP_VERSION_CHECK_ENABLED=false`
+o deje Android en versión mínima/última `1.0.0` con **Forzar actualización** apagado.

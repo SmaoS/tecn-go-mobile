@@ -1,6 +1,6 @@
 import Constants from 'expo-constants'
 import { useEffect, useState, type ReactNode } from 'react'
-import { Linking, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native'
+import { AppState, Linking, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native'
 import { api } from '../../api/client'
 import { colors } from '../../components/UI'
 import type { AppVersionCheck } from '../../types'
@@ -8,20 +8,38 @@ import type { AppVersionCheck } from '../../types'
 export function AppVersionGate({ children }: { children: ReactNode }) {
   const [check, setCheck] = useState<AppVersionCheck>()
   const [dismissed, setDismissed] = useState(false)
+  const enforceVersionCheck = process.env.EXPO_PUBLIC_ENFORCE_VERSION_CHECK !== 'false'
+  const currentVersion = Constants.expoConfig?.version ?? '1.0.0'
   useEffect(() => {
-    if (Platform.OS !== 'android' && Platform.OS !== 'ios') return
+    if (!enforceVersionCheck || Platform.OS !== 'android' && Platform.OS !== 'ios') {
+      setCheck(undefined)
+      return
+    }
     const platform = Platform.OS === 'ios' ? 'IOS' : 'ANDROID'
-    const currentVersion = Constants.expoConfig?.version ?? '1.0.0'
-    api.get<AppVersionCheck>('/v1/app-version/check', { params: { platform, currentVersion } })
-      .then(({ data }) => setCheck(data))
-      .catch((reason) => console.warn('App version check failed; continuing normally.', reason))
-  }, [])
+    const verify = () => {
+      api.get<AppVersionCheck>('/v1/app-version/check', { params: { platform, currentVersion } })
+        .then(({ data }) => {
+          setCheck(data)
+          if (!data.updateRequired) setDismissed(false)
+        })
+        .catch((reason) => {
+          setCheck(undefined)
+          console.warn('App version check failed; continuing normally.', reason)
+        })
+    }
+    verify()
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') verify()
+    })
+    return () => subscription.remove()
+  }, [currentVersion, enforceVersionCheck])
   const visible = Boolean(check?.updateRequired && !dismissed)
   return <>{children}<Modal visible={visible} transparent animationType="fade" onRequestClose={() => {
     if (!check?.forceUpdate) setDismissed(true)
   }}>
     <View style={styles.overlay}><View style={styles.card}><Text style={styles.title}>{check?.forceUpdate ? 'Actualización requerida' : 'Actualización disponible'}</Text>
       <Text style={styles.message}>{check?.message}</Text>
+      <Text style={styles.detail}>Instalada: {currentVersion} · mínima: {check?.minimumSupportedVersion}</Text>
       <Pressable style={styles.primary} onPress={() => check?.updateUrl && void Linking.openURL(check.updateUrl)}><Text style={styles.primaryText}>Actualizar</Text></Pressable>
       {!check?.forceUpdate && <Pressable style={styles.secondary} onPress={() => setDismissed(true)}><Text style={styles.secondaryText}>Continuar</Text></Pressable>}
     </View></View>
@@ -33,6 +51,7 @@ const styles = StyleSheet.create({
   card: { width: '100%', maxWidth: 440, borderRadius: 20, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card, padding: 24 },
   title: { color: colors.text, fontSize: 24, fontWeight: '800', marginBottom: 12 },
   message: { color: colors.muted, fontSize: 16, lineHeight: 23, marginBottom: 20 },
+  detail: { color: colors.muted, fontSize: 13, marginBottom: 16 },
   primary: { borderRadius: 14, backgroundColor: colors.brand, padding: 14, alignItems: 'center' },
   primaryText: { color: colors.bg, fontWeight: '800' },
   secondary: { padding: 14, alignItems: 'center' },

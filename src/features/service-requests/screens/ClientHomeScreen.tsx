@@ -1,7 +1,8 @@
-import { Image, Pressable, Text, useWindowDimensions, View } from 'react-native'
+import { Pressable, Text, useWindowDimensions, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, Card, colors, styles } from '../../../components/UI'
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
+import { PrivateImage } from '../../../components/PrivateImage'
 import { useUnreadNotifications } from '../../notifications/hooks'
 import { QueryState } from '../../../shared/QueryState'
 import type { RootStackParamList } from '../../../types'
@@ -28,7 +29,7 @@ export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStac
         {recentQuotes.data?.map(({ request, quote }) => <Pressable key={quote.id} style={{ width: cardWidth }} onPress={() => navigation.navigate('RequestDetail', { request })}>
           <Card style={{ height: '100%' }}><View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
             {quote.technicianProfilePhotoUrl
-              ? <Image source={{ uri: quote.technicianProfilePhotoUrl }} style={{ width: 52, height: 52, borderRadius: 26 }} />
+              ? <PrivateImage url={quote.technicianProfilePhotoUrl} style={{ width: 52, height: 52, borderRadius: 26 }} />
               : <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center' }}><Text style={styles.cardTitle}>{quote.technicianName.charAt(0)}</Text></View>}
             <View style={{ flex: 1 }}><Text style={styles.cardTitle}>{quote.technicianName}</Text><Text style={styles.muted}>{request.categoryName}</Text><Text style={[styles.cardTitle, { color: colors.brand }]}>${quote.price.toLocaleString()}</Text></View>
           </View></Card>

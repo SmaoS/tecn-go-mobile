@@ -22,3 +22,14 @@ export function useSendMessage(requestId: string) {
     onSuccess: () => client.invalidateQueries({ queryKey: chatKey(requestId) }),
   })
 }
+
+export function useReportMessage(requestId: string) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (messageId: string) => chatApi.report(
+      messageId,
+      'Contenido inapropiado reportado desde la aplicación móvil',
+    ),
+    onSuccess: () => client.invalidateQueries({ queryKey: chatKey(requestId) }),
+  })
+}

@@ -7,15 +7,24 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "environment": "development"
+      "environment": "development",
+      "env": {
+        "EXPO_PUBLIC_ENFORCE_VERSION_CHECK": "false"
+      }
     },
     "preview": {
       "distribution": "internal",
-      "environment": "preview"
+      "environment": "preview",
+      "env": {
+        "EXPO_PUBLIC_ENFORCE_VERSION_CHECK": "false"
+      }
     },
     "production": {
       "autoIncrement": true,
       "environment": "production",
+      "env": {
+        "EXPO_PUBLIC_ENFORCE_VERSION_CHECK": "true"
+      },
       "android": {
         "buildType": "app-bundle"
       }

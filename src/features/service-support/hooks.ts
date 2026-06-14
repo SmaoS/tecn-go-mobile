@@ -9,9 +9,11 @@ export const useServiceSupport = (requestId: string) => {
     mutationFn: async (input:
       | { kind: 'evidence'; evidenceType: import('./api').EvidenceType; description: string }
       | { kind: 'proof'; amount: number; paymentMethod: import('./api').ProofMethod }
+      | { kind: 'contentReport'; contentAssetId: string; reason: string }
       | { kind: 'report'; description: string }) => {
       if (input.kind === 'evidence') await serviceSupportApi.uploadEvidence(requestId, input.evidenceType, input.description)
       else if (input.kind === 'proof') await serviceSupportApi.uploadProof(requestId, input.amount, input.paymentMethod)
+      else if (input.kind === 'contentReport') await serviceSupportApi.reportContent(input.contentAssetId, input.reason)
       else await serviceSupportApi.report(requestId, 'OTHER', input.description)
     },
     onSuccess: () => {

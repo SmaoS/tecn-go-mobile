@@ -57,6 +57,8 @@ export interface ServiceRequestImage {
   serviceRequestId: string
   imageUrl: string
   publicId: string
+  contentAssetId?: string
+  moderationStatus: 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'FLAGGED'
   createdAt: string
 }
 
@@ -87,6 +89,8 @@ export interface ChatMessage {
   senderId: string
   senderName: string
   message: string
+  moderationStatus: 'PENDING' | 'APPROVED' | 'FLAGGED' | 'BLOCKED'
+  moderationReason?: string
   createdAt: string
   readAt?: string
 }
@@ -100,7 +104,7 @@ export interface UserNotification {
     | 'PAYMENT_PROOF_VERIFIED'
     | 'TECHNICIAN_ON_THE_WAY' | 'TECHNICIAN_ARRIVED' | 'SERVICE_STARTED'
     | 'SERVICE_COMPLETED' | 'NEW_CHAT_MESSAGE' | 'NEW_RATING' | 'SERVICE_STATUS_CHANGED'
-    | 'LEGAL_ACCEPTANCE_REQUIRED'
+    | 'LEGAL_ACCEPTANCE_REQUIRED' | 'CONTENT_MODERATION_ALERT' | 'CHAT_MODERATION_ALERT'
   read: boolean
   createdAt: string
   route?: string
@@ -195,6 +199,7 @@ export type RootStackParamList = {
   Legal: undefined
   CaptureProfilePhoto: undefined
   TechnicianReferrals: undefined
+  ChatModeration: undefined
 }
 
 export interface Payment {
