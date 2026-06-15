@@ -10,10 +10,21 @@ import { navigationRef } from './navigationRef'
 import { StaffNavigator } from './StaffNavigator'
 import { TechnicianNavigator } from './TechnicianNavigator'
 import { openNotification } from './notificationNavigation'
+import type { LinkingOptions } from '@react-navigation/native'
+import type { RootStackParamList } from '../types'
 
 const theme = {
   ...DarkTheme,
   colors: { ...DarkTheme.colors, primary: colors.brand, background: colors.bg, card: colors.card, border: colors.border },
+}
+
+const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: ['tecngo://', 'https://tecn-go.com', 'https://www.tecn-go.com'],
+  config: {
+    screens: {
+      ResetPassword: 'reset-password',
+    },
+  },
 }
 
 export function AppNavigator() {
@@ -31,7 +42,7 @@ export function AppNavigator() {
   }, [session])
 
   if (!ready) return <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center' }}><ActivityIndicator color={colors.brand} /></View>
-  return <NavigationContainer ref={navigationRef} theme={theme}>
+  return <NavigationContainer ref={navigationRef} theme={theme} linking={linking}>
     {!session ? <AuthNavigator />
       : session.role === 'CLIENT' ? <ClientNavigator />
         : session.role === 'TECHNICIAN' ? <TechnicianNavigator />

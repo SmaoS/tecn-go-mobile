@@ -14,6 +14,7 @@ import { LegalScreen } from '../features/legal/screens/LegalScreen'
 import { CaptureProfilePhotoScreen } from '../features/profile/screens/CaptureProfilePhotoScreen'
 import { TechnicianReferralsScreen } from '../features/technician/screens/TechnicianReferralsScreen'
 import { NotificationRequestScreen } from '../features/service-requests/screens/NotificationRequestScreen'
+import { TechnicianRequestHistoryScreen } from '../features/service-requests/screens/RequestHistoryScreen'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
@@ -24,6 +25,7 @@ export function TechnicianNavigator() {
     <Stack.Screen name="TechnicianHome" component={TechnicianHomeScreen} options={{ headerShown: false }} />
     <Stack.Screen name="TechnicianProfile" component={TechnicianProfileScreen} options={{ title: 'Perfil técnico' }} />
     <Stack.Screen name="AvailableRequests" component={AvailableRequestsScreen} options={{ title: 'Disponibles' }} />
+    <Stack.Screen name="TechnicianHistory" component={TechnicianRequestHistoryScreen} options={{ title: 'Historial' }} />
     <Stack.Screen name="NotificationRequest" component={NotificationRequestScreen} options={{ title: 'Solicitud' }} />
     <Stack.Screen name="Chat" component={ChatScreen} />
     <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ title: 'Notificaciones' }} />

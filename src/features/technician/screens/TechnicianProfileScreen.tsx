@@ -8,6 +8,7 @@ import { useSaveTechnicianProfile, useTechnicianCategories, useTechnicianProfile
 import type { TechnicianProfileForm } from '../types'
 import { useDocumentUpload, useProfileImageUpload } from '../../files/hooks'
 import { useCurrentLocation } from '../../location/hooks'
+import { PasswordChangeForm } from '../../profile/components/PasswordChangeForm'
 
 const empty: TechnicianProfileForm = {
   documentNumber: '', phone: '', categoryIds: [], description: '', profilePhotoUrl: '',
@@ -54,7 +55,8 @@ export function TechnicianProfileScreen() {
       : 'Completa el documento para iniciar la verificación'
   return <KeyboardAwareScreen><Text style={styles.title}>Perfil técnico</Text><Text style={styles.subtitle}>{profile.data ? `Estado profesional: ${profile.data.status} · ${identityStatus}` : 'Completa tus datos para solicitar aprobación.'}</Text>
     <QueryState pending={profile.isPending || categories.isPending} error={profileError ?? categories.error}>
-      <><Field placeholder="Documento" value={form.documentNumber} onChangeText={(documentNumber) => setForm({ ...form, documentNumber })} />
+      <>{profile.data?.email && <Field value={profile.data.email} editable={false} selectTextOnFocus={false} accessibilityLabel="Correo registrado" />}
+        <Field placeholder="Documento" value={form.documentNumber} onChangeText={(documentNumber) => setForm({ ...form, documentNumber })} />
         <Field placeholder="Teléfono" value={form.phone} onChangeText={(phone) => setForm({ ...form, phone })} />
         <Text style={styles.label}>Categorías</Text>{categories.data?.map((category) => <Pressable key={category.id} onPress={() => setForm({ ...form, categoryIds: form.categoryIds.includes(category.id) ? form.categoryIds.filter((id) => id !== category.id) : [...form.categoryIds, category.id] })}><Card><Text style={[styles.cardTitle, form.categoryIds.includes(category.id) && { color: colors.brand }]}>{form.categoryIds.includes(category.id) ? '✓ ' : ''}{category.name}</Text></Card></Pressable>)}
         <Field multiline placeholder="Descripción profesional" value={form.description} onChangeText={(description) => setForm({ ...form, description })} />
@@ -71,7 +73,8 @@ export function TechnicianProfileScreen() {
         <Field keyboardType="numeric" placeholder="Longitud" value={form.longitude} onChangeText={(longitude) => setForm({ ...form, longitude })} />
         <Button title="Usar mi ubicación GPS" onPress={useGps} loading={location.isLocating} />
         {(location.error || profileImage.error || document.error || save.error) && <Text style={styles.error}>{location.error || apiMessage(profileImage.error ?? document.error ?? save.error)}</Text>}
-        <Button title={profile.data ? 'Actualizar perfil' : 'Crear perfil'} onPress={() => save.mutate(form)} loading={save.isPending} /></>
+        <Button title={profile.data ? 'Actualizar perfil' : 'Crear perfil'} onPress={() => save.mutate(form)} loading={save.isPending} />
+        <PasswordChangeForm /></>
     </QueryState>
   </KeyboardAwareScreen>
 }

@@ -43,10 +43,17 @@ pantallas conservan localmente únicamente formularios y estado de interacción.
 - Cierre de sesión visible desde la cuenta
 - Solicitud de verificación de correo desde `Mi perfil`
 - Estimado del cliente visible para técnicos en solicitudes cercanas
+- Recuperación por correo, confirmación de contraseña y cambio desde perfil
+- Historial separado de solicitudes y servicios asignados
+- Inicio técnico dinámico según servicios activos y doble pulsación para salir en Android
 
 El registro inicial solicita nombre, correo, contraseña y tipo de cuenta. Las fotos y
 el documento se cargan después desde el perfil. La cuenta muestra su estado de
 identidad: `CREATED`, `PENDING_VERIFICATION` o `VERIFIED`.
+
+Los enlaces `https://tecn-go.com/reset-password?token=...` y
+`tecngo://reset-password?token=...` se resuelven a la pantalla de nueva contraseña
+cuando la aplicación no tiene una sesión activa.
 
 ## Requisitos
 

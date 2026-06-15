@@ -5,7 +5,9 @@ import { uploadServiceImage } from '../../services/files'
 
 export const requestKeys = {
   client: ['service-requests', 'client'] as const,
+  clientHistory: ['service-requests', 'client', 'history'] as const,
   assigned: ['service-requests', 'assigned'] as const,
+  assignedHistory: ['service-requests', 'assigned', 'history'] as const,
   available: (radiusKm: string) => ['service-requests', 'available', radiusKm] as const,
   detail: (requestId: string) => ['service-requests', 'detail', requestId] as const,
   quotes: (requestId: string) => ['service-requests', 'quotes', requestId] as const,
@@ -30,6 +32,22 @@ export function useAssignedRequests() {
   })
 }
 
+export function useClientRequestHistory() {
+  return useQuery({
+    queryKey: requestKeys.clientHistory,
+    queryFn: serviceRequestApi.clientHistory,
+    refetchInterval: 10_000,
+  })
+}
+
+export function useAssignedRequestHistory() {
+  return useQuery({
+    queryKey: requestKeys.assignedHistory,
+    queryFn: serviceRequestApi.assignedHistory,
+    refetchInterval: 10_000,
+  })
+}
+
 export function useAvailableRequests(radiusKm: string) {
   return useQuery({
     queryKey: requestKeys.available(radiusKm),
@@ -50,8 +68,7 @@ export function useRequestDetail(initial: ServiceRequest) {
     initialData: initial,
     refetchInterval: 10_000,
     queryFn: async () => {
-      const requests = await serviceRequestApi.clientRequests()
-      return requests.find((item) => item.id === initial.id) ?? initial
+      return serviceRequestApi.detail(initial.id)
     },
   })
 }
@@ -126,6 +143,8 @@ export function useRequestAction(requestId: string) {
         client.invalidateQueries({ queryKey: requestKeys.quotes(requestId) }),
         client.invalidateQueries({ queryKey: requestKeys.client }),
         client.invalidateQueries({ queryKey: requestKeys.assigned }),
+        client.invalidateQueries({ queryKey: requestKeys.clientHistory }),
+        client.invalidateQueries({ queryKey: requestKeys.assignedHistory }),
       ])
     },
   })

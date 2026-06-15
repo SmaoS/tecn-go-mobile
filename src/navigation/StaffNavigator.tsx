@@ -17,7 +17,7 @@ export function StaffNavigator() {
         <Text style={{ color: colors.brand, fontWeight: '700' }}>Moderar chat</Text>
       </Pressable>,
     })}>
-      {() => <ProfileScreen session={session!} onLogout={logout} />}
+      {() => <ProfileScreen session={session!} onLogout={logout} rootExit />}
     </Stack.Screen>
     <Stack.Screen name="ChatModeration" component={ChatModerationScreen} options={{ title: 'Moderación de chat' }} />
   </Stack.Navigator>

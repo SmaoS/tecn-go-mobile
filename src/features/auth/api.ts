@@ -11,8 +11,12 @@ async function persist(response: Promise<{ data: Session }>) {
 export const authApi = {
   login: (email: string, password: string) =>
     persist(api.post<Session>('/v1/auth/login', { email, password })),
-  register: (payload: { fullName: string; email: string; password: string; role: 'CLIENT' | 'TECHNICIAN'; referralCode?: string }) =>
+  register: (payload: { fullName: string; email: string; password: string; confirmPassword: string; role: 'CLIENT' | 'TECHNICIAN'; referralCode?: string }) =>
     persist(api.post<Session>('/v1/auth/register', payload)),
+  forgotPassword: (email: string) =>
+    api.post<{ message: string }>('/v1/auth/forgot-password', { email }).then(({ data }) => data),
+  resetPassword: (payload: { token: string; newPassword: string; confirmPassword: string }) =>
+    api.post<{ message: string }>('/v1/auth/reset-password', payload).then(({ data }) => data),
   validateReferral: (code: string) =>
     api.get<{ valid: boolean; technicianName?: string; message: string }>(`/v1/referrals/validate/${encodeURIComponent(code)}`).then(({ data }) => data),
 }

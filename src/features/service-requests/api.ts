@@ -3,9 +3,11 @@ import type { Category, NearbyTechnician, ServiceQuote, ServiceRequest, Technici
 
 export const serviceRequestApi = {
   categories: () => api.get<Category[]>('/v1/services').then(({ data }) => data),
-  clientRequests: () => api.get<ServiceRequest[]>('/v1/service-requests/my').then(({ data }) => data),
+  clientRequests: () => api.get<ServiceRequest[]>('/v1/service-requests/my?activeOnly=true').then(({ data }) => data),
+  clientHistory: () => api.get<ServiceRequest[]>('/v1/service-requests/my/history').then(({ data }) => data),
   detail: (requestId: string) => api.get<ServiceRequest>(`/v1/service-requests/${requestId}`).then(({ data }) => data),
-  assigned: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned').then(({ data }) => data),
+  assigned: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned?activeOnly=true').then(({ data }) => data),
+  assignedHistory: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned/history').then(({ data }) => data),
   available: (radiusKm: string) => api.get<ServiceRequest[]>(`/v1/service-requests/available?radiusKm=${radiusKm}`).then(({ data }) => data),
   quotes: (requestId: string) => api.get<ServiceQuote[]>(`/v1/service-requests/${requestId}/quotes`).then(({ data }) => data),
   technicianLocation: (requestId: string) => api.get<TechnicianLocation>(`/v1/service-requests/${requestId}/technician-location`).then(({ data }) => data),

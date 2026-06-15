@@ -16,6 +16,7 @@ export function useSaveProfile() {
 }
 
 export const useVerifyEmail = () => useMutation({ mutationFn: profileApi.verifyEmail })
+export const useChangePassword = () => useMutation({ mutationFn: profileApi.changePassword })
 
 export function useCaptureProfilePhoto(onSuccess: () => void) {
   const client = useQueryClient()

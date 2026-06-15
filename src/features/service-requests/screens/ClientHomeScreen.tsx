@@ -8,8 +8,10 @@ import { QueryState } from '../../../shared/QueryState'
 import type { RootStackParamList } from '../../../types'
 import { useClientRequests, useRecentClientQuotes } from '../hooks'
 import { requestStatusLabels } from '../status'
+import { useDoubleBackExit } from '../../../hooks/useDoubleBackExit'
 
 export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) {
+  useDoubleBackExit()
   const requests = useClientRequests()
   const recentQuotes = useRecentClientQuotes(requests.data ?? [])
   const hasPendingQuoteRequests = (requests.data ?? []).some((item) => item.status === 'QUOTE_PENDING')
@@ -21,6 +23,7 @@ export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStac
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 16 }}>
       <Pressable onPress={() => navigation.navigate('NearbyTechnicians')}><Text style={styles.link}>Técnicos cercanos</Text></Pressable>
       <Pressable onPress={() => navigation.navigate('Profile')}><Text style={styles.link}>Mi perfil</Text></Pressable>
+      <Pressable onPress={() => navigation.navigate('RequestHistory')}><Text style={styles.link}>Historial</Text></Pressable>
       <Pressable onPress={() => navigation.navigate('Notifications')}><Text style={styles.link}>Notificaciones{(unread.data ?? 0) > 0 ? ` (${unread.data})` : ''}</Text></Pressable>
       <Pressable onPress={() => navigation.navigate('Legal')}><Text style={styles.link}>Seguridad</Text></Pressable>
     </View>

@@ -13,6 +13,7 @@ import { useSession } from '../context/useSession'
 import { ServiceSupportScreen } from '../features/service-support/screens/ServiceSupportScreen'
 import { LegalScreen } from '../features/legal/screens/LegalScreen'
 import { CaptureProfilePhotoScreen } from '../features/profile/screens/CaptureProfilePhotoScreen'
+import { ClientRequestHistoryScreen } from '../features/service-requests/screens/RequestHistoryScreen'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
@@ -23,6 +24,7 @@ export function ClientNavigator() {
     <Stack.Screen name="RequestService" component={CreateRequestScreen} options={{ title: 'Solicitar servicio' }} />
     <Stack.Screen name="NearbyTechnicians" component={NearbyTechniciansScreen} options={{ title: 'Cerca de ti' }} />
     <Stack.Screen name="RequestDetail" component={RequestDetailScreen} options={{ title: 'Solicitud' }} />
+    <Stack.Screen name="RequestHistory" component={ClientRequestHistoryScreen} options={{ title: 'Historial' }} />
     <Stack.Screen name="NotificationRequest" component={NotificationRequestScreen} options={{ title: 'Solicitud' }} />
     <Stack.Screen name="Chat" component={ChatScreen} />
     <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ title: 'Notificaciones' }} />

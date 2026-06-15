@@ -117,6 +117,7 @@ export interface UnreadCount {
 
 export interface TechnicianProfile {
   id: string
+  email: string
   documentNumber: string
   phone: string
   categories: Category[]
@@ -182,10 +183,13 @@ export interface UserVerification {
 export type RootStackParamList = {
   Login: undefined
   Register: undefined
+  ForgotPassword: undefined
+  ResetPassword: { token?: string } | undefined
   Home: undefined
   RequestService: undefined
   NearbyTechnicians: undefined
   RequestDetail: { request: ServiceRequest }
+  RequestHistory: undefined
   NotificationRequest: { requestId: string }
   Chat: { requestId: string }
   Notifications: undefined
@@ -195,6 +199,7 @@ export type RootStackParamList = {
   TechnicianEntry: undefined
   TechnicianProfile: undefined
   AvailableRequests: undefined
+  TechnicianHistory: undefined
   ServiceSupport: { requestId: string }
   Legal: undefined
   CaptureProfilePhoto: undefined

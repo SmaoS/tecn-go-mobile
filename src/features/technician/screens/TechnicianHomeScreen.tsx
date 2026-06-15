@@ -12,8 +12,10 @@ import type { RequestStatus, RootStackParamList, ServiceRequest } from '../../..
 import { useTechnicianLocationTracking } from '../../location/hooks'
 import { requestStatusLabels } from '../../service-requests/status'
 import { useRatingStatuses } from '../../ratings/hooks'
+import { useDoubleBackExit } from '../../../hooks/useDoubleBackExit'
 
 export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'TechnicianHome'>) {
+  useDoubleBackExit()
   const tracking = useTechnicianLocationTracking()
   const requests = useAssignedRequests()
   const earnings = useTechnicianEarnings()
@@ -43,6 +45,7 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
     <Button title="Mi cuenta / cerrar sesión" onPress={() => navigation.navigate('Profile')} />
     <Button title="Compromiso y términos" onPress={() => navigation.navigate('Legal')} />
     <Button title="Invita y gana" onPress={() => navigation.navigate('TechnicianReferrals')} />
+    <Button title="Historial de servicios" onPress={() => navigation.navigate('TechnicianHistory')} />
     {(tracking.error || advance.error) && <Text style={styles.error}>{tracking.error || apiMessage(advance.error)}</Text>}
     <QueryState pending={earnings.isPending} error={earnings.error}>{earnings.data && <Card><Text style={styles.cardTitle}>Mis ganancias</Text><Text style={[styles.title, { color: colors.brand }]}>${earnings.data.totalTechnicianAmount.toLocaleString()}</Text><Text style={styles.muted}>{earnings.data.paymentCount} pagos · comisión de plataforma ${earnings.data.totalPlatformFee.toLocaleString()}</Text></Card>}</QueryState>
     <Text style={styles.label}>Servicios asignados</Text>
