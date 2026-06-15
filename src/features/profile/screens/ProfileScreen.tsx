@@ -8,8 +8,10 @@ import type { Session, UserProfile } from '../../../types'
 import { useProfile, useSaveProfile, useVerifyEmail } from '../hooks'
 import { useDocumentUpload, useProfileImageUpload } from '../../files/hooks'
 import { useCurrentLocation } from '../../location/hooks'
-import { PasswordChangeForm } from '../components/PasswordChangeForm'
+import { PasswordChangeModal } from '../components/PasswordChangeModal'
 import { useDoubleBackExit } from '../../../hooks/useDoubleBackExit'
+import { CatalogSelect } from '../../catalogs/CatalogSelect'
+import { useCities, useCountries, useDepartments } from '../../catalogs/hooks'
 
 export function ProfileScreen({ session, onLogout, navigation, rootExit = false }: { session: Session; onLogout: () => void; navigation?: { navigate: (screen: 'CaptureProfilePhoto' | 'Legal') => void }; rootExit?: boolean }) {
   useDoubleBackExit(rootExit)
@@ -17,11 +19,15 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
   const save = useSaveProfile()
   const [draft, setDraft] = useState<UserProfile | null>(null)
   const [notice, setNotice] = useState('')
+  const [passwordModal, setPasswordModal] = useState(false)
   const location = useCurrentLocation()
   const profileImage = useProfileImageUpload()
   const document = useDocumentUpload()
   const verifyEmail = useVerifyEmail()
   const current = draft ?? profile.data
+  const countries = useCountries()
+  const departments = useDepartments(current?.countryId)
+  const cities = useCities(current?.departmentId)
   function update(value: Partial<UserProfile>) {
     if (current) setDraft({ ...current, ...value })
   }
@@ -31,6 +37,10 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
   }
   function submit() {
     if (!current?.documentPhotoUrl) { setNotice('El documento es obligatorio'); return }
+    if (!current.countryId || !current.departmentId || !current.cityId) {
+      setNotice('Selecciona país, departamento y ciudad')
+      return
+    }
     save.mutate(current, {
       onSuccess: () => { setDraft(null); setNotice('Perfil actualizado.') },
     })
@@ -45,8 +55,12 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       <Field value={session.email} editable={false} selectTextOnFocus={false} accessibilityLabel="Correo registrado" />
       <Field placeholder="Nombre completo" value={current.fullName} onChangeText={(fullName) => update({ fullName })} />
       <Field placeholder="Teléfono" value={current.phone ?? ''} onChangeText={(phone) => update({ phone })} />
+      <CatalogSelect label="País" value={current.countryId} items={countries.data} onChange={(country) => update({ countryId: country.id, countryName: country.name, departmentId: undefined, departmentName: undefined, cityId: undefined, cityName: undefined, homeCity: undefined })} />
+      <CatalogSelect label="Departamento" value={current.departmentId} items={departments.data} disabled={!current.countryId} onChange={(department) => update({ departmentId: department.id, departmentName: department.name, cityId: undefined, cityName: undefined, homeCity: undefined })} />
+      <CatalogSelect label="Ciudad" value={current.cityId} items={cities.data} disabled={!current.departmentId} onChange={(city) => update({ cityId: city.id, cityName: city.name, homeCity: city.name })} />
+      <Text style={styles.label}>Dirección de domicilio</Text>
       <Field placeholder="Dirección domicilio" value={current.homeAddress ?? ''} onChangeText={(homeAddress) => update({ homeAddress })} />
-      <Field placeholder="Ciudad" value={current.homeCity ?? ''} onChangeText={(homeCity) => update({ homeCity })} />
+      <Text style={styles.label}>Barrio</Text>
       <Field placeholder="Barrio" value={current.homeNeighborhood ?? ''} onChangeText={(homeNeighborhood) => update({ homeNeighborhood })} />
       <Button title={current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'} onPress={useHomeGps} loading={location.isLocating} />
       <Button title={current.profilePhotoUrl ? 'Foto de perfil cargada' : 'Subir foto de perfil'} onPress={() => profileImage.mutate(undefined, { onSuccess: (url) => update({ profilePhotoUrl: url ?? current.profilePhotoUrl }) })} loading={profileImage.isPending} />
@@ -56,5 +70,8 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       <Button title="Guardar perfil" onPress={submit} loading={save.isPending} />
       {navigation && <Button title="Seguridad, términos y datos" onPress={() => navigation.navigate('Legal')} />}
       {!current.emailVerified && <Button title="Verificar correo" loading={verifyEmail.isPending} onPress={() => verifyEmail.mutate(undefined, { onSuccess: () => setNotice('Correo de verificación enviado'), onError: (error) => setNotice(apiMessage(error)) })} />}</>}
-  </QueryState><PasswordChangeForm /><Button title="Cerrar sesión" onPress={onLogout} /></KeyboardAwareScreen>
+      <Button title="Modificar contraseña" onPress={() => setPasswordModal(true)} />
+  </QueryState><Button title="Cerrar sesión" onPress={onLogout} />
+    <PasswordChangeModal visible={passwordModal} onClose={() => setPasswordModal(false)} />
+  </KeyboardAwareScreen>
 }

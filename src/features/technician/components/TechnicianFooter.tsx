@@ -1,4 +1,5 @@
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export type TechnicianTab = 'available' | 'earnings'
 
@@ -6,12 +7,13 @@ export function TechnicianFooter({ active, onSelect }: {
   active: TechnicianTab
   onSelect: (tab: TechnicianTab) => void
 }) {
-  return <SafeAreaView style={styles.safe}>
+  const insets = useSafeAreaInsets()
+  return <View style={[styles.safe, { paddingBottom: Math.max(insets.bottom, 12) }]}>
     <View style={styles.footer}>
       <FooterButton label="Solicitudes disponibles" active={active === 'available'} onPress={() => onSelect('available')} />
-      <FooterButton label="Ganancias" active={active === 'earnings'} onPress={() => onSelect('earnings')} />
+      <FooterButton label="Cartera" active={active === 'earnings'} onPress={() => onSelect('earnings')} />
     </View>
-  </SafeAreaView>
+  </View>
 }
 
 function FooterButton({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {

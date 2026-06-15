@@ -21,6 +21,11 @@ export interface Category {
   active: boolean
 }
 
+export interface CatalogItem {
+  id: string
+  name: string
+}
+
 export interface ServiceRequest {
   id: string
   clientId: string
@@ -50,6 +55,8 @@ export interface ServiceRequest {
   serviceImagesCount: number
   firstServiceImageUrl?: string
   images: ServiceRequestImage[]
+  cityId?: string
+  cityName?: string
 }
 
 export interface ServiceRequestImage {
@@ -139,6 +146,12 @@ export interface TechnicianProfile {
   homeLongitude: number
   homeCity?: string
   homeNeighborhood?: string
+  countryId?: string
+  countryName?: string
+  departmentId?: string
+  departmentName?: string
+  cityId?: string
+  cityName?: string
 }
 
 export interface UserProfile {
@@ -163,6 +176,12 @@ export interface UserProfile {
   homeLongitude?: number
   homeCity?: string
   homeNeighborhood?: string
+  countryId?: string
+  countryName?: string
+  departmentId?: string
+  departmentName?: string
+  cityId?: string
+  cityName?: string
   accountStatus?: 'ACTIVE' | 'INACTIVE_PAYMENT' | 'INACTIVE_REPORT' | 'INACTIVE_ADMIN' | 'BLOCKED' | 'DELETED_LOGICAL'
   inactiveReason?: string
   inactiveComment?: string

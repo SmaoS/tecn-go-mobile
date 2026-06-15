@@ -14,4 +14,7 @@ export interface TechnicianProfileForm {
   homeLongitude: string
   homeCity: string
   homeNeighborhood: string
+  countryId: string
+  departmentId: string
+  cityId: string
 }

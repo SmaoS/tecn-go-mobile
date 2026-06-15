@@ -12,7 +12,7 @@ export const requestKeys = {
   detail: (requestId: string) => ['service-requests', 'detail', requestId] as const,
   quotes: (requestId: string) => ['service-requests', 'quotes', requestId] as const,
   location: (requestId: string) => ['service-requests', 'location', requestId] as const,
-  nearbyTechnicians: (latitude: number, longitude: number) => ['technicians', 'nearby', latitude, longitude] as const,
+  nearbyTechnicians: (latitude: number, longitude: number, cityId?: string) => ['technicians', 'nearby', latitude, longitude, cityId] as const,
   recentQuotes: (requestIds: string[]) => ['service-requests', 'recent-quotes', ...requestIds] as const,
 }
 
@@ -104,10 +104,10 @@ export function useRecentClientQuotes(requests: ServiceRequest[]) {
   })
 }
 
-export function useNearbyTechnicians(latitude?: number, longitude?: number) {
+export function useNearbyTechnicians(latitude?: number, longitude?: number, cityId?: string) {
   return useQuery({
-    queryKey: requestKeys.nearbyTechnicians(latitude ?? 0, longitude ?? 0),
-    queryFn: () => serviceRequestApi.nearbyTechnicians(latitude!, longitude!),
+    queryKey: requestKeys.nearbyTechnicians(latitude ?? 0, longitude ?? 0, cityId),
+    queryFn: () => serviceRequestApi.nearbyTechnicians(latitude!, longitude!, 25, cityId),
     enabled: latitude != null && longitude != null,
     refetchInterval: 10_000,
   })

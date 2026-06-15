@@ -37,7 +37,7 @@ pantallas conservan localmente únicamente formularios y estado de interacción.
 - Registro del token nativo FCM en Android
 - Seguimiento con llegada del técnico y actualización de estado
 - Confirmación de pago en efectivo y calificación después del estado `PAID`
-- Resumen de ganancias para el técnico
+- Resumen de ganancias(cartera) para el técnico
 - Carga de foto, documento y certificado con selectores nativos
 - Reputación contextual y calificación en ambas direcciones
 - Cierre de sesión visible desde la cuenta

@@ -11,6 +11,7 @@ import { TechnicianFooter } from '../components/TechnicianFooter'
 import { TechnicianHeader } from '../components/TechnicianHeader'
 import { TechnicianMenu } from '../components/TechnicianMenu'
 import { apiMessage } from '../../../shared/apiMessage'
+import { useSession } from '../../../context/useSession'
 
 export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'AvailableRequests'>) {
   useDoubleBackExit()
@@ -19,8 +20,9 @@ export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<R
   const radiusKm = '10'
   const availability = useTechnicianAvailability()
   const available = availability.data?.available ?? true
-  const requests = useAvailableRequests(radiusKm, available)
+  const requests = useAvailableRequests(radiusKm)
   const profile = useTechnicianProfile()
+  const { logout } = useSession()
 
   return <View style={styles.screen}>
     <TechnicianHeader
@@ -31,24 +33,24 @@ export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<R
     />
     <View style={styles.heading}>
       <Text style={styles.title}>Solicitudes disponibles</Text>
-      <Text style={styles.subtitle}>{available ? 'Ofertas cercanas actualizadas cada 10 segundos' : 'Activa Disponible para recibir nuevas solicitudes'}</Text>
+      <Text style={styles.subtitle}>{available ? 'Ofertas cercanas actualizadas cada 10 segundos' : 'Modo ocupado: puedes ver ofertas, pero no recibirás avisos nuevos'}</Text>
     </View>
     {availability.error
       ? <Text style={styles.error}>{apiMessage(availability.error)}</Text>
-      : requests.isPending && available
+      : requests.isPending
         ? <View style={styles.center}><ActivityIndicator color="#0891b2" /><Text style={styles.empty}>Buscando solicitudes cercanas...</Text></View>
-        : requests.error && available
+        : requests.error
           ? <View style={styles.center}><Text style={styles.error}>{apiMessage(requests.error)}</Text></View>
           : <FlatList
-            data={available ? requests.data ?? [] : []}
+            data={requests.data ?? []}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => <AvailableRequestItem request={item} onPress={() => setSelected(item)} />}
             contentContainerStyle={styles.list}
-            refreshControl={<RefreshControl refreshing={requests.isRefetching} onRefresh={() => void requests.refetch()} enabled={available} />}
-            ListEmptyComponent={<View style={styles.center}><Text style={styles.empty}>{available ? 'No hay solicitudes cercanas por ahora.' : 'Estás en modo Ocupado.'}</Text></View>}
+            refreshControl={<RefreshControl refreshing={requests.isRefetching} onRefresh={() => void requests.refetch()} />}
+            ListEmptyComponent={<View style={styles.center}><Text style={styles.empty}>No hay solicitudes cercanas por ahora.</Text></View>}
           />}
     <TechnicianFooter active="available" onSelect={(tab) => tab === 'earnings' && navigation.navigate('TechnicianEarnings')} />
-    <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)} />
+    <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)} onLogout={logout} />
     <AvailableRequestDetailModal request={selected} radiusKm={radiusKm} onClose={() => setSelected(null)} />
   </View>
 }

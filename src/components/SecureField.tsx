@@ -5,7 +5,13 @@ import { Field, colors } from './UI'
 export function SecureField(props: TextInputProps) {
   const [visible, setVisible] = useState(false)
   return <View style={styles.container}>
-    <Field {...props} secureTextEntry={!visible} style={[styles.field, props.style]} />
+    <Field
+      {...props}
+      secureTextEntry={!visible}
+      selectionColor={colors.brand}
+      cursorColor={colors.brand}
+      style={[styles.field, props.style]}
+    />
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
@@ -19,7 +25,7 @@ export function SecureField(props: TextInputProps) {
 
 const styles = StyleSheet.create({
   container: { position: 'relative' },
-  field: { paddingRight: 84 },
+  field: { paddingRight: 84, color: '#f8fafc', backgroundColor: '#0f172a', opacity: 1 },
   toggle: { position: 'absolute', right: 14, top: 15, paddingHorizontal: 4 },
   toggleText: { color: colors.brand, fontWeight: '700' },
 })

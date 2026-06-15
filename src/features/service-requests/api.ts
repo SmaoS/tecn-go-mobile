@@ -11,8 +11,8 @@ export const serviceRequestApi = {
   available: (radiusKm: string) => api.get<ServiceRequest[]>(`/v1/service-requests/available?radiusKm=${radiusKm}`).then(({ data }) => data),
   quotes: (requestId: string) => api.get<ServiceQuote[]>(`/v1/service-requests/${requestId}/quotes`).then(({ data }) => data),
   technicianLocation: (requestId: string) => api.get<TechnicianLocation>(`/v1/service-requests/${requestId}/technician-location`).then(({ data }) => data),
-  nearbyTechnicians: (latitude: number, longitude: number, radiusKm = 25) =>
-    api.get<NearbyTechnician[]>('/v1/technicians/nearby', { params: { latitude, longitude, radiusKm } }).then(({ data }) => data),
+  nearbyTechnicians: (latitude: number, longitude: number, radiusKm = 25, cityId?: string) =>
+    api.get<NearbyTechnician[]>('/v1/technicians/nearby', { params: { latitude, longitude, radiusKm, cityId } }).then(({ data }) => data),
   create: (payload: object) => api.post<ServiceRequest>('/v1/service-requests', payload).then(({ data }) => data),
   status: (requestId: string, status: string) => api.put<ServiceRequest>(`/v1/service-requests/${requestId}/status`, { status }).then(({ data }) => data),
   confirmQuote: (requestId: string, quoteId: string) => api.put<ServiceRequest>(`/v1/service-requests/${requestId}/confirm-quote`, { quoteId }).then(({ data }) => data),

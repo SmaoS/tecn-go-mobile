@@ -9,12 +9,14 @@ import { useTechnicianAvailability, useTechnicianProfile } from '../hooks'
 import { TechnicianFooter } from '../components/TechnicianFooter'
 import { TechnicianHeader } from '../components/TechnicianHeader'
 import { TechnicianMenu } from '../components/TechnicianMenu'
+import { useSession } from '../../../context/useSession'
 
 export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'TechnicianEarnings'>) {
   const [menu, setMenu] = useState(false)
   const earnings = useTechnicianEarnings()
   const profile = useTechnicianProfile()
   const availability = useTechnicianAvailability()
+  const { logout } = useSession()
   return <View style={styles.screen}>
     <TechnicianHeader
       available={availability.data?.available ?? true}
@@ -23,7 +25,7 @@ export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<
       onMenu={() => setMenu(true)}
     />
     <ScrollView contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Ganancias</Text>
+      <Text style={styles.title}>Cartera</Text>
       <QueryState pending={earnings.isPending} error={earnings.error}>
         {earnings.data && <>
           <View style={styles.summary}><Text style={styles.label}>Total recibido</Text><Text style={styles.amount}>{formatCopCurrency(earnings.data.totalTechnicianAmount)}</Text><Text style={styles.meta}>{earnings.data.paymentCount} pagos registrados</Text></View>
@@ -35,7 +37,7 @@ export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<
       </QueryState>
     </ScrollView>
     <TechnicianFooter active="earnings" onSelect={(tab) => tab === 'available' && navigation.navigate('AvailableRequests')} />
-    <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)} />
+    <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)} onLogout={logout} />
   </View>
 }
 

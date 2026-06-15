@@ -6,12 +6,14 @@ import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
 import { PrivateImage } from '../../../components/PrivateImage'
 import { useCurrentLocation, type Coordinates } from '../../location/hooks'
 import { useNearbyTechnicians } from '../hooks'
+import { useProfile } from '../../profile/hooks'
 
 export function NearbyTechniciansScreen() {
   const location = useCurrentLocation()
   const [coordinates, setCoordinates] = useState<Coordinates>()
+  const profile = useProfile()
   useEffect(() => { void location.getCurrent().then((value) => value && setCoordinates(value)) }, [])
-  const technicians = useNearbyTechnicians(coordinates?.latitude, coordinates?.longitude)
+  const technicians = useNearbyTechnicians(coordinates?.latitude, coordinates?.longitude, profile.data?.cityId)
   return <KeyboardAwareScreen><Text style={styles.title}>Técnicos cercanos</Text><Text style={styles.subtitle}>Técnicos en línea alrededor de tu ubicación actual.</Text>
     <Button title={location.isLocating ? 'Ubicando...' : 'Volver a ubicarme'} loading={location.isLocating} onPress={() => void location.getCurrent().then((value) => value && setCoordinates(value))} />
     {(location.error || technicians.error) && <Text style={styles.error}>{location.error || 'No fue posible consultar técnicos cercanos.'}</Text>}
