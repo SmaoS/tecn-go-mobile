@@ -117,6 +117,7 @@ export interface UnreadCount {
 
 export interface TechnicianProfile {
   id: string
+  fullName: string
   email: string
   documentNumber: string
   phone: string
@@ -200,6 +201,7 @@ export type RootStackParamList = {
   TechnicianProfile: undefined
   AvailableRequests: undefined
   TechnicianHistory: undefined
+  TechnicianEarnings: undefined
   ServiceSupport: { requestId: string }
   Legal: undefined
   CaptureProfilePhoto: undefined

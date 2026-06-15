@@ -48,10 +48,11 @@ export function useAssignedRequestHistory() {
   })
 }
 
-export function useAvailableRequests(radiusKm: string) {
+export function useAvailableRequests(radiusKm: string, enabled = true) {
   return useQuery({
     queryKey: requestKeys.available(radiusKm),
     queryFn: () => serviceRequestApi.available(radiusKm),
+    enabled,
     refetchInterval: 10_000,
   })
 }

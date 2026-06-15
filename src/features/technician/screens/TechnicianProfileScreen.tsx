@@ -41,11 +41,14 @@ export function TechnicianProfileScreen() {
   const save = useSaveTechnicianProfile(Boolean(profile.data))
   async function useGps() {
     const coordinates = await location.getCurrent()
-    if (coordinates) setForm({
-      ...form, latitude: String(coordinates.latitude), longitude: String(coordinates.longitude),
+    if (coordinates) setForm((value) => ({
+      ...value, latitude: String(coordinates.latitude), longitude: String(coordinates.longitude),
       homeLatitude: String(coordinates.latitude), homeLongitude: String(coordinates.longitude),
-    })
+    }))
   }
+  useEffect(() => {
+    if (!profile.isPending && (!form.latitude || !form.longitude)) void useGps()
+  }, [profile.isPending])
   const profileError = profile.error && !hasApiStatus(profile.error, 404)
     ? profile.error : null
   const identityStatus = profile.data?.verificationStatus === 'VERIFIED'
@@ -67,11 +70,7 @@ export function TechnicianProfileScreen() {
         <Field placeholder="Dirección domicilio" value={form.homeAddress} onChangeText={(homeAddress) => setForm({ ...form, homeAddress })} />
         <Field placeholder="Ciudad" value={form.homeCity} onChangeText={(homeCity) => setForm({ ...form, homeCity })} />
         <Field placeholder="Barrio" value={form.homeNeighborhood} onChangeText={(homeNeighborhood) => setForm({ ...form, homeNeighborhood })} />
-        <Field keyboardType="numeric" placeholder="Latitud domicilio" value={form.homeLatitude} onChangeText={(homeLatitude) => setForm({ ...form, homeLatitude })} />
-        <Field keyboardType="numeric" placeholder="Longitud domicilio" value={form.homeLongitude} onChangeText={(homeLongitude) => setForm({ ...form, homeLongitude })} />
-        <Field keyboardType="numeric" placeholder="Latitud" value={form.latitude} onChangeText={(latitude) => setForm({ ...form, latitude })} />
-        <Field keyboardType="numeric" placeholder="Longitud" value={form.longitude} onChangeText={(longitude) => setForm({ ...form, longitude })} />
-        <Button title="Usar mi ubicación GPS" onPress={useGps} loading={location.isLocating} />
+        <Button title={form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener mi ubicación GPS'} onPress={useGps} loading={location.isLocating} />
         {(location.error || profileImage.error || document.error || save.error) && <Text style={styles.error}>{location.error || apiMessage(profileImage.error ?? document.error ?? save.error)}</Text>}
         <Button title={profile.data ? 'Actualizar perfil' : 'Crear perfil'} onPress={() => save.mutate(form)} loading={save.isPending} />
         <PasswordChangeForm /></>

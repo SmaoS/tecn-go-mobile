@@ -48,9 +48,7 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       <Field placeholder="Dirección domicilio" value={current.homeAddress ?? ''} onChangeText={(homeAddress) => update({ homeAddress })} />
       <Field placeholder="Ciudad" value={current.homeCity ?? ''} onChangeText={(homeCity) => update({ homeCity })} />
       <Field placeholder="Barrio" value={current.homeNeighborhood ?? ''} onChangeText={(homeNeighborhood) => update({ homeNeighborhood })} />
-      <Field keyboardType="numeric" placeholder="Latitud domicilio" value={String(current.homeLatitude ?? '')} onChangeText={(value) => update({ homeLatitude: Number(value) })} />
-      <Field keyboardType="numeric" placeholder="Longitud domicilio" value={String(current.homeLongitude ?? '')} onChangeText={(value) => update({ homeLongitude: Number(value) })} />
-      <Button title="Usar ubicación actual" onPress={useHomeGps} loading={location.isLocating} />
+      <Button title={current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'} onPress={useHomeGps} loading={location.isLocating} />
       <Button title={current.profilePhotoUrl ? 'Foto de perfil cargada' : 'Subir foto de perfil'} onPress={() => profileImage.mutate(undefined, { onSuccess: (url) => update({ profilePhotoUrl: url ?? current.profilePhotoUrl }) })} loading={profileImage.isPending} />
       {navigation && <Button title="Tomar foto de perfil con cámara" onPress={() => navigation.navigate('CaptureProfilePhoto')} />}
       <Button title={current.documentPhotoUrl ? 'Documento cargado' : 'Subir documento obligatorio'} onPress={() => document.mutate('DOCUMENT', { onSuccess: (url) => update({ documentPhotoUrl: url ?? current.documentPhotoUrl }) })} loading={document.isPending} />

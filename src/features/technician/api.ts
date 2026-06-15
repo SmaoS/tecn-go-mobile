@@ -13,4 +13,7 @@ export const technicianApi = {
   referralCode: () => api.get<ReferralCode>('/v1/technicians/me/referral-code').then(({ data }) => data),
   referrals: () => api.get<ReferralRegistration[]>('/v1/technicians/me/referrals').then(({ data }) => data),
   referralRewards: () => api.get<ReferralReward[]>('/v1/technicians/me/referral-rewards').then(({ data }) => data),
+  availability: () => api.get<{ available: boolean }>('/v1/technicians/me/availability').then(({ data }) => data),
+  setAvailability: (available: boolean) =>
+    api.put<{ available: boolean }>('/v1/technicians/me/availability', { available }).then(({ data }) => data),
 }

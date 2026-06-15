@@ -6,6 +6,7 @@ import { SESSION_KEY, setUnauthorizedHandler } from '../api/client'
 import { usePushRegistration } from '../features/notifications/usePushRegistration'
 import { technicianApi } from '../features/technician/api'
 import type { Session } from '../types'
+import { locationTrackingService } from '../services/LocationTrackingService'
 import { SessionContext } from './session-context'
 
 export function SessionProvider({ children }: { children: ReactNode }) {
@@ -26,6 +27,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   async function logout() {
     if (session?.role === 'TECHNICIAN') {
+      await locationTrackingService.stopTracking(false)
       try {
         const location = await Location.getLastKnownPositionAsync()
         if (location) await technicianApi.location({

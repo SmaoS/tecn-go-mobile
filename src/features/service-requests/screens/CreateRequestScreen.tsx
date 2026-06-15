@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Alert, Image, Pressable, ScrollView, Text } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, Card, Field, styles, colors } from '../../../components/UI'
@@ -20,8 +20,9 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
   const selectedCategory = categories.data?.find((item) => item.id === form.categoryId)
   async function useGps() {
     const coordinates = await location.getCurrent()
-    if (coordinates) setForm({ ...form, latitude: String(coordinates.latitude), longitude: String(coordinates.longitude) })
+    if (coordinates) setForm((value) => ({ ...value, latitude: String(coordinates.latitude), longitude: String(coordinates.longitude) }))
   }
+  useEffect(() => { void useGps() }, [])
   function chooseImageSource() {
     const remaining = Math.max(1, 5 - images.length)
     Alert.alert('Agregar foto', 'Elige el origen de la imagen.', [
@@ -38,16 +39,18 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
     </QueryState>
     <Field multiline placeholder="Describe el problema" value={form.description} onChangeText={(description) => setForm({ ...form, description })} />
     <Field placeholder="Dirección" value={form.address} onChangeText={(address) => setForm({ ...form, address })} />
-    <Field keyboardType="numeric" placeholder="Latitud" value={form.latitude} onChangeText={(latitude) => setForm({ ...form, latitude })} />
-    <Field keyboardType="numeric" placeholder="Longitud" value={form.longitude} onChangeText={(longitude) => setForm({ ...form, longitude })} />
-    <Button title="Usar ubicación GPS" onPress={useGps} loading={location.isLocating} />
+    <Button title={form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener ubicación GPS'} onPress={useGps} loading={location.isLocating} />
     <Field keyboardType="numeric" placeholder="Presupuesto estimado (opcional)" value={form.estimatedPrice} onChangeText={(estimatedPrice) => setForm({ ...form, estimatedPrice })} />
     <Button title={images.length ? `Agregar foto (${images.length}/5)` : 'Tomar foto o elegir de galería'} onPress={chooseImageSource} loading={picker.isPending} />
     {images.length > 0 && <ScrollView horizontal>{images.map((image) => <Image key={image.uri} source={{ uri: image.uri }} style={{ width: 100, height: 100, borderRadius: 12, marginRight: 8 }} />)}</ScrollView>}
     {(location.error || picker.error || create.error) && <Text style={styles.error}>{location.error || apiMessage(picker.error ?? create.error)}</Text>}
-    <Button title="Crear solicitud" onPress={() => create.mutate({ payload: {
+    {!form.latitude || !form.longitude ? <Text style={styles.error}>Se requiere ubicación GPS para publicar la solicitud.</Text> : null}
+    <Button title="Crear solicitud" onPress={() => {
+      if (!form.latitude || !form.longitude) return
+      create.mutate({ payload: {
       ...form, latitude: Number(form.latitude), longitude: Number(form.longitude),
       estimatedPrice: form.estimatedPrice ? Number(form.estimatedPrice) : null,
-    }, images })} loading={create.isPending} />
+    }, images })
+    }} loading={create.isPending} />
   </KeyboardAwareScreen>
 }

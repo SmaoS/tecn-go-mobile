@@ -15,17 +15,20 @@ import { CaptureProfilePhotoScreen } from '../features/profile/screens/CapturePr
 import { TechnicianReferralsScreen } from '../features/technician/screens/TechnicianReferralsScreen'
 import { NotificationRequestScreen } from '../features/service-requests/screens/NotificationRequestScreen'
 import { TechnicianRequestHistoryScreen } from '../features/service-requests/screens/RequestHistoryScreen'
+import { TechnicianEarningsScreen } from '../features/technician/screens/TechnicianEarningsScreen'
+import { TechnicianLocationController } from '../features/location/TechnicianLocationController'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
 export function TechnicianNavigator() {
   const { session, logout } = useSession()
-  return <Stack.Navigator initialRouteName="TechnicianEntry">
+  return <><TechnicianLocationController /><Stack.Navigator initialRouteName="TechnicianEntry">
     <Stack.Screen name="TechnicianEntry" component={TechnicianEntryScreen} options={{ headerShown: false }} />
     <Stack.Screen name="TechnicianHome" component={TechnicianHomeScreen} options={{ headerShown: false }} />
     <Stack.Screen name="TechnicianProfile" component={TechnicianProfileScreen} options={{ title: 'Perfil técnico' }} />
     <Stack.Screen name="AvailableRequests" component={AvailableRequestsScreen} options={{ title: 'Disponibles' }} />
     <Stack.Screen name="TechnicianHistory" component={TechnicianRequestHistoryScreen} options={{ title: 'Historial' }} />
+    <Stack.Screen name="TechnicianEarnings" component={TechnicianEarningsScreen} options={{ headerShown: false }} />
     <Stack.Screen name="NotificationRequest" component={NotificationRequestScreen} options={{ title: 'Solicitud' }} />
     <Stack.Screen name="Chat" component={ChatScreen} />
     <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ title: 'Notificaciones' }} />
@@ -35,5 +38,5 @@ export function TechnicianNavigator() {
     <Stack.Screen name="Legal" component={LegalScreen} options={{ title: 'Compromiso y términos' }} />
     <Stack.Screen name="CaptureProfilePhoto" component={CaptureProfilePhotoScreen} options={{ title: 'Foto de perfil' }} />
     <Stack.Screen name="TechnicianReferrals" component={TechnicianReferralsScreen} options={{ title: 'Invita y gana' }} />
-  </Stack.Navigator>
+  </Stack.Navigator></>
 }

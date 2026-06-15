@@ -1,29 +1,65 @@
 import { useState } from 'react'
-import { ScrollView, Text } from 'react-native'
-import { Button, Card, Field, LoadingOverlay, colors, styles } from '../../../components/UI'
-import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
-import { PrivateImage } from '../../../components/PrivateImage'
-import { apiMessage, hasApiStatus } from '../../../shared/apiMessage'
-import { QueryState } from '../../../shared/QueryState'
-import { useAvailableRequests } from '../../service-requests/hooks'
-import { useSendQuote } from '../hooks'
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import type { RootStackParamList } from '../../../types'
+import type { RootStackParamList, ServiceRequest } from '../../../types'
 import { useDoubleBackExit } from '../../../hooks/useDoubleBackExit'
+import { useAvailableRequests } from '../../service-requests/hooks'
+import { useTechnicianAvailability, useTechnicianProfile } from '../hooks'
+import { AvailableRequestItem } from '../components/AvailableRequestItem'
+import { AvailableRequestDetailModal } from '../components/AvailableRequestDetailModal'
+import { TechnicianFooter } from '../components/TechnicianFooter'
+import { TechnicianHeader } from '../components/TechnicianHeader'
+import { TechnicianMenu } from '../components/TechnicianMenu'
+import { apiMessage } from '../../../shared/apiMessage'
 
 export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'AvailableRequests'>) {
   useDoubleBackExit()
-  const [radiusKm, setRadiusKm] = useState('10')
-  const [quotes, setQuotes] = useState<Record<string, string>>({})
-  const [descriptions, setDescriptions] = useState<Record<string, string>>({})
-  const requests = useAvailableRequests(radiusKm)
-  const quote = useSendQuote(radiusKm)
-  const error = quote.error && hasApiStatus(quote.error, 409)
-    ? 'Ya tienes una cotización pendiente para este servicio. Espera respuesta o expiración.'
-    : quote.error ? apiMessage(quote.error) : ''
-  return <KeyboardAwareScreen><Text style={styles.title}>Solicitudes cercanas</Text><Text style={styles.subtitle}>Solo visibles para técnicos aprobados y dentro del radio.</Text><Button title="Mi panel y servicios asignados" onPress={() => navigation.navigate('TechnicianHome')} /><Button title="Historial de servicios" onPress={() => navigation.navigate('TechnicianHistory')} /><Field keyboardType="numeric" placeholder="Radio en km" value={radiusKm} onChangeText={setRadiusKm} /><Button title="Buscar" onPress={() => void requests.refetch()} />{error && <Text style={styles.error}>{error}</Text>}
-    <QueryState pending={requests.isPending} error={requests.error} empty={requests.data?.length === 0} emptyText="No hay solicitudes cercanas.">
-      <>{requests.data?.map((item) => <Card key={item.id}>{item.firstServiceImageUrl && <PrivateImage url={item.firstServiceImageUrl} style={{ width: '100%', height: 160, borderRadius: 12 }} />}<Text style={styles.cardTitle}>{item.categoryName}</Text><Text style={styles.cardTitle}>{item.clientName}</Text>{item.clientProfilePhotoUrl && <PrivateImage url={item.clientProfilePhotoUrl} style={{ width: 58, height: 58, borderRadius: 29, marginTop: 8 }} />}<Text style={[styles.muted, { color: colors.brand }]}>★ {item.clientAverageRating.toFixed(1)} · {item.clientPaidServicesCount} servicios pagados</Text><Text style={styles.muted}>{item.description}</Text>{item.images?.length > 0 && <ScrollView horizontal keyboardShouldPersistTaps="handled">{item.images.map((image) => <PrivateImage key={image.id} url={image.imageUrl} style={{ width: 120, height: 90, borderRadius: 10, marginRight: 8, marginTop: 8 }} />)}</ScrollView>}{item.estimatedPrice != null && <Text style={[styles.muted, { color: colors.brand }]}>Estimado del cliente: ${item.estimatedPrice.toLocaleString()}</Text>}<Text style={styles.muted}>{item.address} · {item.distanceKm?.toFixed(2)} km</Text><Field keyboardType="numeric" placeholder="Tu cotización" value={quotes[item.id] ?? ''} onChangeText={(value) => setQuotes({ ...quotes, [item.id]: value })} /><Field placeholder="Descripción de la oferta (opcional)" value={descriptions[item.id] ?? ''} onChangeText={(value) => setDescriptions({ ...descriptions, [item.id]: value })} /><Button title="Enviar cotización" onPress={() => quote.mutate({ id: item.id, price: Number(quotes[item.id]), description: descriptions[item.id] || undefined })} loading={quote.isPending} /></Card>)}</>
-    </QueryState><LoadingOverlay visible={quote.isPending} />
-  </KeyboardAwareScreen>
+  const [menu, setMenu] = useState(false)
+  const [selected, setSelected] = useState<ServiceRequest | null>(null)
+  const radiusKm = '10'
+  const availability = useTechnicianAvailability()
+  const available = availability.data?.available ?? true
+  const requests = useAvailableRequests(radiusKm, available)
+  const profile = useTechnicianProfile()
+
+  return <View style={styles.screen}>
+    <TechnicianHeader
+      available={available}
+      loading={availability.update.isPending}
+      onAvailabilityChange={(value) => availability.update.mutate(value)}
+      onMenu={() => setMenu(true)}
+    />
+    <View style={styles.heading}>
+      <Text style={styles.title}>Solicitudes disponibles</Text>
+      <Text style={styles.subtitle}>{available ? 'Ofertas cercanas actualizadas cada 10 segundos' : 'Activa Disponible para recibir nuevas solicitudes'}</Text>
+    </View>
+    {availability.error
+      ? <Text style={styles.error}>{apiMessage(availability.error)}</Text>
+      : requests.isPending && available
+        ? <View style={styles.center}><ActivityIndicator color="#0891b2" /><Text style={styles.empty}>Buscando solicitudes cercanas...</Text></View>
+        : requests.error && available
+          ? <View style={styles.center}><Text style={styles.error}>{apiMessage(requests.error)}</Text></View>
+          : <FlatList
+            data={available ? requests.data ?? [] : []}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <AvailableRequestItem request={item} onPress={() => setSelected(item)} />}
+            contentContainerStyle={styles.list}
+            refreshControl={<RefreshControl refreshing={requests.isRefetching} onRefresh={() => void requests.refetch()} enabled={available} />}
+            ListEmptyComponent={<View style={styles.center}><Text style={styles.empty}>{available ? 'No hay solicitudes cercanas por ahora.' : 'Estás en modo Ocupado.'}</Text></View>}
+          />}
+    <TechnicianFooter active="available" onSelect={(tab) => tab === 'earnings' && navigation.navigate('TechnicianEarnings')} />
+    <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)} />
+    <AvailableRequestDetailModal request={selected} radiusKm={radiusKm} onClose={() => setSelected(null)} />
+  </View>
 }
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: '#fff' },
+  heading: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10, backgroundColor: '#fff' },
+  title: { color: '#0f172a', fontSize: 24, fontWeight: '900' },
+  subtitle: { color: '#64748b', fontSize: 12, marginTop: 4 },
+  list: { flexGrow: 1, paddingBottom: 18 },
+  center: { flex: 1, minHeight: 220, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  empty: { color: '#64748b', textAlign: 'center', marginTop: 10 },
+  error: { color: '#be123c', textAlign: 'center', padding: 16 },
+})

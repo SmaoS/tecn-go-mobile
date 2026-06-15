@@ -1,61 +1,94 @@
 import { useState } from 'react'
-import { Text, useWindowDimensions, View } from 'react-native'
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { Button, Card, colors, styles } from '../../../components/UI'
-import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
-import { useUnreadNotifications } from '../../notifications/hooks'
-import { useTechnicianEarnings } from '../../payments/hooks'
-import { useAdvanceRequest, useAssignedRequests } from '../../service-requests/hooks'
+import { Button } from '../../../components/UI'
+import { useDoubleBackExit } from '../../../hooks/useDoubleBackExit'
 import { apiMessage } from '../../../shared/apiMessage'
 import { QueryState } from '../../../shared/QueryState'
 import type { RequestStatus, RootStackParamList, ServiceRequest } from '../../../types'
-import { useTechnicianLocationTracking } from '../../location/hooks'
-import { requestStatusLabels } from '../../service-requests/status'
+import { useUnreadNotifications } from '../../notifications/hooks'
 import { useRatingStatuses } from '../../ratings/hooks'
-import { useDoubleBackExit } from '../../../hooks/useDoubleBackExit'
+import { useAdvanceRequest, useAssignedRequests } from '../../service-requests/hooks'
+import { requestStatusLabels } from '../../service-requests/status'
+import { TechnicianFooter } from '../components/TechnicianFooter'
+import { TechnicianHeader } from '../components/TechnicianHeader'
+import { TechnicianMenu } from '../components/TechnicianMenu'
+import { useTechnicianAvailability, useTechnicianProfile } from '../hooks'
 
 export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'TechnicianHome'>) {
   useDoubleBackExit()
-  const tracking = useTechnicianLocationTracking()
+  const [menu, setMenu] = useState(false)
   const requests = useAssignedRequests()
-  const earnings = useTechnicianEarnings()
   const unread = useUnreadNotifications()
   const advance = useAdvanceRequest()
+  const profile = useTechnicianProfile()
+  const availability = useTechnicianAvailability()
   const paidIds = (requests.data ?? []).filter((item) => item.status === 'PAID').map((item) => item.id)
   const ratingStatuses = useRatingStatuses(paidIds)
-  const { width } = useWindowDimensions()
 
   function next(item: ServiceRequest) {
     const states: Partial<Record<RequestStatus, RequestStatus>> = {
-      QUOTE_ACCEPTED: 'ON_THE_WAY', ON_THE_WAY: 'ARRIVED',
-      ARRIVED: 'IN_PROGRESS', IN_PROGRESS: 'COMPLETED',
+      QUOTE_ACCEPTED: 'ON_THE_WAY',
+      ON_THE_WAY: 'ARRIVED',
+      ARRIVED: 'IN_PROGRESS',
+      IN_PROGRESS: 'COMPLETED',
     }
     const status = states[item.status]
     if (status) advance.mutate({ requestId: item.id, status })
   }
   const actionLabels: Partial<Record<RequestStatus, string>> = {
-    QUOTE_ACCEPTED: 'Voy en camino', ON_THE_WAY: 'Ya llegué',
-    ARRIVED: 'Iniciar servicio', IN_PROGRESS: 'Completar servicio',
+    QUOTE_ACCEPTED: 'Voy en camino',
+    ON_THE_WAY: 'Ya llegué',
+    ARRIVED: 'Iniciar servicio',
+    IN_PROGRESS: 'Completar servicio',
   }
 
-  return <KeyboardAwareScreen><Text style={styles.title}>Panel técnico</Text><Text style={styles.subtitle}>Gestiona tu perfil y servicios.</Text>
-    <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}><View style={{ flex: 1 }}><Button title="Mi perfil" onPress={() => navigation.navigate('TechnicianProfile')} /></View><View style={{ flex: 1 }}><Button title="Disponibles" onPress={() => navigation.navigate('AvailableRequests')} /></View></View>
-    <Button title={`Notificaciones${(unread.data ?? 0) > 0 ? ` (${unread.data})` : ''}`} onPress={() => navigation.navigate('Notifications')} />
-    <Button title={tracking.online ? 'Ubicación activa · Desactivar' : 'Activar ubicación'} onPress={tracking.toggle} />
-    <Button title="Mi cuenta / cerrar sesión" onPress={() => navigation.navigate('Profile')} />
-    <Button title="Compromiso y términos" onPress={() => navigation.navigate('Legal')} />
-    <Button title="Invita y gana" onPress={() => navigation.navigate('TechnicianReferrals')} />
-    <Button title="Historial de servicios" onPress={() => navigation.navigate('TechnicianHistory')} />
-    {(tracking.error || advance.error) && <Text style={styles.error}>{tracking.error || apiMessage(advance.error)}</Text>}
-    <QueryState pending={earnings.isPending} error={earnings.error}>{earnings.data && <Card><Text style={styles.cardTitle}>Mis ganancias</Text><Text style={[styles.title, { color: colors.brand }]}>${earnings.data.totalTechnicianAmount.toLocaleString()}</Text><Text style={styles.muted}>{earnings.data.paymentCount} pagos · comisión de plataforma ${earnings.data.totalPlatformFee.toLocaleString()}</Text></Card>}</QueryState>
-    <Text style={styles.label}>Servicios asignados</Text>
-    <QueryState pending={requests.isPending || (paidIds.length > 0 && ratingStatuses.isPending)} error={requests.error ?? ratingStatuses.error ?? unread.error} empty={requests.data?.length === 0} emptyText="No tienes servicios asignados.">
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>{requests.data?.map((item) => <Card key={item.id} style={{ width: width >= 700 ? '48.5%' : '100%' }}><Text style={styles.cardTitle}>{item.categoryName}</Text><Text style={styles.muted}>{item.clientName} · {item.address}</Text><Text style={[styles.muted, { color: colors.brand }]}>{requestStatusLabels[item.status]}</Text>
-        {actionLabels[item.status] && <Button title={actionLabels[item.status]!} onPress={() => next(item)} loading={advance.isPending} />}
-        {item.status === 'PAID' && ratingStatuses.data?.[item.id] === false && <Button title="Calificar cliente" onPress={() => navigation.navigate('Rating', { requestId: item.id })} />}
-        <Button title="Abrir chat" onPress={() => navigation.navigate('Chat', { requestId: item.id })} />
-        <Button title="Evidencias, pagos y reportes" onPress={() => navigation.navigate('ServiceSupport', { requestId: item.id })} />
-      </Card>)}</View>
-    </QueryState>
-  </KeyboardAwareScreen>
+  return <View style={styles.screen}>
+    <TechnicianHeader
+      available={availability.data?.available ?? true}
+      loading={availability.update.isPending}
+      onAvailabilityChange={(value) => availability.update.mutate(value)}
+      onMenu={() => setMenu(true)}
+    />
+    <ScrollView contentContainerStyle={styles.content}>
+      <View style={styles.heading}>
+        <View><Text style={styles.title}>Servicios asignados</Text><Text style={styles.subtitle}>Trabajos que requieren tu atención.</Text></View>
+        <Pressable onPress={() => navigation.navigate('Notifications')}><Text style={styles.notifications}>Avisos{(unread.data ?? 0) > 0 ? ` (${unread.data})` : ''}</Text></Pressable>
+      </View>
+      {advance.error && <Text style={styles.error}>{apiMessage(advance.error)}</Text>}
+      <QueryState pending={requests.isPending || (paidIds.length > 0 && ratingStatuses.isPending)} error={requests.error ?? ratingStatuses.error} empty={requests.data?.length === 0} emptyText="No tienes servicios asignados activos.">
+        {requests.data?.map((item) => <View key={item.id} style={styles.card}>
+          <View style={styles.cardHeading}><Text style={styles.category}>{item.categoryName}</Text><Text style={styles.status}>{requestStatusLabels[item.status]}</Text></View>
+          <Text style={styles.client}>{item.clientName}</Text>
+          <Text style={styles.address}>{item.address}</Text>
+          {actionLabels[item.status] && <Button title={actionLabels[item.status]!} onPress={() => next(item)} loading={advance.isPending} />}
+          {item.status === 'PAID' && ratingStatuses.data?.[item.id] === false && <Button title="Calificar cliente" onPress={() => navigation.navigate('Rating', { requestId: item.id })} />}
+          <View style={styles.actions}>
+            <Pressable onPress={() => navigation.navigate('Chat', { requestId: item.id })}><Text style={styles.link}>Abrir chat</Text></Pressable>
+            <Pressable onPress={() => navigation.navigate('ServiceSupport', { requestId: item.id })}><Text style={styles.link}>Evidencias y pagos</Text></Pressable>
+          </View>
+        </View>)}
+      </QueryState>
+    </ScrollView>
+    <TechnicianFooter active="available" onSelect={(tab) => navigation.navigate(tab === 'available' ? 'AvailableRequests' : 'TechnicianEarnings')} />
+    <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)} />
+  </View>
 }
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  content: { padding: 16, paddingBottom: 30 },
+  heading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 },
+  title: { color: '#0f172a', fontSize: 25, fontWeight: '900' },
+  subtitle: { color: '#64748b', fontSize: 12, marginTop: 4 },
+  notifications: { color: '#0891b2', fontWeight: '800', padding: 8 },
+  card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: StyleSheet.hairlineWidth, borderColor: '#cbd5e1' },
+  cardHeading: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
+  category: { color: '#0f172a', fontSize: 17, fontWeight: '900', flex: 1 },
+  status: { color: '#0891b2', fontSize: 12, fontWeight: '800' },
+  client: { color: '#334155', fontWeight: '700', marginTop: 10 },
+  address: { color: '#64748b', marginTop: 4, marginBottom: 10 },
+  actions: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 },
+  link: { color: '#0e7490', fontWeight: '800', paddingVertical: 6 },
+  error: { color: '#be123c', marginBottom: 10 },
+})

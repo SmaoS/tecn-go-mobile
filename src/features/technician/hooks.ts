@@ -5,6 +5,7 @@ import { requestKeys } from '../service-requests/hooks'
 
 export const technicianProfileKey = ['technicians', 'me'] as const
 export const categoriesKey = ['service-categories'] as const
+export const technicianAvailabilityKey = ['technicians', 'me', 'availability'] as const
 
 export const useTechnicianProfile = () => useQuery({
   queryKey: technicianProfileKey,
@@ -42,4 +43,20 @@ export function useTechnicianReferrals() {
   const referrals = useQuery({ queryKey: ['referrals', 'registrations'], queryFn: technicianApi.referrals })
   const rewards = useQuery({ queryKey: ['referrals', 'rewards'], queryFn: technicianApi.referralRewards })
   return { code, referrals, rewards }
+}
+
+export function useTechnicianAvailability() {
+  const client = useQueryClient()
+  const query = useQuery({
+    queryKey: technicianAvailabilityKey,
+    queryFn: technicianApi.availability,
+  })
+  const update = useMutation({
+    mutationFn: technicianApi.setAvailability,
+    onSuccess: (data) => {
+      client.setQueryData(technicianAvailabilityKey, data)
+      void client.invalidateQueries({ queryKey: requestKeys.available('10') })
+    },
+  })
+  return { ...query, update }
 }
