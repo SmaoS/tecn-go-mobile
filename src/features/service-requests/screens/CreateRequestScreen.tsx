@@ -9,6 +9,7 @@ import type { RootStackParamList } from '../../../types'
 import { useCreateRequest, useServiceCategories } from '../hooks'
 import { useServiceImagePicker } from '../../files/hooks'
 import { useCurrentLocation } from '../../location/hooks'
+import { LocationPickerModal } from '../../location/LocationPickerModal'
 import { CatalogSelect } from '../../catalogs/CatalogSelect'
 import { useCities, useCountries, useDepartments } from '../../catalogs/hooks'
 import { useProfile } from '../../profile/hooks'
@@ -17,6 +18,7 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
   const categories = useServiceCategories()
   const [form, setForm] = useState({ categoryId: '', description: '', address: '', latitude: '', longitude: '', estimatedPrice: '', countryId: '', departmentId: '', cityId: '' })
   const [images, setImages] = useState<{ uri: string; name: string; mimeType: string }[]>([])
+  const [mapVisible, setMapVisible] = useState(false)
   const location = useCurrentLocation()
   const picker = useServiceImagePicker()
   const create = useCreateRequest(() => navigation.replace('Home'))
@@ -25,6 +27,9 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
   const departments = useDepartments(form.countryId)
   const cities = useCities(form.departmentId)
   const selectedCategory = categories.data?.find((item) => item.id === form.categoryId)
+  const selectedCoordinates = form.latitude && form.longitude
+    ? { latitude: Number(form.latitude), longitude: Number(form.longitude) }
+    : null
   async function useGps() {
     const coordinates = await location.getCurrent()
     if (coordinates) setForm((value) => ({ ...value, latitude: String(coordinates.latitude), longitude: String(coordinates.longitude) }))
@@ -58,7 +63,10 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
     <CatalogSelect label="Ciudad" value={form.cityId} items={cities.data} disabled={!form.departmentId} onChange={(city) => setForm({ ...form, cityId: city.id })} />
     <Field multiline placeholder="Describe el problema" value={form.description} onChangeText={(description) => setForm({ ...form, description })} />
     <Field placeholder="Dirección" value={form.address} onChangeText={(address) => setForm({ ...form, address })} />
+    <Text style={styles.label}>Ubicación del servicio</Text>
+    <Text style={styles.muted}>Activa la ubicación para usar tu GPS o elige manualmente el punto en el mapa.</Text>
     <Button title={form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener ubicación GPS'} onPress={useGps} loading={location.isLocating} />
+    <Button title="Elegir ubicación en mapa" onPress={() => setMapVisible(true)} />
     <Field keyboardType="numeric" placeholder="Presupuesto estimado (opcional)" value={form.estimatedPrice} onChangeText={(estimatedPrice) => setForm({ ...form, estimatedPrice })} />
     <Button title={images.length ? `Agregar foto (${images.length}/5)` : 'Tomar foto o elegir de galería'} onPress={chooseImageSource} loading={picker.isPending} />
     {images.length > 0 && <ScrollView horizontal>{images.map((image) => <Image key={image.uri} source={{ uri: image.uri }} style={{ width: 100, height: 100, borderRadius: 12, marginRight: 8 }} />)}</ScrollView>}
@@ -72,5 +80,11 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
       estimatedPrice: form.estimatedPrice ? Number(form.estimatedPrice) : null,
     }, images })
     }} loading={create.isPending} />
+    <LocationPickerModal
+      visible={mapVisible}
+      value={selectedCoordinates}
+      onSelect={(coordinates) => setForm((value) => ({ ...value, latitude: String(coordinates.latitude), longitude: String(coordinates.longitude) }))}
+      onClose={() => setMapVisible(false)}
+    />
   </KeyboardAwareScreen>
 }

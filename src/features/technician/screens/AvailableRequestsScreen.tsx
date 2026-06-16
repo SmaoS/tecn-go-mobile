@@ -35,8 +35,8 @@ export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<R
       <Text style={styles.title}>Solicitudes disponibles</Text>
       <Text style={styles.subtitle}>{available ? 'Ofertas cercanas actualizadas cada 10 segundos' : 'Modo ocupado: puedes ver ofertas, pero no recibirás avisos nuevos'}</Text>
     </View>
-    {availability.error
-      ? <Text style={styles.error}>{apiMessage(availability.error)}</Text>
+    {availability.error || availability.update.error
+      ? <Text style={styles.error}>{apiMessage(availability.error ?? availability.update.error)}</Text>
       : requests.isPending
         ? <View style={styles.center}><ActivityIndicator color="#0891b2" /><Text style={styles.empty}>Buscando solicitudes cercanas...</Text></View>
         : requests.error

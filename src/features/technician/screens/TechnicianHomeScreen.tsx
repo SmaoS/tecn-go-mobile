@@ -57,7 +57,7 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
         <View><Text style={styles.title}>Servicios asignados</Text><Text style={styles.subtitle}>Trabajos que requieren tu atención.</Text></View>
         <Pressable onPress={() => navigation.navigate('Notifications')}><Text style={styles.notifications}>Avisos{(unread.data ?? 0) > 0 ? ` (${unread.data})` : ''}</Text></Pressable>
       </View>
-      {advance.error && <Text style={styles.error}>{apiMessage(advance.error)}</Text>}
+      {(advance.error || availability.update.error) && <Text style={styles.error}>{apiMessage(advance.error ?? availability.update.error)}</Text>}
       <QueryState pending={requests.isPending || (paidIds.length > 0 && ratingStatuses.isPending)} error={requests.error ?? ratingStatuses.error} empty={requests.data?.length === 0} emptyText="No tienes servicios asignados activos.">
         {requests.data?.map((item) => <View key={item.id} style={styles.card}>
           <View style={styles.cardHeading}><Text style={styles.category}>{item.categoryName}</Text><Text style={styles.status}>{requestStatusLabels[item.status]}</Text></View>

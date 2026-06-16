@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import * as Location from 'expo-location'
 import { technicianApi } from './api'
 import type { TechnicianProfileForm } from './types'
 import { requestKeys } from '../service-requests/hooks'
@@ -52,7 +53,13 @@ export function useTechnicianAvailability() {
     queryFn: technicianApi.availability,
   })
   const update = useMutation({
-    mutationFn: technicianApi.setAvailability,
+    mutationFn: async (available: boolean) => {
+      if (available) {
+        const permission = await Location.requestForegroundPermissionsAsync()
+        if (!permission.granted) throw new Error('Activa la ubicación para aparecer disponible y recibir servicios cercanos.')
+      }
+      return technicianApi.setAvailability(available)
+    },
     onSuccess: (data) => {
       client.setQueryData(technicianAvailabilityKey, data)
       void client.invalidateQueries({ queryKey: requestKeys.available('10') })

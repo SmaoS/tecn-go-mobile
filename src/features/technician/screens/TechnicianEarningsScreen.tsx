@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { QueryState } from '../../../shared/QueryState'
+import { apiMessage } from '../../../shared/apiMessage'
 import { formatCopCurrency } from '../../../shared/format'
 import type { RootStackParamList } from '../../../types'
 import { useTechnicianEarnings } from '../../payments/hooks'
@@ -26,6 +27,7 @@ export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<
     />
     <ScrollView contentContainerStyle={styles.content}>
       <Text style={styles.title}>Cartera</Text>
+      {availability.update.error && <Text style={styles.error}>{apiMessage(availability.update.error)}</Text>}
       <QueryState pending={earnings.isPending} error={earnings.error}>
         {earnings.data && <>
           <View style={styles.summary}><Text style={styles.label}>Total recibido</Text><Text style={styles.amount}>{formatCopCurrency(earnings.data.totalTechnicianAmount)}</Text><Text style={styles.meta}>{earnings.data.paymentCount} pagos registrados</Text></View>
@@ -52,4 +54,5 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#fff', paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#e2e8f0' },
   rowTitle: { color: '#1e293b', fontWeight: '800' },
   rowAmount: { color: '#0e7490', fontWeight: '900' },
+  error: { color: '#be123c', marginBottom: 10 },
 })

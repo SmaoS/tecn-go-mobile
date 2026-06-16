@@ -36,3 +36,16 @@ export function useMarkNotificationRead() {
     },
   })
 }
+
+export function useDeleteNotification() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: notificationsApi.delete,
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: notificationKeys.all }),
+        client.invalidateQueries({ queryKey: notificationKeys.unread }),
+      ])
+    },
+  })
+}
