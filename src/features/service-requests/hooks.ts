@@ -172,8 +172,15 @@ export function useCreateRequest(onSuccess: () => void) {
 export function useAdvanceRequest() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: ({ requestId, status }: { requestId: string; status: string }) =>
-      serviceRequestApi.status(requestId, status),
+    mutationFn: ({ requestId, status, paymentReceived, paymentMethod, comment }: {
+      requestId: string
+      status?: string
+      paymentReceived?: boolean
+      paymentMethod?: string
+      comment?: string
+    }) => status
+      ? serviceRequestApi.status(requestId, status)
+      : serviceRequestApi.technicianComplete(requestId, { paymentReceived: Boolean(paymentReceived), paymentMethod, comment }),
     onSuccess: () => client.invalidateQueries({ queryKey: requestKeys.assigned }),
   })
 }

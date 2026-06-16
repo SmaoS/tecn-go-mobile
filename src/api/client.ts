@@ -7,8 +7,12 @@ const apiUrl = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '')
 if (!apiUrl) throw new Error('EXPO_PUBLIC_API_URL is required')
 
 let unauthorizedHandler: (() => void) | undefined
+let operationBlockedHandler: ((code: string) => void) | undefined
 export function setUnauthorizedHandler(handler: () => void) {
   unauthorizedHandler = handler
+}
+export function setOperationBlockedHandler(handler: (code: string) => void) {
+  operationBlockedHandler = handler
 }
 
 export const api = axios.create({
@@ -28,6 +32,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       await AsyncStorage.removeItem(SESSION_KEY)
       unauthorizedHandler?.()
+    }
+    if (error.response?.status === 403 && typeof error.response.data?.code === 'string') {
+      operationBlockedHandler?.(error.response.data.code)
     }
     return Promise.reject(error)
   },

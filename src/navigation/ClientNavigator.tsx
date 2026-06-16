@@ -14,6 +14,8 @@ import { ServiceSupportScreen } from '../features/service-support/screens/Servic
 import { LegalScreen } from '../features/legal/screens/LegalScreen'
 import { CaptureProfilePhotoScreen } from '../features/profile/screens/CaptureProfilePhotoScreen'
 import { ClientRequestHistoryScreen } from '../features/service-requests/screens/RequestHistoryScreen'
+import { EmailConfirmationRequiredScreen } from '../features/onboarding/screens/EmailConfirmationRequiredScreen'
+import { OnboardingRequiredScreen } from '../features/onboarding/screens/OnboardingRequiredScreen'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
@@ -21,6 +23,8 @@ export function ClientNavigator() {
   const { session, logout } = useSession()
   return <Stack.Navigator>
     <Stack.Screen name="Home" component={ClientHomeScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="EmailConfirmationRequired" component={EmailConfirmationRequiredScreen} options={{ title: 'Confirma tu correo' }} />
+    <Stack.Screen name="OnboardingRequired" component={OnboardingRequiredScreen} options={{ title: 'Inscripción' }} />
     <Stack.Screen name="RequestService" component={CreateRequestScreen} options={{ title: 'Solicitar servicio' }} />
     <Stack.Screen name="NearbyTechnicians" component={NearbyTechniciansScreen} options={{ title: 'Cerca de ti' }} />
     <Stack.Screen name="RequestDetail" component={RequestDetailScreen} options={{ title: 'Solicitud' }} />

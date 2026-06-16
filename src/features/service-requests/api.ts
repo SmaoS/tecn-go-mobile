@@ -15,6 +15,8 @@ export const serviceRequestApi = {
     api.get<NearbyTechnician[]>('/v1/technicians/nearby', { params: { latitude, longitude, radiusKm, cityId } }).then(({ data }) => data),
   create: (payload: object) => api.post<ServiceRequest>('/v1/service-requests', payload).then(({ data }) => data),
   status: (requestId: string, status: string) => api.put<ServiceRequest>(`/v1/service-requests/${requestId}/status`, { status }).then(({ data }) => data),
+  technicianComplete: (requestId: string, input: { paymentReceived: boolean; paymentMethod?: string; comment?: string }) =>
+    api.post<ServiceRequest>(`/v1/service-requests/${requestId}/technician-complete`, input).then(({ data }) => data),
   confirmQuote: (requestId: string, quoteId: string) => api.put<ServiceRequest>(`/v1/service-requests/${requestId}/confirm-quote`, { quoteId }).then(({ data }) => data),
   rejectQuote: (requestId: string, quoteId: string) => api.put(`/v1/service-requests/${requestId}/quotes/${quoteId}/reject`),
   payCash: (requestId: string) => api.post(`/v1/service-requests/${requestId}/payment/cash`),

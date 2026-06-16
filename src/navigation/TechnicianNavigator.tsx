@@ -17,6 +17,8 @@ import { NotificationRequestScreen } from '../features/service-requests/screens/
 import { TechnicianRequestHistoryScreen } from '../features/service-requests/screens/RequestHistoryScreen'
 import { TechnicianEarningsScreen } from '../features/technician/screens/TechnicianEarningsScreen'
 import { TechnicianLocationController } from '../features/location/TechnicianLocationController'
+import { EmailConfirmationRequiredScreen } from '../features/onboarding/screens/EmailConfirmationRequiredScreen'
+import { OnboardingRequiredScreen } from '../features/onboarding/screens/OnboardingRequiredScreen'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
@@ -24,6 +26,8 @@ export function TechnicianNavigator() {
   const { session, logout } = useSession()
   return <><TechnicianLocationController /><Stack.Navigator initialRouteName="TechnicianEntry">
     <Stack.Screen name="TechnicianEntry" component={TechnicianEntryScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="EmailConfirmationRequired" component={EmailConfirmationRequiredScreen} options={{ title: 'Confirma tu correo' }} />
+    <Stack.Screen name="OnboardingRequired" component={OnboardingRequiredScreen} options={{ title: 'Inscripción' }} />
     <Stack.Screen name="TechnicianHome" component={TechnicianHomeScreen} options={{ headerShown: false }} />
     <Stack.Screen name="TechnicianProfile" component={TechnicianProfileScreen} options={{ title: 'Perfil técnico' }} />
     <Stack.Screen name="AvailableRequests" component={AvailableRequestsScreen} options={{ title: 'Disponibles' }} />

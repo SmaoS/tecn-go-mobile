@@ -11,10 +11,11 @@ import { useServiceImagePicker } from '../../files/hooks'
 import { useCurrentLocation } from '../../location/hooks'
 import { LocationPickerModal } from '../../location/LocationPickerModal'
 import { useProfile } from '../../profile/hooks'
+import { paymentMethodLabels, requestPaymentMethods, type RequestPaymentMethod } from '../../payments/paymentMethods'
 
 export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'RequestService'>) {
   const categories = useServiceCategories()
-  const [form, setForm] = useState({ categoryId: '', description: '', address: '', latitude: '', longitude: '', estimatedPrice: '' })
+  const [form, setForm] = useState<{ categoryId: string; description: string; address: string; latitude: string; longitude: string; estimatedPrice: string; paymentMethod: RequestPaymentMethod }>({ categoryId: '', description: '', address: '', latitude: '', longitude: '', estimatedPrice: '', paymentMethod: 'CASH' })
   const [images, setImages] = useState<{ uri: string; name: string; mimeType: string }[]>([])
   const [mapVisible, setMapVisible] = useState(false)
   const location = useCurrentLocation()
@@ -56,6 +57,12 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
     <Button title={form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener ubicación GPS'} onPress={useGps} loading={location.isLocating} />
     <Button title="Elegir ubicación en mapa" onPress={() => setMapVisible(true)} />
     <Field keyboardType="numeric" placeholder="Presupuesto estimado (opcional)" value={form.estimatedPrice} onChangeText={(estimatedPrice) => setForm({ ...form, estimatedPrice })} />
+    <Text style={styles.label}>¿Por dónde vas a pagar?</Text>
+    {requestPaymentMethods.map((method) => <Pressable key={method} onPress={() => setForm({ ...form, paymentMethod: method })}>
+      <Card style={form.paymentMethod === method ? { borderColor: colors.brand } : undefined}>
+        <Text style={[styles.cardTitle, form.paymentMethod === method && { color: colors.brand }]}>{paymentMethodLabels[method]}</Text>
+      </Card>
+    </Pressable>)}
     <Button title={images.length ? `Agregar foto (${images.length}/5)` : 'Tomar foto o elegir de galería'} onPress={chooseImageSource} loading={picker.isPending} />
     {images.length > 0 && <ScrollView horizontal>{images.map((image) => <Image key={image.uri} source={{ uri: image.uri }} style={{ width: 100, height: 100, borderRadius: 12, marginRight: 8 }} />)}</ScrollView>}
     {(location.error || picker.error || create.error) && <Text style={styles.error}>{location.error || apiMessage(picker.error ?? create.error)}</Text>}

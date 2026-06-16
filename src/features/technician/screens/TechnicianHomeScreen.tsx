@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button } from '../../../components/UI'
 import { useDoubleBackExit } from '../../../hooks/useDoubleBackExit'
@@ -15,6 +15,7 @@ import { TechnicianHeader } from '../components/TechnicianHeader'
 import { TechnicianMenu } from '../components/TechnicianMenu'
 import { useTechnicianAvailability, useTechnicianProfile } from '../hooks'
 import { useSession } from '../../../context/useSession'
+import { paymentMethodLabels } from '../../payments/paymentMethods'
 
 export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'TechnicianHome'>) {
   useDoubleBackExit()
@@ -33,7 +34,14 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
       QUOTE_ACCEPTED: 'ON_THE_WAY',
       ON_THE_WAY: 'ARRIVED',
       ARRIVED: 'IN_PROGRESS',
-      IN_PROGRESS: 'COMPLETED',
+    }
+    if (item.status === 'IN_PROGRESS') {
+      Alert.alert('Terminar trabajo', '¿El cliente pagó el valor acordado?', [
+        { text: 'No, no pagó', style: 'destructive', onPress: () => advance.mutate({ requestId: item.id, paymentReceived: false, paymentMethod: item.requestedPaymentMethod, comment: 'El cliente no pagó el valor acordado.' }) },
+        { text: 'Sí, pagó', onPress: () => advance.mutate({ requestId: item.id, paymentReceived: true, paymentMethod: item.requestedPaymentMethod }) },
+        { text: 'Cancelar', style: 'cancel' },
+      ])
+      return
     }
     const status = states[item.status]
     if (status) advance.mutate({ requestId: item.id, status })
@@ -42,7 +50,7 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
     QUOTE_ACCEPTED: 'Voy en camino',
     ON_THE_WAY: 'Ya llegué',
     ARRIVED: 'Iniciar servicio',
-    IN_PROGRESS: 'Completar servicio',
+    IN_PROGRESS: 'Terminar trabajo',
   }
 
   return <View style={styles.screen}>
@@ -63,6 +71,7 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
           <View style={styles.cardHeading}><Text style={styles.category}>{item.categoryName}</Text><Text style={styles.status}>{requestStatusLabels[item.status]}</Text></View>
           <Text style={styles.client}>{item.clientName}</Text>
           <Text style={styles.address}>{item.address}</Text>
+          <Text style={styles.address}>Pago: {paymentMethodLabels[item.requestedPaymentMethod] ?? item.requestedPaymentMethod}</Text>
           {actionLabels[item.status] && <Button title={actionLabels[item.status]!} onPress={() => next(item)} loading={advance.isPending} />}
           {item.status === 'PAID' && ratingStatuses.data?.[item.id] === false && <Button title="Calificar cliente" onPress={() => navigation.navigate('Rating', { requestId: item.id })} />}
           <View style={styles.actions}>

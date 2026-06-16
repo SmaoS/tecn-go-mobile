@@ -10,6 +10,7 @@ import { Tracking } from '../components/Tracking'
 import { useRequestAction, useRequestDetail, useRequestQuotes, useTechnicianLocation } from '../hooks'
 import { useRatingStatus } from '../../ratings/hooks'
 import { requestStatusLabels } from '../status'
+import { paymentMethodLabels } from '../../payments/paymentMethods'
 
 export function RequestDetailScreen({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'RequestDetail'>) {
   const request = useRequestDetail(route.params.request)
@@ -25,6 +26,7 @@ export function RequestDetailScreen({ route, navigation }: NativeStackScreenProp
     <Tracking status={item.status} />
     {item.status === 'CANCELLED' && <Text style={styles.error}>Servicio cancelado</Text>}
     {item.estimatedPrice != null && <Text style={styles.muted}>Estimado: ${item.estimatedPrice.toLocaleString()}</Text>}
+    <Text style={styles.muted}>Método de pago: {paymentMethodLabels[item.requestedPaymentMethod] ?? item.requestedPaymentMethod}</Text>
     {item.technicianPrice != null && <Text style={[styles.muted, { color: colors.brand }]}>Cotización aceptada: ${item.technicianPrice.toLocaleString()}</Text>}
     {item.status === 'QUOTE_PENDING' && quotes.data?.filter((quote) => quote.status === 'PENDING').map((quote) => <Card key={quote.id}><View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>{quote.technicianProfilePhotoUrl && <PrivateImage url={quote.technicianProfilePhotoUrl} style={{ width: 58, height: 58, borderRadius: 29 }} />}<View style={{ flex: 1 }}><Text style={styles.cardTitle}>{quote.technicianName}</Text><Text style={[styles.muted, { color: colors.brand }]}>★ {quote.technicianAverageRating.toFixed(1)} · {quote.technicianCompletedServicesCount} servicios</Text></View></View><Text style={styles.muted}>{quote.technicianCategories.join(', ')}</Text><Text style={styles.muted}>{quote.technicianExperienceDescription}</Text>{quote.description && <Text style={styles.muted}>{quote.description}</Text>}<Text style={styles.muted}>Expira: {new Date(quote.expiresAt).toLocaleString()}</Text><Text style={[styles.cardTitle, { color: colors.brand }]}>${quote.price.toLocaleString()}</Text><Button title="Aceptar esta cotización" onPress={() => action.mutate({ kind: 'confirmQuote', quoteId: quote.id })} loading={action.isPending} /><Button title="Rechazar cotización" onPress={() => action.mutate({ kind: 'rejectQuote', quoteId: quote.id })} loading={action.isPending} /></Card>)}
     {item.technicianName && <Card><Text style={styles.cardTitle}>{item.technicianName}</Text><Text style={[styles.muted, { color: colors.brand }]}>★ {(item.technicianAverageRating ?? 5).toFixed(1)} · {item.technicianCompletedServicesCount} servicios</Text><Text style={styles.muted}>{item.technicianExperienceDescription}</Text><Text style={styles.muted}>{item.technicianCategories?.join(', ')}</Text></Card>}

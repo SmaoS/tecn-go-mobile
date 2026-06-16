@@ -12,6 +12,7 @@ import { TechnicianNavigator } from './TechnicianNavigator'
 import { openNotification } from './notificationNavigation'
 import type { LinkingOptions } from '@react-navigation/native'
 import type { RootStackParamList } from '../types'
+import { setOperationBlockedHandler } from '../api/client'
 
 const theme = {
   ...DarkTheme,
@@ -31,6 +32,11 @@ export function AppNavigator() {
   const { session, ready } = useSession()
   useEffect(() => {
     if (!session) return
+    setOperationBlockedHandler((code) => {
+      if (!navigationRef.isReady()) return
+      if (code === 'EMAIL_NOT_VERIFIED') navigationRef.navigate('EmailConfirmationRequired')
+      if (code === 'ONBOARDING_REQUIRED') navigationRef.navigate('OnboardingRequired')
+    })
     return addNotificationListeners((data) => {
       if (!navigationRef.isReady()) return
       openNotification(navigationRef, session.role, {

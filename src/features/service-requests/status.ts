@@ -9,5 +9,6 @@ export const requestStatusLabels: Record<RequestStatus, string> = {
   IN_PROGRESS: 'Servicio en curso',
   COMPLETED: 'Servicio completado',
   PAID: 'Pagado',
+  PAYMENT_DISPUTE: 'Pago en disputa',
   CANCELLED: 'Cancelado',
 }

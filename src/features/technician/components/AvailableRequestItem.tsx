@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { PrivateImage } from '../../../components/PrivateImage'
 import type { ServiceRequest } from '../../../types'
 import { formatCopCurrency, formatElapsedTime } from '../../../shared/format'
+import { paymentMethodLabels } from '../../payments/paymentMethods'
 
 export function AvailableRequestItem({ request, onPress }: { request: ServiceRequest; onPress: () => void }) {
   return <Pressable onPress={onPress} style={styles.item}>
@@ -22,6 +23,7 @@ export function AvailableRequestItem({ request, onPress }: { request: ServiceReq
       <Text style={styles.price}>{formatCopCurrency(request.estimatedPrice)}</Text>
       <Text numberOfLines={1} style={styles.address}>{request.address}</Text>
       <Text numberOfLines={1} style={styles.category}>{request.categoryName}</Text>
+      <Text numberOfLines={1} style={styles.payment}>Pago: {paymentMethodLabels[request.requestedPaymentMethod] ?? request.requestedPaymentMethod}</Text>
       {request.firstServiceImageUrl && <View style={styles.imageWrap}>
         <PrivateImage url={request.firstServiceImageUrl} style={styles.thumbnail} />
         {request.serviceImagesCount > 1 && <Text style={styles.imageCount}>+{request.serviceImagesCount - 1}</Text>}
@@ -46,6 +48,7 @@ const styles = StyleSheet.create({
   price: { color: '#0f172a', fontSize: 25, fontWeight: '900', marginTop: 5 },
   address: { color: '#334155', fontSize: 13, marginTop: 4 },
   category: { color: '#0891b2', fontSize: 12, fontWeight: '800', marginTop: 5 },
+  payment: { color: '#475569', fontSize: 12, fontWeight: '700', marginTop: 4 },
   imageWrap: { position: 'absolute', right: 0, bottom: 0 },
   thumbnail: { width: 54, height: 42, borderRadius: 8 },
   imageCount: { position: 'absolute', right: 3, bottom: 3, color: '#fff', backgroundColor: 'rgba(15,23,42,.75)', borderRadius: 8, paddingHorizontal: 5, fontSize: 10, fontWeight: '800' },
