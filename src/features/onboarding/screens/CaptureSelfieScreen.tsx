@@ -73,8 +73,8 @@ export function CaptureSelfieScreen({ navigation }: NativeStackScreenProps<RootS
     <View style={local.overlay}>
       <View style={local.oval} />
       <Text style={local.title}>Ubica tu rostro dentro del óvalo.</Text>
-      <Text style={local.help}>{ready ? `Mantente quieto... ${countdown}` : 'Preparando cámara...'}</Text>
-      <Button title="Tomar foto" onPress={() => void takePhoto()} />
+      <Text style={local.help}>{ready ? `Captura guiada... ${countdown}` : 'Preparando cámara...'}</Text>
+      <Button title="Tomar foto para revisión" onPress={() => void takePhoto()} />
     </View>
   </View>
 }

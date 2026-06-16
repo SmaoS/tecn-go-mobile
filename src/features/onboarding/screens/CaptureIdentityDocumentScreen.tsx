@@ -104,8 +104,8 @@ export function CaptureIdentityDocumentScreen({ navigation, route }: NativeStack
       <View style={local.frame} />
       <Text style={local.title}>{side === 'back' ? 'Ubica el reverso dentro del marco.' : documentType === 'PASSPORT' ? 'Ubica el pasaporte dentro del marco.' : 'Ubica el frente dentro del marco.'}</Text>
       <Text style={local.tip}>Evita reflejos y sombras.</Text>
-      <Text style={local.help}>{ready ? `Documento detectado... ${countdown}` : 'Preparando cámara...'}</Text>
-      <Button title="Tomar foto" onPress={() => void takePhoto()} />
+      <Text style={local.help}>{ready ? `Captura guiada... ${countdown}` : 'Preparando cámara...'}</Text>
+      <Button title="Tomar foto para revisión" onPress={() => void takePhoto()} />
     </View>
   </View>
 }
