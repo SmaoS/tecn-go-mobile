@@ -10,22 +10,17 @@ import { useCreateRequest, useServiceCategories } from '../hooks'
 import { useServiceImagePicker } from '../../files/hooks'
 import { useCurrentLocation } from '../../location/hooks'
 import { LocationPickerModal } from '../../location/LocationPickerModal'
-import { CatalogSelect } from '../../catalogs/CatalogSelect'
-import { useCities, useCountries, useDepartments } from '../../catalogs/hooks'
 import { useProfile } from '../../profile/hooks'
 
 export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'RequestService'>) {
   const categories = useServiceCategories()
-  const [form, setForm] = useState({ categoryId: '', description: '', address: '', latitude: '', longitude: '', estimatedPrice: '', countryId: '', departmentId: '', cityId: '' })
+  const [form, setForm] = useState({ categoryId: '', description: '', address: '', latitude: '', longitude: '', estimatedPrice: '' })
   const [images, setImages] = useState<{ uri: string; name: string; mimeType: string }[]>([])
   const [mapVisible, setMapVisible] = useState(false)
   const location = useCurrentLocation()
   const picker = useServiceImagePicker()
   const create = useCreateRequest(() => navigation.replace('Home'))
   const profile = useProfile()
-  const countries = useCountries()
-  const departments = useDepartments(form.countryId)
-  const cities = useCities(form.departmentId)
   const selectedCategory = categories.data?.find((item) => item.id === form.categoryId)
   const selectedCoordinates = form.latitude && form.longitude
     ? { latitude: Number(form.latitude), longitude: Number(form.longitude) }
@@ -35,15 +30,6 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
     if (coordinates) setForm((value) => ({ ...value, latitude: String(coordinates.latitude), longitude: String(coordinates.longitude) }))
   }
   useEffect(() => { void useGps() }, [])
-  useEffect(() => {
-    if (!profile.data || form.countryId) return
-    setForm((value) => ({
-      ...value,
-      countryId: profile.data?.countryId ?? '',
-      departmentId: profile.data?.departmentId ?? '',
-      cityId: profile.data?.cityId ?? '',
-    }))
-  }, [profile.data, form.countryId])
   function chooseImageSource() {
     const remaining = Math.max(1, 5 - images.length)
     Alert.alert('Agregar foto', 'Elige el origen de la imagen.', [
@@ -58,9 +44,11 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
         ? <Card><Text style={[styles.cardTitle, { color: colors.brand }]}>{selectedCategory.name}</Text><Text style={styles.muted}>{selectedCategory.description}</Text><Button title="Ver categorías" onPress={() => setForm({ ...form, categoryId: '' })} /></Card>
         : categories.data?.map((item) => <Pressable key={item.id} onPress={() => setForm({ ...form, categoryId: item.id })}><Card><Text style={styles.cardTitle}>{item.name}</Text><Text style={styles.muted}>{item.description}</Text></Card></Pressable>)}</>
     </QueryState>
-    <CatalogSelect label="País" value={form.countryId} items={countries.data} onChange={(country) => setForm({ ...form, countryId: country.id, departmentId: '', cityId: '' })} />
-    <CatalogSelect label="Departamento" value={form.departmentId} items={departments.data} disabled={!form.countryId} onChange={(department) => setForm({ ...form, departmentId: department.id, cityId: '' })} />
-    <CatalogSelect label="Ciudad" value={form.cityId} items={cities.data} disabled={!form.departmentId} onChange={(city) => setForm({ ...form, cityId: city.id })} />
+    <Card>
+      <Text style={styles.cardTitle}>Ciudad del servicio</Text>
+      <Text style={styles.muted}>{profile.data?.cityName ?? profile.data?.homeCity ?? 'No configurada en tu perfil'}</Text>
+      <Text style={styles.muted}>Se toma automáticamente de tu perfil. Puedes cambiar dirección y ubicación exacta para este servicio.</Text>
+    </Card>
     <Field multiline placeholder="Describe el problema" value={form.description} onChangeText={(description) => setForm({ ...form, description })} />
     <Field placeholder="Dirección" value={form.address} onChangeText={(address) => setForm({ ...form, address })} />
     <Text style={styles.label}>Ubicación del servicio</Text>
@@ -71,12 +59,12 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
     <Button title={images.length ? `Agregar foto (${images.length}/5)` : 'Tomar foto o elegir de galería'} onPress={chooseImageSource} loading={picker.isPending} />
     {images.length > 0 && <ScrollView horizontal>{images.map((image) => <Image key={image.uri} source={{ uri: image.uri }} style={{ width: 100, height: 100, borderRadius: 12, marginRight: 8 }} />)}</ScrollView>}
     {(location.error || picker.error || create.error) && <Text style={styles.error}>{location.error || apiMessage(picker.error ?? create.error)}</Text>}
-    {!form.cityId ? <Text style={styles.error}>Selecciona la ciudad del servicio.</Text> : null}
+    {!profile.data?.cityId ? <Text style={styles.error}>Completa la ciudad en Mi perfil antes de crear una solicitud.</Text> : null}
     {!form.latitude || !form.longitude ? <Text style={styles.error}>Se requiere ubicación GPS para publicar la solicitud.</Text> : null}
     <Button title="Crear solicitud" onPress={() => {
-      if (!form.cityId || !form.latitude || !form.longitude) return
+      if (!profile.data?.cityId || !form.latitude || !form.longitude) return
       create.mutate({ payload: {
-      ...form, latitude: Number(form.latitude), longitude: Number(form.longitude),
+      ...form, cityId: profile.data.cityId, latitude: Number(form.latitude), longitude: Number(form.longitude),
       estimatedPrice: form.estimatedPrice ? Number(form.estimatedPrice) : null,
     }, images })
     }} loading={create.isPending} />
