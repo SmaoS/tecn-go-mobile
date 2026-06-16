@@ -163,6 +163,11 @@ export interface UserProfile {
   role: Role
   profilePhotoUrl?: string
   documentPhotoUrl?: string
+  documentType?: 'CC' | 'PASSPORT'
+  documentNumber?: string
+  documentFrontUrl?: string
+  documentBackUrl?: string
+  documentSingleUrl?: string
   certificatePhotoUrl?: string
   workExperienceDescription?: string
   averageRating: number
@@ -209,6 +214,8 @@ export type RootStackParamList = {
   Home: undefined
   EmailConfirmationRequired: undefined
   OnboardingRequired: undefined
+  ClientRequests: undefined
+  ClientPayments: undefined
   RequestService: undefined
   NearbyTechnicians: undefined
   RequestDetail: { request: ServiceRequest }

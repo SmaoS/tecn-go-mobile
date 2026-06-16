@@ -1,7 +1,7 @@
-import { Pressable, Text, useWindowDimensions, View } from 'react-native'
+import { useState } from 'react'
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, Card, colors, styles } from '../../../components/UI'
-import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
 import { PrivateImage } from '../../../components/PrivateImage'
 import { useUnreadNotifications } from '../../notifications/hooks'
 import { QueryState } from '../../../shared/QueryState'
@@ -9,25 +9,31 @@ import type { RootStackParamList } from '../../../types'
 import { useClientRequests, useRecentClientQuotes } from '../hooks'
 import { requestStatusLabels } from '../status'
 import { useDoubleBackExit } from '../../../hooks/useDoubleBackExit'
+import { ClientFooter } from '../components/ClientFooter'
+import { ClientHeader } from '../components/ClientHeader'
+import { ClientMenu } from '../components/ClientMenu'
+import { useProfile } from '../../profile/hooks'
+import { useSession } from '../../../context/useSession'
 
 export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) {
   useDoubleBackExit()
+  const [menu, setMenu] = useState(false)
   const requests = useClientRequests()
   const recentQuotes = useRecentClientQuotes(requests.data ?? [])
   const hasPendingQuoteRequests = (requests.data ?? []).some((item) => item.status === 'QUOTE_PENDING')
   const unread = useUnreadNotifications()
+  const profile = useProfile()
+  const { logout } = useSession()
   const { width } = useWindowDimensions()
   const cardWidth = width >= 700 ? '48.5%' : '100%'
-  return <KeyboardAwareScreen><Text style={styles.title}>¿Qué necesitas?</Text><Text style={styles.subtitle}>Encuentra ayuda técnica confiable.</Text>
-    <Button title="Solicitar servicio" onPress={() => navigation.navigate('RequestService')} />
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 16 }}>
-      <Pressable onPress={() => navigation.navigate('NearbyTechnicians')}><Text style={styles.link}>Técnicos cercanos</Text></Pressable>
-      <Pressable onPress={() => navigation.navigate('Profile')}><Text style={styles.link}>Mi perfil</Text></Pressable>
-      <Pressable onPress={() => navigation.navigate('RequestHistory')}><Text style={styles.link}>Historial</Text></Pressable>
-      <Pressable onPress={() => navigation.navigate('Notifications')}><Text style={styles.link}>Notificaciones{(unread.data ?? 0) > 0 ? ` (${unread.data})` : ''}</Text></Pressable>
-      <Pressable onPress={() => navigation.navigate('Legal')}><Text style={styles.link}>Seguridad</Text></Pressable>
-    </View>
-    {(recentQuotes.data?.length ?? 0) > 0 && <><Text style={styles.label}>Cotizaciones recientes</Text>
+  return <View style={screenStyles.screen}>
+    <ClientHeader unread={unread.data ?? 0} onMenu={() => setMenu(true)} onNotifications={() => navigation.navigate('Notifications')} />
+    <ScrollView contentContainerStyle={screenStyles.content}>
+      <Text style={screenStyles.title}>Solicita un servicio</Text>
+      <Text style={screenStyles.subtitle}>Encuentra ayuda técnica confiable cerca de ti.</Text>
+      <Button title="Solicitar servicio" onPress={() => navigation.navigate('RequestService')} />
+      <Pressable onPress={() => navigation.navigate('NearbyTechnicians')}><Text style={screenStyles.nearby}>Ver técnicos cercanos</Text></Pressable>
+      {(recentQuotes.data?.length ?? 0) > 0 && <><Text style={screenStyles.sectionLabel}>Cotizaciones recientes</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {recentQuotes.data?.map(({ request, quote }) => <Pressable key={quote.id} style={{ width: cardWidth }} onPress={() => navigation.navigate('RequestDetail', { request })}>
           <Card style={{ height: '100%' }}><View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
@@ -39,9 +45,21 @@ export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStac
         </Pressable>)}
       </View>
     </>}
-    <Text style={styles.label}>Solicitudes recientes</Text>
+    <Text style={screenStyles.sectionLabel}>Solicitudes recientes</Text>
     <QueryState pending={requests.isPending || (hasPendingQuoteRequests && recentQuotes.isPending)} error={requests.error ?? recentQuotes.error ?? unread.error} empty={requests.data?.length === 0} emptyText="Aún no tienes solicitudes.">
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>{requests.data?.map((item) => <Pressable key={item.id} style={{ width: cardWidth }} onPress={() => navigation.navigate('RequestDetail', { request: item })}><Card style={{ height: '100%' }}><Text style={styles.cardTitle}>{item.categoryName}</Text><Text style={styles.muted}>{item.description}</Text><Text style={[styles.muted, { color: colors.brand }]}>{requestStatusLabels[item.status]}</Text></Card></Pressable>)}</View>
     </QueryState>
-  </KeyboardAwareScreen>
+    </ScrollView>
+    <ClientFooter active="request" onSelect={(tab) => navigation.navigate(tab === 'request' ? 'Home' : 'ClientRequests')} />
+    <ClientMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)} onLogout={logout} />
+  </View>
 }
+
+const screenStyles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  content: { padding: 16, paddingBottom: 30 },
+  title: { color: '#0f172a', fontSize: 28, fontWeight: '900', marginBottom: 6 },
+  subtitle: { color: '#64748b', fontSize: 14, marginBottom: 18 },
+  nearby: { color: '#0e7490', fontWeight: '900', textAlign: 'center', paddingVertical: 16 },
+  sectionLabel: { color: '#0f172a', fontWeight: '900', marginTop: 18, marginBottom: 10 },
+})

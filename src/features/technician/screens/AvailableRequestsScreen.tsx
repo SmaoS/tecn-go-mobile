@@ -12,6 +12,7 @@ import { TechnicianHeader } from '../components/TechnicianHeader'
 import { TechnicianMenu } from '../components/TechnicianMenu'
 import { apiMessage } from '../../../shared/apiMessage'
 import { useSession } from '../../../context/useSession'
+import { useUnreadNotifications } from '../../notifications/hooks'
 
 export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'AvailableRequests'>) {
   useDoubleBackExit()
@@ -23,13 +24,16 @@ export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<R
   const requests = useAvailableRequests(radiusKm)
   const profile = useTechnicianProfile()
   const { logout } = useSession()
+  const unread = useUnreadNotifications()
 
   return <View style={styles.screen}>
     <TechnicianHeader
       available={available}
       loading={availability.update.isPending}
+      unread={unread.data ?? 0}
       onAvailabilityChange={(value) => availability.update.mutate(value)}
       onMenu={() => setMenu(true)}
+      onNotifications={() => navigation.navigate('Notifications')}
     />
     <View style={styles.heading}>
       <Text style={styles.title}>Solicitudes disponibles</Text>

@@ -11,6 +11,7 @@ import { TechnicianFooter } from '../components/TechnicianFooter'
 import { TechnicianHeader } from '../components/TechnicianHeader'
 import { TechnicianMenu } from '../components/TechnicianMenu'
 import { useSession } from '../../../context/useSession'
+import { useUnreadNotifications } from '../../notifications/hooks'
 
 export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'TechnicianEarnings'>) {
   const [menu, setMenu] = useState(false)
@@ -18,12 +19,15 @@ export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<
   const profile = useTechnicianProfile()
   const availability = useTechnicianAvailability()
   const { logout } = useSession()
+  const unread = useUnreadNotifications()
   return <View style={styles.screen}>
     <TechnicianHeader
       available={availability.data?.available ?? true}
       loading={availability.update.isPending}
+      unread={unread.data ?? 0}
       onAvailabilityChange={(value) => availability.update.mutate(value)}
       onMenu={() => setMenu(true)}
+      onNotifications={() => navigation.navigate('Notifications')}
     />
     <ScrollView contentContainerStyle={styles.content}>
       <Text style={styles.title}>Cartera</Text>

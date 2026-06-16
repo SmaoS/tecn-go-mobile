@@ -1,8 +1,10 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { ChatScreen } from '../features/chat/screens/ChatScreen'
 import { NotificationsScreen } from '../features/notifications/screens/NotificationsScreen'
+import { ClientPaymentsScreen } from '../features/payments/screens/ClientPaymentsScreen'
 import { ProfileScreen } from '../features/profile/screens/ProfileScreen'
 import { RatingScreen } from '../features/ratings/screens/RatingScreen'
+import { ClientActiveRequestsScreen } from '../features/service-requests/screens/ClientActiveRequestsScreen'
 import { ClientHomeScreen } from '../features/service-requests/screens/ClientHomeScreen'
 import { CreateRequestScreen } from '../features/service-requests/screens/CreateRequestScreen'
 import { NearbyTechniciansScreen } from '../features/service-requests/screens/NearbyTechniciansScreen'
@@ -23,6 +25,8 @@ export function ClientNavigator() {
   const { session, logout } = useSession()
   return <Stack.Navigator>
     <Stack.Screen name="Home" component={ClientHomeScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="ClientRequests" component={ClientActiveRequestsScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="ClientPayments" component={ClientPaymentsScreen} options={{ title: 'Pagos' }} />
     <Stack.Screen name="EmailConfirmationRequired" component={EmailConfirmationRequiredScreen} options={{ title: 'Confirma tu correo' }} />
     <Stack.Screen name="OnboardingRequired" component={OnboardingRequiredScreen} options={{ title: 'Inscripción' }} />
     <Stack.Screen name="RequestService" component={CreateRequestScreen} options={{ title: 'Solicitar servicio' }} />

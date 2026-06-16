@@ -57,13 +57,14 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
     <TechnicianHeader
       available={availability.data?.available ?? true}
       loading={availability.update.isPending}
+      unread={unread.data ?? 0}
       onAvailabilityChange={(value) => availability.update.mutate(value)}
       onMenu={() => setMenu(true)}
+      onNotifications={() => navigation.navigate('Notifications')}
     />
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.heading}>
         <View><Text style={styles.title}>Servicios asignados</Text><Text style={styles.subtitle}>Trabajos que requieren tu atención.</Text></View>
-        <Pressable onPress={() => navigation.navigate('Notifications')}><Text style={styles.notifications}>Avisos{(unread.data ?? 0) > 0 ? ` (${unread.data})` : ''}</Text></Pressable>
       </View>
       {(advance.error || availability.update.error) && <Text style={styles.error}>{apiMessage(advance.error ?? availability.update.error)}</Text>}
       <QueryState pending={requests.isPending || (paidIds.length > 0 && ratingStatuses.isPending)} error={requests.error ?? ratingStatuses.error} empty={requests.data?.length === 0} emptyText="No tienes servicios asignados activos.">
@@ -92,7 +93,6 @@ const styles = StyleSheet.create({
   heading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 },
   title: { color: '#0f172a', fontSize: 25, fontWeight: '900' },
   subtitle: { color: '#64748b', fontSize: 12, marginTop: 4 },
-  notifications: { color: '#0891b2', fontWeight: '800', padding: 8 },
   card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: StyleSheet.hairlineWidth, borderColor: '#cbd5e1' },
   cardHeading: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
   category: { color: '#0f172a', fontSize: 17, fontWeight: '900', flex: 1 },
