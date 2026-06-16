@@ -66,8 +66,8 @@ export function TechnicianProfileScreen() {
   return <KeyboardAwareScreen><Text style={styles.title}>Perfil técnico</Text><Text style={styles.subtitle}>{profile.data ? `Estado profesional: ${profile.data.status} · ${identityStatus}` : 'Completa tus datos para solicitar aprobación.'}</Text>
     <QueryState pending={profile.isPending || categories.isPending} error={profileError ?? categories.error}>
       <>{profile.data?.email && <><Text style={styles.label}>Correo</Text><Field value={profile.data.email} editable={false} selectTextOnFocus={false} accessibilityLabel="Correo registrado" /></>}
-        <Text style={styles.label}>Documento</Text>
-        <Field placeholder="Documento" value={form.documentNumber} onChangeText={(documentNumber) => setForm({ ...form, documentNumber })} />
+        <Text style={styles.label}>Nro Documento</Text>
+        <Field placeholder="Nro Documento" value={form.documentNumber} onChangeText={(documentNumber) => setForm({ ...form, documentNumber })} />
         <Text style={styles.label}>Teléfono</Text>
         <Field placeholder="Teléfono" value={form.phone} onChangeText={(phone) => setForm({ ...form, phone })} />
         <Text style={styles.label}>Categorías</Text>{categories.data?.map((category) => <Pressable key={category.id} onPress={() => setForm({ ...form, categoryIds: form.categoryIds.includes(category.id) ? form.categoryIds.filter((id) => id !== category.id) : [...form.categoryIds, category.id] })}><Card><Text style={[styles.cardTitle, form.categoryIds.includes(category.id) && { color: colors.brand }]}>{form.categoryIds.includes(category.id) ? '✓ ' : ''}{category.name}</Text></Card></Pressable>)}

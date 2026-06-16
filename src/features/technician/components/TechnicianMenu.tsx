@@ -1,4 +1,5 @@
-import { Modal, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { PrivateImage } from '../../../components/PrivateImage'
 import type { TechnicianProfile } from '../../../types'
 
@@ -15,7 +16,7 @@ export function TechnicianMenu({ visible, profile, onClose, onNavigate, onLogout
   }
   return <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
     <View style={styles.overlay}>
-      <SafeAreaView style={styles.drawer}>
+      <SafeAreaView edges={['top', 'bottom', 'left']} style={styles.drawer}>
         <Pressable onPress={() => go('TechnicianProfile')} style={styles.profile}>
           {profile?.profilePhotoUrl
             ? <PrivateImage url={profile.profilePhotoUrl} style={styles.avatar} />
@@ -30,7 +31,9 @@ export function TechnicianMenu({ visible, profile, onClose, onNavigate, onLogout
           <MenuItem label="Invita y gana" onPress={() => go('TechnicianReferrals')} />
           <MenuItem label="Compromisos y términos" onPress={() => go('Legal')} />
         </View>
-        <MenuItem label="Cerrar sesión" danger onPress={() => { onClose(); onLogout() }} />
+        <View style={styles.logout}>
+          <MenuItem label="Cerrar sesión" danger onPress={() => { onClose(); onLogout() }} />
+        </View>
       </SafeAreaView>
       <Pressable style={styles.dismiss} onPress={onClose} />
     </View>
@@ -45,6 +48,7 @@ const styles = StyleSheet.create({
   overlay: { flex: 1, flexDirection: 'row', backgroundColor: 'rgba(15,23,42,.45)' },
   drawer: { width: '82%', maxWidth: 340, backgroundColor: '#fff', paddingTop: 16 },
   menu: { flex: 1 },
+  logout: { paddingBottom: 12, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#e2e8f0' },
   dismiss: { flex: 1 },
   profile: { flexDirection: 'row', alignItems: 'center', padding: 20, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#cbd5e1' },
   avatar: { width: 64, height: 64, borderRadius: 32 },

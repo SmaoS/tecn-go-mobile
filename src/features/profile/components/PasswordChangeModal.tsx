@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Modal, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { Button, colors, styles } from '../../../components/UI'
 import { SecureField } from '../../../components/SecureField'
 import { apiMessage } from '../../../shared/apiMessage'

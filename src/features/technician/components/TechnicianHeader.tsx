@@ -1,4 +1,5 @@
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { TechnicianAvailabilitySwitch } from './TechnicianAvailabilitySwitch'
 
 export function TechnicianHeader({ available, loading, onAvailabilityChange, onMenu }: {
@@ -7,7 +8,7 @@ export function TechnicianHeader({ available, loading, onAvailabilityChange, onM
   onAvailabilityChange: (available: boolean) => void
   onMenu: () => void
 }) {
-  return <SafeAreaView style={styles.safe}>
+  return <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
     <View style={styles.header}>
       <Pressable accessibilityLabel="Abrir menú" onPress={onMenu} style={styles.iconButton}>
         <Text style={styles.icon}>☰</Text>

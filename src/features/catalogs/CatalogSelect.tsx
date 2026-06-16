@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { FlatList, Modal, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import type { CatalogItem } from '../../types'
 
 export function CatalogSelect({ label, value, items = [], disabled = false, onChange }: {

@@ -45,9 +45,9 @@ export function AvailableRequestDetailModal({ request, radiusKm, onClose }: {
             <Text style={styles.category}>{request.categoryName}</Text>
           </View>
         </View>
-        <Text style={styles.sectionTitle}>Descripción</Text>
+        <Text style={styles.sectionTitle}>Descripción del servicio</Text>
         <Text style={styles.description}>{request.description}</Text>
-        <Text style={styles.sectionTitle}>Imágenes</Text>
+        <Text style={styles.sectionTitle}>Imágenes del servicio</Text>
         {request.images?.length
           ? <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {request.images.map((image) => <Pressable key={image.id} onPress={() => setLargeImage(image.imageUrl)}>

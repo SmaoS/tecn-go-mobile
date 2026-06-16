@@ -41,6 +41,8 @@ class LocationTrackingService {
   private async createSubscription() {
     const permission = await Location.requestForegroundPermissionsAsync()
     if (!permission.granted) throw new Error('Debes permitir la ubicación para aparecer disponible')
+    const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
+    await this.updateBackendLocation(current, true)
     this.subscription = await Location.watchPositionAsync({
       accuracy: Location.Accuracy.Balanced,
       timeInterval: 10_000,

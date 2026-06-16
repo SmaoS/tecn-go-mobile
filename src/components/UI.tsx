@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { ActivityIndicator, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native'
+import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export const colors = { bg: '#020617', card: '#0f172a', border: '#1e293b', text: '#f8fafc', muted: '#94a3b8', brand: '#22d3ee', dark: '#083344', danger: '#fb7185' }
 
