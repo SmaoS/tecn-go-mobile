@@ -62,13 +62,11 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       <Field placeholder="Dirección domicilio" value={current.homeAddress ?? ''} onChangeText={(homeAddress) => update({ homeAddress })} />
       <Text style={styles.label}>Barrio</Text>
       <Field placeholder="Barrio" value={current.homeNeighborhood ?? ''} onChangeText={(homeNeighborhood) => update({ homeNeighborhood })} />
-      <Button title={current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'} onPress={useHomeGps} loading={location.isLocating} />
-      <Button title={current.profilePhotoUrl ? 'Foto de perfil cargada' : 'Subir foto de perfil'} onPress={() => profileImage.mutate(undefined, { onSuccess: (url) => update({ profilePhotoUrl: url ?? current.profilePhotoUrl }) })} loading={profileImage.isPending} />
+      <Button title={current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'} onPress={useHomeGps} loading={location.isLocating} />      
       {navigation && <Button title="Tomar foto de perfil con cámara" onPress={() => navigation.navigate('CaptureProfilePhoto')} />}
       <Button title={current.documentPhotoUrl ? 'Documento cargado' : 'Subir documento obligatorio'} onPress={() => document.mutate('DOCUMENT', { onSuccess: (url) => update({ documentPhotoUrl: url ?? current.documentPhotoUrl }) })} loading={document.isPending} />
       {(notice || location.error || save.error || profileImage.error || document.error) && <Text style={(save.error || profileImage.error || document.error) ? styles.error : styles.muted}>{save.error || profileImage.error || document.error ? apiMessage(save.error ?? profileImage.error ?? document.error) : location.error || notice}</Text>}
-      <Button title="Guardar perfil" onPress={submit} loading={save.isPending} />
-      {navigation && <Button title="Seguridad, términos y datos" onPress={() => navigation.navigate('Legal')} />}
+      <Button title="Guardar perfil" onPress={submit} loading={save.isPending} />      
       {!current.emailVerified && <Button title="Verificar correo" loading={verifyEmail.isPending} onPress={() => verifyEmail.mutate(undefined, { onSuccess: () => setNotice('Correo de verificación enviado'), onError: (error) => setNotice(apiMessage(error)) })} />}</>}
       <Button title="Modificar contraseña" onPress={() => setPasswordModal(true)} />
   </QueryState><Button title="Cerrar sesión" onPress={onLogout} />
