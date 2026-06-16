@@ -18,6 +18,8 @@ import { CaptureProfilePhotoScreen } from '../features/profile/screens/CapturePr
 import { ClientRequestHistoryScreen } from '../features/service-requests/screens/RequestHistoryScreen'
 import { EmailConfirmationRequiredScreen } from '../features/onboarding/screens/EmailConfirmationRequiredScreen'
 import { OnboardingRequiredScreen } from '../features/onboarding/screens/OnboardingRequiredScreen'
+import { CaptureSelfieScreen } from '../features/onboarding/screens/CaptureSelfieScreen'
+import { CaptureIdentityDocumentScreen } from '../features/onboarding/screens/CaptureIdentityDocumentScreen'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
@@ -29,6 +31,8 @@ export function ClientNavigator() {
     <Stack.Screen name="ClientPayments" component={ClientPaymentsScreen} options={{ title: 'Pagos' }} />
     <Stack.Screen name="EmailConfirmationRequired" component={EmailConfirmationRequiredScreen} options={{ title: 'Confirma tu correo' }} />
     <Stack.Screen name="OnboardingRequired" component={OnboardingRequiredScreen} options={{ title: 'Inscripción' }} />
+    <Stack.Screen name="CaptureSelfie" component={CaptureSelfieScreen} options={{ title: 'Selfie de perfil' }} />
+    <Stack.Screen name="CaptureIdentityDocument" component={CaptureIdentityDocumentScreen} options={{ title: 'Documento' }} />
     <Stack.Screen name="RequestService" component={CreateRequestScreen} options={{ title: 'Solicitar servicio' }} />
     <Stack.Screen name="NearbyTechnicians" component={NearbyTechniciansScreen} options={{ title: 'Cerca de ti' }} />
     <Stack.Screen name="RequestDetail" component={RequestDetailScreen} options={{ title: 'Solicitud' }} />

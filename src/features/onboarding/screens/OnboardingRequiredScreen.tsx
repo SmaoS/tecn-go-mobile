@@ -10,7 +10,7 @@ import { apiMessage } from '../../../shared/apiMessage'
 import { CatalogSelect } from '../../catalogs/CatalogSelect'
 import { useCities, useCountries, useDepartments } from '../../catalogs/hooks'
 import { useProfile } from '../../profile/hooks'
-import { pickAndUploadEvidence, pickAndUploadImageAsset } from '../../../services/files'
+import { pickAndUploadEvidence, pickAndUploadImageAsset, uploadAsset } from '../../../services/files'
 import { onboardingApi, type DocumentType, type OnboardingMainData } from '../api'
 
 const labels: Record<string, string> = {
@@ -19,10 +19,10 @@ const labels: Record<string, string> = {
   PROFILE_SELFIE: 'Foto de perfil',
   IDENTITY_DOCUMENT: 'Documento de identidad',
   TECHNICIAN_CERTIFICATE: 'Certificado técnico opcional',
-  COMPLETED: 'Finalizar inscripción',
+  COMPLETED: 'Inscripción lista',
 }
 
-export function OnboardingRequiredScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'OnboardingRequired'>) {
+export function OnboardingRequiredScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'OnboardingRequired'>) {
   const queryClient = useQueryClient()
   const { session } = useSession()
   const profile = useProfile()
@@ -46,6 +46,8 @@ export function OnboardingRequiredScreen({ navigation }: NativeStackScreenProps<
   const [backUrl, setBackUrl] = useState('')
   const [singleUrl, setSingleUrl] = useState('')
   const [certificateUrl, setCertificateUrl] = useState('')
+  const [processedSelfieUri, setProcessedSelfieUri] = useState<string>()
+  const [processedDocumentKey, setProcessedDocumentKey] = useState<string>()
 
   useEffect(() => {
     if (!profile.data) return
@@ -69,15 +71,58 @@ export function OnboardingRequiredScreen({ navigation }: NativeStackScreenProps<
   const documentMutation = useMutation({ mutationFn: onboardingApi.identityDocument, onSuccess: refresh })
   const certificateMutation = useMutation({ mutationFn: onboardingApi.certificate, onSuccess: refresh })
   const skipCertificate = useMutation({ mutationFn: onboardingApi.skipCertificate, onSuccess: refresh })
-  const complete = useMutation({
-    mutationFn: onboardingApi.complete,
-    onSuccess: () => navigation.navigate(session?.role === 'TECHNICIAN' ? 'AvailableRequests' : 'Home'),
-  })
   const pending = mainMutation.isPending || legalMutation.isPending || selfieMutation.isPending
-    || documentMutation.isPending || certificateMutation.isPending || skipCertificate.isPending || complete.isPending
+    || documentMutation.isPending || certificateMutation.isPending || skipCertificate.isPending
   const error = mainMutation.error || legalMutation.error || selfieMutation.error || documentMutation.error
-    || certificateMutation.error || skipCertificate.error || complete.error || status.error
+    || certificateMutation.error || skipCertificate.error || status.error
   const step = status.data?.currentStep ?? 'MAIN_DATA'
+
+  useEffect(() => {
+    if (status.data?.onboardingCompleted) {
+      navigation.reset({ index: 0, routes: [{ name: session?.role === 'TECHNICIAN' ? 'AvailableRequests' : 'Home' }] })
+    }
+  }, [navigation, session?.role, status.data?.onboardingCompleted])
+
+  useEffect(() => {
+    const selfieUri = route.params?.selfieUri
+    if (!selfieUri || processedSelfieUri === selfieUri || selfieMutation.isPending) return
+    setProcessedSelfieUri(selfieUri)
+    void uploadAsset({ uri: selfieUri, name: `selfie-${Date.now()}.jpg`, mimeType: 'image/jpeg' }, 'PROFILE')
+      .then((url) => selfieMutation.mutate({
+        profilePhotoUrl: url,
+        faceDetectionStatus: route.params?.faceDetectionStatus ?? 'MANUAL_REVIEW_REQUIRED',
+      }))
+      .catch((err) => Alert.alert('No fue posible cargar la selfie', apiMessage(err)))
+  }, [processedSelfieUri, route.params?.faceDetectionStatus, route.params?.selfieUri, selfieMutation])
+
+  useEffect(() => {
+    const frontUri = route.params?.documentFrontUri
+    const backUri = route.params?.documentBackUri
+    const singleUri = route.params?.documentSingleUri
+    const key = `${frontUri ?? ''}|${backUri ?? ''}|${singleUri ?? ''}`
+    if ((!singleUri && (!frontUri || !backUri)) || processedDocumentKey === key || documentMutation.isPending) return
+    setProcessedDocumentKey(key)
+    async function uploadDocuments() {
+      if (singleUri) {
+        const single = await uploadAsset({ uri: singleUri, name: `passport-${Date.now()}.jpg`, mimeType: 'image/jpeg' }, 'DOCUMENT')
+        documentMutation.mutate({
+          documentType: 'PASSPORT',
+          documentSingleUrl: single,
+          identityDocumentCaptureStatus: route.params?.identityDocumentCaptureStatus ?? 'MANUAL_REVIEW_REQUIRED',
+        })
+      } else if (frontUri && backUri) {
+        const front = await uploadAsset({ uri: frontUri, name: `document-front-${Date.now()}.jpg`, mimeType: 'image/jpeg' }, 'DOCUMENT')
+        const back = await uploadAsset({ uri: backUri, name: `document-back-${Date.now()}.jpg`, mimeType: 'image/jpeg' }, 'DOCUMENT')
+        documentMutation.mutate({
+          documentType: 'CC',
+          documentFrontUrl: front,
+          documentBackUrl: back,
+          identityDocumentCaptureStatus: route.params?.identityDocumentCaptureStatus ?? 'MANUAL_REVIEW_REQUIRED',
+        })
+      }
+    }
+    void uploadDocuments().catch((err) => Alert.alert('No fue posible cargar el documento', apiMessage(err)))
+  }, [documentMutation, processedDocumentKey, route.params?.documentBackUri, route.params?.documentFrontUri, route.params?.documentSingleUri, route.params?.identityDocumentCaptureStatus])
 
   async function pickImage(kind: 'PROFILE' | 'DOCUMENT' | 'CERTIFICATE', setUrl: (url: string) => void) {
     Alert.alert('Seleccionar archivo', 'Elige cómo quieres cargar la imagen.', [
@@ -127,24 +172,27 @@ export function OnboardingRequiredScreen({ navigation }: NativeStackScreenProps<
 
     {step === 'PROFILE_SELFIE' && <Card>
       <Text style={uiStyles.cardTitle}>Foto de perfil</Text>
-      <Text style={uiStyles.muted}>Carga una foto clara de tu rostro. Después quedará bloqueada para cambios directos.</Text>
+      <Text style={uiStyles.muted}>Ubica tu rostro dentro del óvalo. Después quedará bloqueada para cambios directos.</Text>
       <UploadStatus label="Selfie" ready={Boolean(profilePhotoUrl)} />
-      <Button title="Tomar o seleccionar foto" onPress={() => void pickImage('PROFILE', setProfilePhotoUrl)} />
-      <Button title="Guardar selfie" loading={pending} onPress={() => selfieMutation.mutate(profilePhotoUrl)} />
+      <Button title="Capturar selfie automáticamente" onPress={() => navigation.navigate('CaptureSelfie')} />
+      <Button title="Cargar desde galería" onPress={() => void pickImage('PROFILE', setProfilePhotoUrl)} />
+      <Button title="Guardar selfie" loading={pending} onPress={() => selfieMutation.mutate({ profilePhotoUrl, faceDetectionStatus: 'MANUAL_REVIEW_REQUIRED' })} />
     </Card>}
 
     {step === 'IDENTITY_DOCUMENT' && <Card>
       <Text style={uiStyles.cardTitle}>{main.documentType === 'CC' ? 'Cédula de ciudadanía' : 'Pasaporte'}</Text>
       {main.documentType === 'CC' ? <>
         <UploadStatus label="Frente" ready={Boolean(frontUrl)} />
-        <Button title="Cargar frente" onPress={() => void pickDocument(setFrontUrl)} />
+        <Button title="Capturar frente y reverso automáticamente" onPress={() => navigation.navigate('CaptureIdentityDocument', { documentType: 'CC' })} />
+        <Button title="Cargar frente desde galería/archivo" onPress={() => void pickDocument(setFrontUrl)} />
         <UploadStatus label="Reverso" ready={Boolean(backUrl)} />
-        <Button title="Cargar reverso" onPress={() => void pickDocument(setBackUrl)} />
-        <Button title="Guardar documento" loading={pending} onPress={() => documentMutation.mutate({ documentType: 'CC', documentFrontUrl: frontUrl, documentBackUrl: backUrl })} />
+        <Button title="Cargar reverso desde galería/archivo" onPress={() => void pickDocument(setBackUrl)} />
+        <Button title="Guardar documento" loading={pending} onPress={() => documentMutation.mutate({ documentType: 'CC', documentFrontUrl: frontUrl, documentBackUrl: backUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} />
       </> : <>
         <UploadStatus label="Página principal" ready={Boolean(singleUrl)} />
-        <Button title="Cargar pasaporte" onPress={() => void pickDocument(setSingleUrl)} />
-        <Button title="Guardar documento" loading={pending} onPress={() => documentMutation.mutate({ documentType: 'PASSPORT', documentSingleUrl: singleUrl })} />
+        <Button title="Capturar pasaporte automáticamente" onPress={() => navigation.navigate('CaptureIdentityDocument', { documentType: 'PASSPORT' })} />
+        <Button title="Cargar pasaporte desde galería/archivo" onPress={() => void pickDocument(setSingleUrl)} />
+        <Button title="Guardar documento" loading={pending} onPress={() => documentMutation.mutate({ documentType: 'PASSPORT', documentSingleUrl: singleUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} />
       </>}
     </Card>}
 
@@ -155,12 +203,6 @@ export function OnboardingRequiredScreen({ navigation }: NativeStackScreenProps<
       <Button title="Cargar certificado" onPress={() => void pickImage('CERTIFICATE', setCertificateUrl)} />
       <Button title="Guardar certificado" loading={pending} onPress={() => certificateMutation.mutate(certificateUrl)} />
       <Button title="No tengo certificado ahora" loading={pending} onPress={() => skipCertificate.mutate()} />
-    </Card>}
-
-    {step === 'COMPLETED' && <Card>
-      <Text style={uiStyles.cardTitle}>Inscripción lista</Text>
-      <Text style={uiStyles.muted}>Finaliza para entrar a TecnGo.</Text>
-      <Button title="Finalizar" loading={pending} onPress={() => complete.mutate()} />
     </Card>}
   </KeyboardAwareScreen>
 }

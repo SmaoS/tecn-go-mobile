@@ -15,6 +15,7 @@ async function upload(asset: UploadAsset, kind: 'PROFILE' | 'DOCUMENT' | 'CERTIF
 }
 
 export const uploadProfileAsset = (asset: UploadAsset) => upload(asset, 'PROFILE')
+export const uploadAsset = (asset: UploadAsset, kind: 'PROFILE' | 'DOCUMENT' | 'CERTIFICATE') => upload(asset, kind)
 
 export async function pickAndUploadImageAsset(kind: 'PROFILE' | 'DOCUMENT' | 'CERTIFICATE', source: 'camera' | 'gallery') {
   const permission = source === 'camera'

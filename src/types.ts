@@ -168,6 +168,8 @@ export interface UserProfile {
   documentFrontUrl?: string
   documentBackUrl?: string
   documentSingleUrl?: string
+  faceDetectionStatus?: 'AUTO_VALIDATED' | 'MANUAL_REVIEW_REQUIRED' | 'FAILED'
+  identityDocumentCaptureStatus?: 'AUTO_CAPTURED' | 'MANUAL_CAPTURED' | 'MANUAL_REVIEW_REQUIRED'
   certificatePhotoUrl?: string
   workExperienceDescription?: string
   averageRating: number
@@ -213,7 +215,16 @@ export type RootStackParamList = {
   ResetPassword: { token?: string } | undefined
   Home: undefined
   EmailConfirmationRequired: undefined
-  OnboardingRequired: undefined
+  OnboardingRequired: {
+    selfieUri?: string
+    faceDetectionStatus?: 'AUTO_VALIDATED' | 'MANUAL_REVIEW_REQUIRED' | 'FAILED'
+    documentFrontUri?: string
+    documentBackUri?: string
+    documentSingleUri?: string
+    identityDocumentCaptureStatus?: 'AUTO_CAPTURED' | 'MANUAL_CAPTURED' | 'MANUAL_REVIEW_REQUIRED'
+  } | undefined
+  CaptureSelfie: undefined
+  CaptureIdentityDocument: { documentType: 'CC' | 'PASSPORT' }
   ClientRequests: undefined
   ClientPayments: undefined
   RequestService: undefined

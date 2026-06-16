@@ -19,6 +19,8 @@ import { TechnicianEarningsScreen } from '../features/technician/screens/Technic
 import { TechnicianLocationController } from '../features/location/TechnicianLocationController'
 import { EmailConfirmationRequiredScreen } from '../features/onboarding/screens/EmailConfirmationRequiredScreen'
 import { OnboardingRequiredScreen } from '../features/onboarding/screens/OnboardingRequiredScreen'
+import { CaptureSelfieScreen } from '../features/onboarding/screens/CaptureSelfieScreen'
+import { CaptureIdentityDocumentScreen } from '../features/onboarding/screens/CaptureIdentityDocumentScreen'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
@@ -28,6 +30,8 @@ export function TechnicianNavigator() {
     <Stack.Screen name="TechnicianEntry" component={TechnicianEntryScreen} options={{ headerShown: false }} />
     <Stack.Screen name="EmailConfirmationRequired" component={EmailConfirmationRequiredScreen} options={{ title: 'Confirma tu correo' }} />
     <Stack.Screen name="OnboardingRequired" component={OnboardingRequiredScreen} options={{ title: 'Inscripción' }} />
+    <Stack.Screen name="CaptureSelfie" component={CaptureSelfieScreen} options={{ title: 'Selfie de perfil' }} />
+    <Stack.Screen name="CaptureIdentityDocument" component={CaptureIdentityDocumentScreen} options={{ title: 'Documento' }} />
     <Stack.Screen name="TechnicianHome" component={TechnicianHomeScreen} options={{ headerShown: false }} />
     <Stack.Screen name="TechnicianProfile" component={TechnicianProfileScreen} options={{ title: 'Perfil técnico' }} />
     <Stack.Screen name="AvailableRequests" component={AvailableRequestsScreen} options={{ title: 'Disponibles' }} />
