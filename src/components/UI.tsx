@@ -12,8 +12,8 @@ export function Field(props: TextInputProps) {
   return <TextInput placeholderTextColor={colors.muted} style={styles.field} {...props} />
 }
 
-export function Button({ title, onPress, loading }: { title: string; onPress: () => void; loading?: boolean }) {
-  return <Pressable disabled={loading} onPress={onPress} style={styles.button}>{loading ? <ActivityIndicator color={colors.bg} /> : <Text style={styles.buttonText}>{title}</Text>}</Pressable>
+export function Button({ title, onPress, loading, disabled }: { title: string; onPress: () => void; loading?: boolean; disabled?: boolean }) {
+  return <Pressable disabled={loading || disabled} onPress={onPress} style={[styles.button, disabled && styles.buttonDisabled]}>{loading ? <ActivityIndicator color={colors.bg} /> : <Text style={styles.buttonText}>{title}</Text>}</Pressable>
 }
 
 export function LoadingOverlay({ visible, text = 'Procesando...' }: { visible: boolean; text?: string }) {
@@ -32,6 +32,7 @@ export const styles = StyleSheet.create({
   label: { color: colors.text, fontWeight: '700', marginBottom: 8 },
   field: { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1, borderRadius: 14, color: colors.text, padding: 14, marginBottom: 12 },
   button: { backgroundColor: colors.brand, borderRadius: 14, padding: 15, alignItems: 'center', marginTop: 4 },
+  buttonDisabled: { opacity: 0.45 },
   buttonText: { color: colors.bg, fontWeight: '800', fontSize: 16 },
   link: { color: colors.brand, textAlign: 'center', padding: 14 },
   error: { color: colors.danger, marginBottom: 10 },

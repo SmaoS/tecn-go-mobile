@@ -36,7 +36,7 @@ export function RequestDetailScreen({ route, navigation }: NativeStackScreenProp
     {!['COMPLETED', 'PAID', 'CANCELLED'].includes(item.status) && <Button title="Cancelar solicitud" onPress={() => action.mutate({ kind: 'status', status: 'CANCELLED' })} loading={action.isPending} />}
     {item.technicianId && <Button title="Abrir chat" onPress={() => navigation.navigate('Chat', { requestId: item.id })} />}
     <Button title="Evidencias, pagos y reportes" onPress={() => navigation.navigate('ServiceSupport', { requestId: item.id })} />
-    {item.status === 'COMPLETED' && <Button title="Confirmar pago en efectivo" onPress={() => action.mutate({ kind: 'payCash' })} loading={action.isPending} />}
+    {item.status === 'COMPLETED' && <Card><Text style={styles.cardTitle}>Pendiente de cierre</Text><Text style={styles.muted}>El técnico debe confirmar si recibió el pago para cerrar el servicio. Después ambos podrán calificar o reportar un problema.</Text></Card>}
     {item.status === 'PAID' && ratingStatus.data && !ratingStatus.data.rated && <Button title="Calificar servicio" onPress={() => navigation.navigate('Rating', { requestId: item.id })} />}
   </QueryState></KeyboardAwareScreen>
 }

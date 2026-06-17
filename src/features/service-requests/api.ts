@@ -19,5 +19,4 @@ export const serviceRequestApi = {
     api.post<ServiceRequest>(`/v1/service-requests/${requestId}/technician-complete`, input).then(({ data }) => data),
   confirmQuote: (requestId: string, quoteId: string) => api.put<ServiceRequest>(`/v1/service-requests/${requestId}/confirm-quote`, { quoteId }).then(({ data }) => data),
   rejectQuote: (requestId: string, quoteId: string) => api.put(`/v1/service-requests/${requestId}/quotes/${quoteId}/reject`),
-  payCash: (requestId: string) => api.post(`/v1/service-requests/${requestId}/payment/cash`),
 }

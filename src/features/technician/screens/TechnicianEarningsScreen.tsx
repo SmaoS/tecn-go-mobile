@@ -15,6 +15,8 @@ import { useUnreadNotifications } from '../../notifications/hooks'
 
 export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'TechnicianEarnings'>) {
   const [menu, setMenu] = useState(false)
+  const [showMovements, setShowMovements] = useState(false)
+  const [period, setPeriod] = useState<'week' | 'month'>('week')
   const [rechargeAmount, setRechargeAmount] = useState('10000')
   const earnings = useTechnicianEarnings()
   const { wallet, transactions } = useTechnicianWallet()
@@ -23,6 +25,8 @@ export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<
   const availability = useTechnicianAvailability()
   const { logout } = useSession()
   const unread = useUnreadNotifications()
+  const periodPayments = (earnings.data?.payments ?? []).filter((payment) => inPeriod(payment.createdAt, period))
+  const periodTotal = periodPayments.reduce((total, payment) => total + payment.technicianAmount, 0)
   return <View style={styles.screen}>
     <TechnicianHeader
       available={availability.data?.available ?? true}
@@ -61,19 +65,29 @@ export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<
               <Text style={styles.buttonText}>{recharge.isPending ? 'Creando recarga...' : 'Recargar con Wompi'}</Text>
             </Pressable>
           </View>
-          <Text style={styles.sectionTitle}>Movimientos de saldo</Text>
-          {transactions.data?.length === 0 && <Text style={styles.meta}>Aún no tienes movimientos.</Text>}
-          {transactions.data?.map((item) => <View key={item.id} style={styles.row}>
-            <View style={styles.rowContent}><Text style={styles.rowTitle}>{transactionLabel(item.type)}</Text><Text style={styles.meta}>{new Date(item.createdAt).toLocaleDateString()}</Text>{item.description && <Text style={styles.meta}>{item.description}</Text>}</View>
-            <Text style={[styles.rowAmount, item.amount < 0 && styles.negativeAmount]}>{formatCopCurrency(item.amount)}</Text>
-          </View>)}
+          <Pressable style={styles.secondaryButton} onPress={() => setShowMovements((value) => !value)}>
+            <Text style={styles.secondaryButtonText}>{showMovements ? 'Ocultar movimientos' : 'Ver movimientos de saldo'}</Text>
+          </Pressable>
+          {showMovements && <>
+            <Text style={styles.sectionTitle}>Movimientos de saldo</Text>
+            {transactions.data?.length === 0 && <Text style={styles.meta}>Aún no tienes movimientos.</Text>}
+            {transactions.data?.map((item) => <View key={item.id} style={styles.row}>
+              <View style={styles.rowContent}><Text style={styles.rowTitle}>{transactionLabel(item.type)}</Text><Text style={styles.meta}>{new Date(item.createdAt).toLocaleDateString()}</Text>{item.description && <Text style={styles.meta}>{item.description}</Text>}</View>
+              <Text style={[styles.rowAmount, item.amount < 0 && styles.negativeAmount]}>{formatCopCurrency(item.amount)}</Text>
+            </View>)}
+          </>}
         </>}
       </QueryState>
       <QueryState pending={earnings.isPending} error={earnings.error}>
         {earnings.data && <>
           <Text style={styles.sectionTitle}>Ganancias por servicios</Text>
-          <View style={styles.summary}><Text style={styles.label}>Total recibido</Text><Text style={styles.amount}>{formatCopCurrency(earnings.data.totalTechnicianAmount)}</Text><Text style={styles.meta}>{earnings.data.paymentCount} pagos registrados</Text></View>
-          {earnings.data.payments.map((payment) => <View key={payment.paymentId} style={styles.row}>
+          <View style={styles.periodSwitch}>
+            <Pressable style={[styles.periodButton, period === 'week' && styles.periodButtonActive]} onPress={() => setPeriod('week')}><Text style={[styles.periodText, period === 'week' && styles.periodTextActive]}>Semana</Text></Pressable>
+            <Pressable style={[styles.periodButton, period === 'month' && styles.periodButtonActive]} onPress={() => setPeriod('month')}><Text style={[styles.periodText, period === 'month' && styles.periodTextActive]}>Mes</Text></Pressable>
+          </View>
+          <View style={styles.summary}><Text style={styles.label}>{period === 'week' ? 'Total recibido esta semana' : 'Total recibido este mes'}</Text><Text style={styles.amount}>{formatCopCurrency(periodTotal)}</Text><Text style={styles.meta}>{periodPayments.length} pagos en el periodo · {earnings.data.paymentCount} pagos históricos</Text></View>
+          {periodPayments.length === 0 && <Text style={styles.meta}>No tienes ganancias registradas en este periodo.</Text>}
+          {periodPayments.map((payment) => <View key={payment.paymentId} style={styles.row}>
             <View><Text style={styles.rowTitle}>Servicio pagado</Text><Text style={styles.meta}>{new Date(payment.createdAt).toLocaleDateString()}</Text></View>
             <Text style={styles.rowAmount}>{formatCopCurrency(payment.technicianAmount)}</Text>
           </View>)}
@@ -103,8 +117,35 @@ const styles = StyleSheet.create({
   button: { alignItems: 'center', backgroundColor: '#06b6d4', borderRadius: 14, marginTop: 14, paddingVertical: 14 },
   buttonDisabled: { opacity: 0.45 },
   buttonText: { color: '#082f49', fontWeight: '900' },
+  secondaryButton: { alignItems: 'center', borderColor: '#0891b2', borderRadius: 14, borderWidth: 1, marginBottom: 14, paddingVertical: 13 },
+  secondaryButtonText: { color: '#0e7490', fontWeight: '900' },
+  periodSwitch: { backgroundColor: '#e2e8f0', borderRadius: 16, flexDirection: 'row', gap: 6, marginBottom: 12, padding: 4 },
+  periodButton: { flex: 1, alignItems: 'center', borderRadius: 12, paddingVertical: 10 },
+  periodButtonActive: { backgroundColor: '#fff' },
+  periodText: { color: '#64748b', fontWeight: '900' },
+  periodTextActive: { color: '#0e7490' },
   rowContent: { flex: 1, paddingRight: 10 },
 })
+
+function inPeriod(value: string, period: 'week' | 'month') {
+  const date = new Date(value)
+  const now = new Date()
+  if (Number.isNaN(date.getTime())) return false
+  if (period === 'month') return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth()
+  const start = startOfWeek(now)
+  const end = new Date(start)
+  end.setDate(start.getDate() + 7)
+  return date >= start && date < end
+}
+
+function startOfWeek(value: Date) {
+  const start = new Date(value)
+  start.setHours(0, 0, 0, 0)
+  const day = start.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  start.setDate(start.getDate() + diff)
+  return start
+}
 
 function transactionLabel(type: string) {
   const labels: Record<string, string> = {

@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, Card, Field, colors, styles as uiStyles } from '../../../components/UI'
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
 import type { RootStackParamList } from '../../../types'
 import { useSession } from '../../../context/useSession'
+import { SESSION_KEY } from '../../../api/client'
 import { apiMessage } from '../../../shared/apiMessage'
 import { CatalogSelect } from '../../catalogs/CatalogSelect'
 import { useCities, useCountries, useDepartments } from '../../catalogs/hooks'
@@ -24,9 +26,16 @@ const labels: Record<string, string> = {
 
 export function OnboardingRequiredScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'OnboardingRequired'>) {
   const queryClient = useQueryClient()
-  const { session } = useSession()
+  const { session, setSession } = useSession()
   const profile = useProfile()
-  const status = useQuery({ queryKey: ['onboarding-status'], queryFn: onboardingApi.status, refetchInterval: 10_000 })
+  const draftKey = session?.userId ? `tecngo.onboarding.main.${session.userId}` : undefined
+  const status = useQuery({
+    queryKey: ['onboarding-status'],
+    queryFn: onboardingApi.status,
+    refetchInterval: false,
+    refetchOnMount: true,
+    refetchOnReconnect: false,
+  })
   const [main, setMain] = useState<OnboardingMainData>({
     fullName: session?.fullName ?? '',
     phone: profile.data?.phone ?? '',
@@ -38,6 +47,7 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
     documentType: 'CC',
     documentNumber: '',
   })
+  const [draftLoaded, setDraftLoaded] = useState(false)
   const countries = useCountries()
   const departments = useDepartments(main.countryId)
   const cities = useCities(main.departmentId)
@@ -48,9 +58,27 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
   const [certificateUrl, setCertificateUrl] = useState('')
   const [processedSelfieUri, setProcessedSelfieUri] = useState<string>()
   const [processedDocumentKey, setProcessedDocumentKey] = useState<string>()
+  const step = status.data?.currentStep ?? 'MAIN_DATA'
 
   useEffect(() => {
-    if (!profile.data) return
+    if (!draftKey) {
+      setDraftLoaded(true)
+      return
+    }
+    AsyncStorage.getItem(draftKey)
+      .then((raw) => {
+        if (raw) setMain((current) => ({ ...current, ...JSON.parse(raw) as OnboardingMainData }))
+      })
+      .finally(() => setDraftLoaded(true))
+  }, [draftKey])
+
+  useEffect(() => {
+    if (!draftLoaded || !draftKey || step !== 'MAIN_DATA') return
+    void AsyncStorage.setItem(draftKey, JSON.stringify(main))
+  }, [draftKey, draftLoaded, main, step])
+
+  useEffect(() => {
+    if (!draftLoaded || !profile.data) return
     setMain((current) => ({
       ...current,
       phone: current.phone || profile.data.phone || '',
@@ -62,10 +90,16 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       documentType: current.documentType || profile.data.documentType || 'CC',
       documentNumber: current.documentNumber || profile.data.documentNumber || '',
     }))
-  }, [profile.data])
+  }, [draftLoaded, profile.data])
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['onboarding-status'] })
-  const mainMutation = useMutation({ mutationFn: onboardingApi.mainData, onSuccess: refresh })
+  const mainMutation = useMutation({
+    mutationFn: onboardingApi.mainData,
+    onSuccess: async () => {
+      if (draftKey) await AsyncStorage.removeItem(draftKey)
+      await refresh()
+    },
+  })
   const legalMutation = useMutation({ mutationFn: onboardingApi.legalAcceptance, onSuccess: refresh })
   const selfieMutation = useMutation({ mutationFn: onboardingApi.profileSelfie, onSuccess: refresh })
   const documentMutation = useMutation({ mutationFn: onboardingApi.identityDocument, onSuccess: refresh })
@@ -75,13 +109,17 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
     || documentMutation.isPending || certificateMutation.isPending || skipCertificate.isPending
   const error = mainMutation.error || legalMutation.error || selfieMutation.error || documentMutation.error
     || certificateMutation.error || skipCertificate.error || status.error
-  const step = status.data?.currentStep ?? 'MAIN_DATA'
 
   useEffect(() => {
     if (status.data?.onboardingCompleted) {
+      if (session && !session.onboardingCompleted) {
+        const next = { ...session, onboardingCompleted: true }
+        setSession(next)
+        void AsyncStorage.setItem(SESSION_KEY, JSON.stringify(next))
+      }
       navigation.reset({ index: 0, routes: [{ name: session?.role === 'TECHNICIAN' ? 'AvailableRequests' : 'Home' }] })
     }
-  }, [navigation, session?.role, status.data?.onboardingCompleted])
+  }, [navigation, session, setSession, status.data?.onboardingCompleted])
 
   useEffect(() => {
     const selfieUri = route.params?.selfieUri

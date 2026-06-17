@@ -26,7 +26,12 @@ const Stack = createNativeStackNavigator<RootStackParamList>()
 
 export function TechnicianNavigator() {
   const { session, logout } = useSession()
-  return <><TechnicianLocationController /><Stack.Navigator initialRouteName="TechnicianEntry">
+  const initialRoute = !session?.emailVerified
+    ? 'EmailConfirmationRequired'
+    : !session.onboardingCompleted
+      ? 'OnboardingRequired'
+      : 'TechnicianEntry'
+  return <>{session?.onboardingCompleted && <TechnicianLocationController />}<Stack.Navigator initialRouteName={initialRoute}>
     <Stack.Screen name="TechnicianEntry" component={TechnicianEntryScreen} options={{ headerShown: false }} />
     <Stack.Screen name="EmailConfirmationRequired" component={EmailConfirmationRequiredScreen} options={{ title: 'Confirma tu correo' }} />
     <Stack.Screen name="OnboardingRequired" component={OnboardingRequiredScreen} options={{ title: 'Inscripción' }} />

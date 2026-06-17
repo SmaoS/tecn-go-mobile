@@ -131,12 +131,10 @@ export function useRequestAction(requestId: string) {
     mutationFn: async (input:
       | { kind: 'confirmQuote'; quoteId: string }
       | { kind: 'rejectQuote'; quoteId: string }
-      | { kind: 'status'; status: string }
-      | { kind: 'payCash' }) => {
+      | { kind: 'status'; status: string }) => {
       if (input.kind === 'confirmQuote') await serviceRequestApi.confirmQuote(requestId, input.quoteId)
       else if (input.kind === 'rejectQuote') await serviceRequestApi.rejectQuote(requestId, input.quoteId)
-      else if (input.kind === 'status') await serviceRequestApi.status(requestId, input.status)
-      else await serviceRequestApi.payCash(requestId)
+      else await serviceRequestApi.status(requestId, input.status)
     },
     onSuccess: async () => {
       await Promise.all([

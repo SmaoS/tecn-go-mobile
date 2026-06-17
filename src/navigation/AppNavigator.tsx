@@ -34,8 +34,13 @@ export function AppNavigator() {
     if (!session) return
     setOperationBlockedHandler((code) => {
       if (!navigationRef.isReady()) return
-      if (code === 'EMAIL_NOT_VERIFIED') navigationRef.navigate('EmailConfirmationRequired')
-      if (code === 'ONBOARDING_REQUIRED') navigationRef.navigate('OnboardingRequired')
+      const current = navigationRef.getCurrentRoute()?.name
+      if (code === 'EMAIL_NOT_VERIFIED' && current !== 'EmailConfirmationRequired') {
+        navigationRef.navigate('EmailConfirmationRequired')
+      }
+      if (code === 'ONBOARDING_REQUIRED' && current !== 'OnboardingRequired') {
+        navigationRef.navigate('OnboardingRequired')
+      }
     })
     return addNotificationListeners((data) => {
       if (!navigationRef.isReady()) return

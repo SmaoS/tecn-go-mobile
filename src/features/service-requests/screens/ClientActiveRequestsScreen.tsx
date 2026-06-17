@@ -32,10 +32,12 @@ export function ClientActiveRequestsScreen({ navigation }: NativeStackScreenProp
       <QueryState pending={requests.isPending} error={requests.error} empty={requests.data?.length === 0} emptyText="No tienes solicitudes activas.">
         <View style={screenStyles.grid}>
           {requests.data?.map((item) => <Pressable key={item.id} style={{ width: cardWidth }} onPress={() => navigation.navigate('RequestDetail', { request: item })}>
-            <Card style={{ height: '100%' }}>
-              <Text style={uiStyles.cardTitle}>{item.categoryName}</Text>
-              <Text style={uiStyles.muted}>{item.description}</Text>
-              <Text style={[uiStyles.muted, { color: colors.brand }]}>{requestStatusLabels[item.status]}</Text>
+            <Card style={screenStyles.compactCard}>
+              <View style={screenStyles.cardHeader}>
+                <Text style={uiStyles.cardTitle} numberOfLines={1}>{item.categoryName}</Text>
+                <Text style={screenStyles.statusText}>{requestStatusLabels[item.status]}</Text>
+              </View>
+              <Text style={uiStyles.muted} numberOfLines={2}>{item.description}</Text>
               {item.finalPrice != null && <Text style={uiStyles.cardTitle}>${item.finalPrice.toLocaleString()}</Text>}
             </Card>
           </Pressable>)}
@@ -53,4 +55,7 @@ const screenStyles = StyleSheet.create({
   title: { color: '#0f172a', fontSize: 25, fontWeight: '900' },
   subtitle: { color: '#64748b', fontSize: 12, marginTop: 4, marginBottom: 16 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  compactCard: { padding: 12, marginBottom: 0 },
+  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, justifyContent: 'space-between' },
+  statusText: { color: colors.brand, fontSize: 11, fontWeight: '900', maxWidth: 110, textAlign: 'right' },
 })

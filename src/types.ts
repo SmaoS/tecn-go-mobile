@@ -11,6 +11,7 @@ export interface Session {
   emailVerified: boolean
   phoneVerified: boolean
   documentsVerified: boolean
+  onboardingCompleted: boolean
 }
 
 export interface Category {

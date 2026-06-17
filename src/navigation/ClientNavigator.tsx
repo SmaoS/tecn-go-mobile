@@ -25,7 +25,12 @@ const Stack = createNativeStackNavigator<RootStackParamList>()
 
 export function ClientNavigator() {
   const { session, logout } = useSession()
-  return <Stack.Navigator>
+  const initialRoute = !session?.emailVerified
+    ? 'EmailConfirmationRequired'
+    : !session.onboardingCompleted
+      ? 'OnboardingRequired'
+      : 'Home'
+  return <Stack.Navigator initialRouteName={initialRoute}>
     <Stack.Screen name="Home" component={ClientHomeScreen} options={{ headerShown: false }} />
     <Stack.Screen name="ClientRequests" component={ClientActiveRequestsScreen} options={{ headerShown: false }} />
     <Stack.Screen name="ClientPayments" component={ClientPaymentsScreen} options={{ title: 'Pagos' }} />

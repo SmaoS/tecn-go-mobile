@@ -26,6 +26,7 @@ export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStac
   const { logout } = useSession()
   const { width } = useWindowDimensions()
   const cardWidth = width >= 700 ? '48.5%' : '100%'
+  const recentRequests = (requests.data ?? []).slice(0, 5)
   return <View style={screenStyles.screen}>
     <ClientHeader unread={unread.data ?? 0} onMenu={() => setMenu(true)} onNotifications={() => navigation.navigate('Notifications')} />
     <ScrollView contentContainerStyle={screenStyles.content}>
@@ -36,18 +37,19 @@ export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStac
       {(recentQuotes.data?.length ?? 0) > 0 && <><Text style={screenStyles.sectionLabel}>Cotizaciones recientes</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {recentQuotes.data?.map(({ request, quote }) => <Pressable key={quote.id} style={{ width: cardWidth }} onPress={() => navigation.navigate('RequestDetail', { request })}>
-          <Card style={{ height: '100%' }}><View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+          <Card style={screenStyles.compactCard}><View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
             {quote.technicianProfilePhotoUrl
-              ? <PrivateImage url={quote.technicianProfilePhotoUrl} style={{ width: 52, height: 52, borderRadius: 26 }} />
-              : <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center' }}><Text style={styles.cardTitle}>{quote.technicianName.charAt(0)}</Text></View>}
-            <View style={{ flex: 1 }}><Text style={styles.cardTitle}>{quote.technicianName}</Text><Text style={styles.muted}>{request.categoryName}</Text><Text style={[styles.cardTitle, { color: colors.brand }]}>${quote.price.toLocaleString()}</Text></View>
+              ? <PrivateImage url={quote.technicianProfilePhotoUrl} style={{ width: 44, height: 44, borderRadius: 22 }} />
+              : <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center' }}><Text style={styles.cardTitle}>{quote.technicianName.charAt(0)}</Text></View>}
+            <View style={{ flex: 1 }}><Text style={styles.cardTitle} numberOfLines={1}>{quote.technicianName}</Text><Text style={styles.muted} numberOfLines={1}>{request.categoryName}</Text><Text style={[styles.cardTitle, { color: colors.brand }]}>${quote.price.toLocaleString()}</Text></View>
           </View></Card>
         </Pressable>)}
       </View>
     </>}
     <Text style={screenStyles.sectionLabel}>Solicitudes recientes</Text>
     <QueryState pending={requests.isPending || (hasPendingQuoteRequests && recentQuotes.isPending)} error={requests.error ?? recentQuotes.error ?? unread.error} empty={requests.data?.length === 0} emptyText="Aún no tienes solicitudes.">
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>{requests.data?.map((item) => <Pressable key={item.id} style={{ width: cardWidth }} onPress={() => navigation.navigate('RequestDetail', { request: item })}><Card style={{ height: '100%' }}><Text style={styles.cardTitle}>{item.categoryName}</Text><Text style={styles.muted}>{item.description}</Text><Text style={[styles.muted, { color: colors.brand }]}>{requestStatusLabels[item.status]}</Text></Card></Pressable>)}</View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>{recentRequests.map((item) => <Pressable key={item.id} style={{ width: cardWidth }} onPress={() => navigation.navigate('RequestDetail', { request: item })}><Card style={screenStyles.compactCard}><View style={screenStyles.cardHeader}><Text style={styles.cardTitle} numberOfLines={1}>{item.categoryName}</Text><Text style={screenStyles.statusText}>{requestStatusLabels[item.status]}</Text></View><Text style={styles.muted} numberOfLines={2}>{item.description}</Text>{item.finalPrice != null && <Text style={screenStyles.price}>${item.finalPrice.toLocaleString()}</Text>}</Card></Pressable>)}</View>
+      {(requests.data?.length ?? 0) > recentRequests.length && <Pressable onPress={() => navigation.navigate('ClientRequests')}><Text style={screenStyles.viewAll}>Ver todas mis solicitudes</Text></Pressable>}
     </QueryState>
     </ScrollView>
     <ClientFooter active="request" onSelect={(tab) => navigation.navigate(tab === 'request' ? 'Home' : 'ClientRequests')} />
@@ -62,4 +64,9 @@ const screenStyles = StyleSheet.create({
   subtitle: { color: '#64748b', fontSize: 14, marginBottom: 18 },
   nearby: { color: '#0e7490', fontWeight: '900', textAlign: 'center', paddingVertical: 16 },
   sectionLabel: { color: '#0f172a', fontWeight: '900', marginTop: 18, marginBottom: 10 },
+  compactCard: { padding: 12, marginBottom: 0 },
+  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, justifyContent: 'space-between' },
+  statusText: { color: '#0e7490', fontSize: 11, fontWeight: '900', maxWidth: 110, textAlign: 'right' },
+  price: { color: '#0f172a', fontWeight: '900', marginTop: 6 },
+  viewAll: { color: '#0e7490', fontWeight: '900', paddingVertical: 14, textAlign: 'center' },
 })

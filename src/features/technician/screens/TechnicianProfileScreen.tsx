@@ -45,6 +45,7 @@ export function TechnicianProfileScreen() {
       departmentId: data.departmentId ?? '', cityId: data.cityId ?? '',
     })
   }, [profile.data])
+  
   const save = useSaveTechnicianProfile(Boolean(profile.data))
   async function useGps() {
     const coordinates = await location.getCurrent()

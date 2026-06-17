@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pressable, Text } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, Field, styles } from '../../../components/UI'
 import { SecureField } from '../../../components/SecureField'
@@ -17,10 +17,11 @@ export function LoginScreen({ navigation, onSession }: Props) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const login = useLogin(onSession)
+  const canLogin = email.trim().length > 0 && password.length > 0
   return <KeyboardAwareScreen><Text style={styles.title}>TecnGo</Text><Text style={styles.subtitle}>Ayuda técnica cerca de ti.</Text>
     <Field autoCapitalize="none" keyboardType="email-address" placeholder="Correo" value={email} onChangeText={setEmail} />
     <SecureField placeholder="Contraseña" value={password} onChangeText={setPassword} />
-    {login.error && <Text style={styles.error}>{apiMessage(login.error)}</Text>}<Button title="Ingresar" onPress={() => login.mutate({ email, password })} loading={login.isPending} />
+    {login.error && <Text style={styles.error}>{apiMessage(login.error)}</Text>}<Button title="Ingresar" onPress={() => login.mutate({ email: email.trim(), password })} loading={login.isPending} disabled={!canLogin} />
     <Pressable onPress={() => navigation.navigate('ForgotPassword')}><Text style={styles.link}>¿Olvidaste tu contraseña?</Text></Pressable>
     <Pressable onPress={() => navigation.navigate('Register')}><Text style={styles.link}>Crear una cuenta</Text></Pressable>
   </KeyboardAwareScreen>
@@ -32,10 +33,12 @@ export function RegisterScreen({ navigation, onSession }: Props) {
   const [referralCode, setReferralCode] = useState('')
   const [referralMessage, setReferralMessage] = useState('')
   const register = useRegister(onSession)
-  return <KeyboardAwareScreen><Text style={styles.title}>Crea tu cuenta</Text><Text style={styles.subtitle}>Solicita tu primer servicio en minutos.</Text>
+  return <KeyboardAwareScreen contentContainerStyle={authStyles.registerContent} keyboardVerticalOffset={20}><Text style={styles.title}>Crea tu cuenta</Text><Text style={styles.subtitle}>Solicita tu primer servicio en minutos.</Text>
     <Text style={styles.label}>Tipo de cuenta</Text>
-    <Pressable onPress={() => setRole('CLIENT')}><Text style={[styles.link, role === 'CLIENT' && { fontWeight: '800' }]}>Cliente {role === 'CLIENT' ? '✓' : ''}</Text></Pressable>
-    <Pressable onPress={() => setRole('TECHNICIAN')}><Text style={[styles.link, role === 'TECHNICIAN' && { fontWeight: '800' }]}>Técnico {role === 'TECHNICIAN' ? '✓' : ''}</Text></Pressable>
+    <View style={authStyles.roleRow}>
+      <Pressable style={[authStyles.roleButton, role === 'CLIENT' && authStyles.roleButtonActive]} onPress={() => setRole('CLIENT')}><Text style={[authStyles.roleText, role === 'CLIENT' && authStyles.roleTextActive]}>Cliente {role === 'CLIENT' ? '✓' : ''}</Text></Pressable>
+      <Pressable style={[authStyles.roleButton, role === 'TECHNICIAN' && authStyles.roleButtonActive]} onPress={() => setRole('TECHNICIAN')}><Text style={[authStyles.roleText, role === 'TECHNICIAN' && authStyles.roleTextActive]}>Técnico {role === 'TECHNICIAN' ? '✓' : ''}</Text></Pressable>
+    </View>
     <Field placeholder="Nombre completo" value={form.fullName} onChangeText={(fullName) => setForm({ ...form, fullName })} />
     <Field autoCapitalize="none" keyboardType="email-address" placeholder="Correo" value={form.email} onChangeText={(email) => setForm({ ...form, email })} />
     <SecureField placeholder="Contraseña" value={form.password} onChangeText={(password) => setForm({ ...form, password })} />
@@ -53,6 +56,15 @@ export function RegisterScreen({ navigation, onSession }: Props) {
     <Pressable onPress={() => navigation.navigate('Login')}><Text style={styles.link}>Ya tengo cuenta</Text></Pressable>
   </KeyboardAwareScreen>
 }
+
+const authStyles = StyleSheet.create({
+  registerContent: { paddingBottom: 220 },
+  roleRow: { flexDirection: 'row', gap: 10, marginBottom: 12 },
+  roleButton: { flex: 1, borderColor: '#1e293b', borderRadius: 14, borderWidth: 1, paddingVertical: 12 },
+  roleButtonActive: { borderColor: '#22d3ee', backgroundColor: '#083344' },
+  roleText: { color: '#94a3b8', fontWeight: '800', textAlign: 'center' },
+  roleTextActive: { color: '#22d3ee' },
+})
 
 export function ForgotPasswordScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'ForgotPassword'>) {
   const [email, setEmail] = useState('')
