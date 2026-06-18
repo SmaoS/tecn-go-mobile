@@ -3,7 +3,7 @@ import { api } from '../../api/client'
 export interface OnboardingStatus {
   emailVerified: boolean
   onboardingCompleted: boolean
-  currentStep: 'MAIN_DATA' | 'LEGAL_ACCEPTANCE' | 'PROFILE_SELFIE' | 'IDENTITY_DOCUMENT' | 'TECHNICIAN_CERTIFICATE' | 'COMPLETED'
+  currentStep: 'MAIN_DATA' | 'LEGAL_ACCEPTANCE' | 'PROFILE_SELFIE' | 'IDENTITY_DOCUMENT' | 'TECHNICIAN_PROFESSIONAL_PROFILE' | 'TECHNICIAN_CERTIFICATE' | 'COMPLETED'
   requiredSteps: string[]
   nextScreen?: 'HOME'
 }
@@ -35,6 +35,8 @@ export const onboardingApi = {
   legalAcceptance: () => api.post('/v1/users/me/onboarding/legal-acceptance'),
   profileSelfie: (payload: { profilePhotoUrl: string; faceDetectionStatus?: FaceDetectionStatus }) => api.post<OnboardingStatus>('/v1/users/me/onboarding/profile-selfie', payload).then(({ data }) => data),
   identityDocument: (payload: IdentityDocumentPayload) => api.post('/v1/users/me/onboarding/identity-document', payload),
+  professionalProfile: (payload: { categoryIds: string[]; workExperienceDescription: string }) =>
+    api.put<OnboardingStatus>('/v1/technicians/me/onboarding/professional-profile', payload).then(({ data }) => data),
   certificate: (certificateUrl: string) => api.post('/v1/technicians/me/onboarding/certificate', { certificateUrl }),
   skipCertificate: () => api.post('/v1/technicians/me/onboarding/skip-certificate'),
   complete: () => api.put('/v1/users/me/onboarding/complete'),

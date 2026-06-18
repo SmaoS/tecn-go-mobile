@@ -41,6 +41,7 @@ export interface ServiceRequest {
   technicianCompletedServicesCount: number
   technicianExperienceDescription?: string
   technicianCategories: string[]
+  certifiedTechnician?: boolean
   categoryId: string
   categoryName: string
   description: string
@@ -81,6 +82,7 @@ export interface ServiceQuote {
   technicianCompletedServicesCount: number
   technicianExperienceDescription?: string
   technicianCategories: string[]
+  certifiedTechnician?: boolean
   price: number
   description?: string
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED' | 'CANCELLED'

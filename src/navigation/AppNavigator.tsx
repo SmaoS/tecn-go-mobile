@@ -38,7 +38,8 @@ export function AppNavigator() {
       if (code === 'EMAIL_NOT_VERIFIED' && current !== 'EmailConfirmationRequired') {
         navigationRef.navigate('EmailConfirmationRequired')
       }
-      if (code === 'ONBOARDING_REQUIRED' && current !== 'OnboardingRequired') {
+      if ((code === 'ONBOARDING_REQUIRED' || code === 'TECHNICIAN_PROFILE_INCOMPLETE')
+          && current !== 'OnboardingRequired') {
         navigationRef.navigate('OnboardingRequired')
       }
     })

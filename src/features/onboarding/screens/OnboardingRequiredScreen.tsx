@@ -14,12 +14,14 @@ import { useCities, useCountries, useDepartments } from '../../catalogs/hooks'
 import { useProfile } from '../../profile/hooks'
 import { pickAndUploadEvidence, pickAndUploadImageAsset, uploadAsset } from '../../../services/files'
 import { onboardingApi, type DocumentType, type OnboardingMainData } from '../api'
+import { TechnicianProfessionalProfileOnboardingScreen } from './TechnicianProfessionalProfileOnboardingScreen'
 
 const labels: Record<string, string> = {
   MAIN_DATA: 'Datos principales',
   LEGAL_ACCEPTANCE: 'Documentos legales',
   PROFILE_SELFIE: 'Foto de perfil',
   IDENTITY_DOCUMENT: 'Documento de identidad',
+  TECHNICIAN_PROFESSIONAL_PROFILE: 'Perfil profesional',
   TECHNICIAN_CERTIFICATE: 'Certificado técnico opcional',
   COMPLETED: 'Inscripción lista',
 }
@@ -233,6 +235,9 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
         <Button title="Guardar documento" loading={pending} onPress={() => documentMutation.mutate({ documentType: 'PASSPORT', documentSingleUrl: singleUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} />
       </>}
     </Card>}
+
+    {step === 'TECHNICIAN_PROFESSIONAL_PROFILE'
+      && <TechnicianProfessionalProfileOnboardingScreen onComplete={refresh} />}
 
     {step === 'TECHNICIAN_CERTIFICATE' && <Card>
       <Text style={uiStyles.cardTitle}>Certificado técnico</Text>
