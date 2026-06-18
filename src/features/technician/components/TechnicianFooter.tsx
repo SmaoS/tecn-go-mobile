@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { colors } from '../../../components/UI'
 
 export type TechnicianTab = 'available' | 'earnings'
 
@@ -23,10 +24,10 @@ function FooterButton({ label, active, onPress }: { label: string; active: boole
 }
 
 const styles = StyleSheet.create({
-  safe: { backgroundColor: '#fff' },
-  footer: { minHeight: 66, flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#cbd5e1', backgroundColor: '#fff' },
+  safe: { backgroundColor: colors.bg },
+  footer: { minHeight: 66, flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, backgroundColor: colors.bg },
   button: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, borderTopWidth: 3, borderTopColor: 'transparent' },
-  active: { borderTopColor: '#0891b2', backgroundColor: '#ecfeff' },
-  label: { color: '#64748b', fontWeight: '700', textAlign: 'center', fontSize: 12 },
-  activeLabel: { color: '#0e7490' },
+  active: { borderTopColor: colors.brand, backgroundColor: colors.dark },
+  label: { color: colors.muted, fontWeight: '700', textAlign: 'center', fontSize: 12 },
+  activeLabel: { color: colors.brand },
 })

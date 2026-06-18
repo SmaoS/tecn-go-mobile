@@ -82,7 +82,7 @@ export function CaptureSelfieScreen({ navigation }: NativeStackScreenProps<RootS
 const local = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   overlay: { flex: 1, justifyContent: 'flex-end', padding: 24, paddingBottom: 46 },
-  oval: { alignSelf: 'center', position: 'absolute', top: '16%', width: 235, height: 315, borderRadius: 130, borderWidth: 4, borderColor: colors.brand, backgroundColor: 'rgba(34,211,238,.05)' },
+  oval: { alignSelf: 'center', position: 'absolute', top: '16%', width: 235, height: 315, borderRadius: 130, borderWidth: 4, borderColor: colors.brand, backgroundColor: 'rgba(0,216,74,.06)' },
   title: { color: colors.text, textAlign: 'center', fontSize: 18, fontWeight: '900', backgroundColor: 'rgba(2,6,23,.74)', padding: 12, borderRadius: 14 },
   help: { color: colors.brand, textAlign: 'center', fontSize: 22, fontWeight: '900', marginVertical: 12 },
   previewPanel: { flex: 1, justifyContent: 'flex-end', padding: 24, paddingBottom: 46, backgroundColor: 'rgba(2,6,23,.25)' },

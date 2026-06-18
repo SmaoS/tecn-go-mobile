@@ -58,15 +58,15 @@ export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStac
 }
 
 const screenStyles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: 16, paddingBottom: 30 },
-  title: { color: '#0f172a', fontSize: 28, fontWeight: '900', marginBottom: 6 },
-  subtitle: { color: '#64748b', fontSize: 14, marginBottom: 18 },
-  nearby: { color: '#0e7490', fontWeight: '900', textAlign: 'center', paddingVertical: 16 },
-  sectionLabel: { color: '#0f172a', fontWeight: '900', marginTop: 18, marginBottom: 10 },
+  title: { color: colors.text, fontSize: 28, fontWeight: '900', marginBottom: 6 },
+  subtitle: { color: colors.muted, fontSize: 14, marginBottom: 18 },
+  nearby: { color: colors.brand, fontWeight: '900', textAlign: 'center', paddingVertical: 16 },
+  sectionLabel: { color: colors.text, fontWeight: '900', marginTop: 18, marginBottom: 10 },
   compactCard: { padding: 12, marginBottom: 0 },
   cardHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, justifyContent: 'space-between' },
-  statusText: { color: '#0e7490', fontSize: 11, fontWeight: '900', maxWidth: 110, textAlign: 'right' },
-  price: { color: '#0f172a', fontWeight: '900', marginTop: 6 },
-  viewAll: { color: '#0e7490', fontWeight: '900', paddingVertical: 14, textAlign: 'center' },
+  statusText: { color: colors.brand, fontSize: 11, fontWeight: '900', maxWidth: 110, textAlign: 'right' },
+  price: { color: colors.text, fontWeight: '900', marginTop: 6 },
+  viewAll: { color: colors.brand, fontWeight: '900', paddingVertical: 14, textAlign: 'center' },
 })

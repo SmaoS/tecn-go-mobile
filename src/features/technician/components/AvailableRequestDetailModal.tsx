@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { Button, Field } from '../../../components/UI'
+import { Button, colors, Field } from '../../../components/UI'
 import { PrivateImage } from '../../../components/PrivateImage'
 import type { ServiceRequest } from '../../../types'
 import { formatCopCurrency, formatElapsedTime } from '../../../shared/format'
@@ -77,29 +77,29 @@ export function AvailableRequestDetailModal({ request, radiusKm, onClose }: {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: 18, paddingBottom: 40 },
-  map: { minHeight: 180, borderRadius: 18, backgroundColor: '#e0f2fe', alignItems: 'center', justifyContent: 'center', padding: 24 },
-  mapTitle: { color: '#0f172a', fontSize: 20, fontWeight: '900' },
-  mapText: { color: '#475569', textAlign: 'center', marginTop: 8 },
-  mapDistance: { color: '#0891b2', fontSize: 24, fontWeight: '900', marginTop: 12 },
-  summary: { flexDirection: 'row', paddingVertical: 20, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#cbd5e1' },
+  map: { minHeight: 180, borderRadius: 18, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  mapTitle: { color: colors.text, fontSize: 20, fontWeight: '900' },
+  mapText: { color: colors.muted, textAlign: 'center', marginTop: 8 },
+  mapDistance: { color: colors.brand, fontSize: 24, fontWeight: '900', marginTop: 12 },
+  summary: { flexDirection: 'row', paddingVertical: 20, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   avatar: { width: 62, height: 62, borderRadius: 31 },
-  fallback: { backgroundColor: '#cffafe', alignItems: 'center', justifyContent: 'center' },
-  initial: { color: '#0e7490', fontSize: 24, fontWeight: '900' },
+  fallback: { backgroundColor: colors.dark, alignItems: 'center', justifyContent: 'center' },
+  initial: { color: colors.brand, fontSize: 24, fontWeight: '900' },
   summaryText: { flex: 1, marginLeft: 14 },
-  name: { color: '#0f172a', fontSize: 18, fontWeight: '900' },
-  meta: { color: '#64748b', fontSize: 12, marginTop: 4 },
-  price: { color: '#0f172a', fontSize: 26, fontWeight: '900', marginTop: 8 },
-  address: { color: '#334155', marginTop: 5 },
-  category: { color: '#0891b2', fontWeight: '800', marginTop: 4 },
-  sectionTitle: { color: '#0f172a', fontSize: 17, fontWeight: '900', marginTop: 22, marginBottom: 8 },
-  description: { color: '#334155', lineHeight: 21 },
+  name: { color: colors.text, fontSize: 18, fontWeight: '900' },
+  meta: { color: colors.muted, fontSize: 12, marginTop: 4 },
+  price: { color: colors.text, fontSize: 26, fontWeight: '900', marginTop: 8 },
+  address: { color: '#DCE6F3', marginTop: 5 },
+  category: { color: colors.brand, fontWeight: '800', marginTop: 4 },
+  sectionTitle: { color: colors.text, fontSize: 17, fontWeight: '900', marginTop: 22, marginBottom: 8 },
+  description: { color: '#DCE6F3', lineHeight: 21 },
   empty: { color: '#94a3b8' },
   thumbnail: { width: 118, height: 90, borderRadius: 12, marginRight: 10 },
   error: { color: '#be123c', marginVertical: 8 },
   close: { alignItems: 'center', padding: 16, marginTop: 8 },
-  closeText: { color: '#475569', fontWeight: '800' },
+  closeText: { color: colors.muted, fontWeight: '800' },
   viewer: { flex: 1, backgroundColor: 'rgba(0,0,0,.92)', alignItems: 'center', justifyContent: 'center' },
   largeImage: { width: '94%', height: '80%' },
 })

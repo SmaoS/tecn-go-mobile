@@ -50,10 +50,10 @@ export function ClientActiveRequestsScreen({ navigation }: NativeStackScreenProp
 }
 
 const screenStyles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: 16, paddingBottom: 30 },
-  title: { color: '#0f172a', fontSize: 25, fontWeight: '900' },
-  subtitle: { color: '#64748b', fontSize: 12, marginTop: 4, marginBottom: 16 },
+  title: { color: colors.text, fontSize: 25, fontWeight: '900' },
+  subtitle: { color: colors.muted, fontSize: 12, marginTop: 4, marginBottom: 16 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   compactCard: { padding: 12, marginBottom: 0 },
   cardHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, justifyContent: 'space-between' },

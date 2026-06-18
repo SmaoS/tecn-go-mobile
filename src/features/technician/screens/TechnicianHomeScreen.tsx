@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { Button } from '../../../components/UI'
+import { Button, colors } from '../../../components/UI'
 import { useDoubleBackExit } from '../../../hooks/useDoubleBackExit'
 import { apiMessage } from '../../../shared/apiMessage'
 import { QueryState } from '../../../shared/QueryState'
@@ -88,18 +88,18 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: 16, paddingBottom: 30 },
   heading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 },
-  title: { color: '#0f172a', fontSize: 25, fontWeight: '900' },
-  subtitle: { color: '#64748b', fontSize: 12, marginTop: 4 },
-  card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: StyleSheet.hairlineWidth, borderColor: '#cbd5e1' },
+  title: { color: colors.text, fontSize: 25, fontWeight: '900' },
+  subtitle: { color: colors.muted, fontSize: 12, marginTop: 4 },
+  card: { backgroundColor: colors.card, borderRadius: 18, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border },
   cardHeading: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
-  category: { color: '#0f172a', fontSize: 17, fontWeight: '900', flex: 1 },
-  status: { color: '#0891b2', fontSize: 12, fontWeight: '800' },
-  client: { color: '#334155', fontWeight: '700', marginTop: 10 },
-  address: { color: '#64748b', marginTop: 4, marginBottom: 10 },
+  category: { color: colors.text, fontSize: 17, fontWeight: '900', flex: 1 },
+  status: { color: colors.brand, fontSize: 12, fontWeight: '800' },
+  client: { color: '#DCE6F3', fontWeight: '700', marginTop: 10 },
+  address: { color: colors.muted, marginTop: 4, marginBottom: 10 },
   actions: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 },
-  link: { color: '#0e7490', fontWeight: '800', paddingVertical: 6 },
+  link: { color: colors.brand, fontWeight: '800', paddingVertical: 6 },
   error: { color: '#be123c', marginBottom: 10 },
 })

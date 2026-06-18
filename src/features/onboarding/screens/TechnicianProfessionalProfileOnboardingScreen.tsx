@@ -67,7 +67,7 @@ const screenStyles = StyleSheet.create({
   label: { color: colors.text, fontWeight: '800', marginBottom: 10, marginTop: 18 },
   categories: { gap: 8, marginBottom: 14 },
   category: { borderColor: colors.border, borderRadius: 12, borderWidth: 1, padding: 12 },
-  categoryActive: { backgroundColor: '#083344', borderColor: colors.brand },
+  categoryActive: { backgroundColor: '#063A18', borderColor: colors.brand },
   categoryText: { color: colors.muted, fontWeight: '700' },
   categoryTextActive: { color: colors.brand },
   experience: { minHeight: 130, textAlignVertical: 'top' },

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import type { CatalogItem } from '../../types'
+import { colors } from '../../components/UI'
 
 export function CatalogSelect({ label, value, items = [], disabled = false, onChange }: {
   label: string
@@ -39,12 +40,12 @@ const styles = StyleSheet.create({
   disabled: { opacity: .55 },
   value: { color: '#f8fafc' },
   placeholder: { color: '#94a3b8' },
-  arrow: { color: '#22d3ee', fontSize: 20 },
+  arrow: { color: '#00D84A', fontSize: 20 },
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(2,6,23,.65)' },
-  sheet: { maxHeight: '70%', backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 18 },
+  sheet: { maxHeight: '70%', backgroundColor: colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 18 },
   heading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  title: { color: '#0f172a', fontSize: 22, fontWeight: '900' },
-  close: { color: '#0891b2', fontWeight: '800', padding: 8 },
-  option: { paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#e2e8f0' },
-  optionText: { color: '#1e293b', fontSize: 16, fontWeight: '600' },
+  title: { color: colors.text, fontSize: 22, fontWeight: '900' },
+  close: { color: colors.brand, fontWeight: '800', padding: 8 },
+  option: { paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  optionText: { color: colors.text, fontSize: 16, fontWeight: '600' },
 })

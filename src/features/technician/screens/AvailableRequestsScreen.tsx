@@ -13,6 +13,7 @@ import { TechnicianMenu } from '../components/TechnicianMenu'
 import { apiMessage } from '../../../shared/apiMessage'
 import { useSession } from '../../../context/useSession'
 import { useUnreadNotifications } from '../../notifications/hooks'
+import { colors } from '../../../components/UI'
 
 export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'AvailableRequests'>) {
   useDoubleBackExit()
@@ -42,7 +43,7 @@ export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<R
     {availability.error || availability.update.error
       ? <Text style={styles.error}>{apiMessage(availability.error ?? availability.update.error)}</Text>
       : requests.isPending
-        ? <View style={styles.center}><ActivityIndicator color="#0891b2" /><Text style={styles.empty}>Buscando solicitudes cercanas...</Text></View>
+        ? <View style={styles.center}><ActivityIndicator color={colors.brand} /><Text style={styles.empty}>Buscando solicitudes cercanas...</Text></View>
         : requests.error
           ? <View style={styles.center}><Text style={styles.error}>{apiMessage(requests.error)}</Text></View>
           : <FlatList
@@ -60,12 +61,12 @@ export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<R
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#fff' },
-  heading: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10, backgroundColor: '#fff' },
-  title: { color: '#0f172a', fontSize: 24, fontWeight: '900' },
-  subtitle: { color: '#64748b', fontSize: 12, marginTop: 4 },
+  screen: { flex: 1, backgroundColor: colors.bg },
+  heading: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10, backgroundColor: colors.bg },
+  title: { color: colors.text, fontSize: 24, fontWeight: '900' },
+  subtitle: { color: colors.muted, fontSize: 12, marginTop: 4 },
   list: { flexGrow: 1, paddingBottom: 18 },
   center: { flex: 1, minHeight: 220, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  empty: { color: '#64748b', textAlign: 'center', marginTop: 10 },
+  empty: { color: colors.muted, textAlign: 'center', marginTop: 10 },
   error: { color: '#be123c', textAlign: 'center', padding: 16 },
 })

@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { Button, Field, styles } from '../../../components/UI'
+import { Button, colors, Field, styles } from '../../../components/UI'
 import { SecureField } from '../../../components/SecureField'
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
 import { apiMessage } from '../../../shared/apiMessage'
@@ -18,9 +18,9 @@ export function LoginScreen({ navigation, onSession }: Props) {
   const [password, setPassword] = useState('')
   const login = useLogin(onSession)
   const canLogin = email.trim().length > 0 && password.length > 0
-  return <KeyboardAwareScreen><Text style={styles.title}>TecnGo</Text><Text style={styles.subtitle}>Ayuda técnica cerca de ti.</Text>
-    <Field autoCapitalize="none" keyboardType="email-address" placeholder="Correo" value={email} onChangeText={setEmail} />
-    <SecureField placeholder="Contraseña" value={password} onChangeText={setPassword} />
+  return <KeyboardAwareScreen><Image source={require('../../../../assets/logo-horizontal-dark.png')} style={authStyles.logo} resizeMode="contain" /><Text style={styles.title}>Bienvenido de nuevo</Text><Text style={styles.subtitle}>Ayuda técnica cerca de ti.</Text>
+    <Field style={authStyles.baseInput}  autoCapitalize="none" keyboardType="email-address" placeholder="Correo" value={email} onChangeText={setEmail} />
+    <SecureField style={authStyles.baseInput}  placeholder="Contraseña" value={password} onChangeText={setPassword} />
     {login.error && <Text style={styles.error}>{apiMessage(login.error)}</Text>}<Button title="Ingresar" onPress={() => login.mutate({ email: email.trim(), password })} loading={login.isPending} disabled={!canLogin} />
     <Pressable onPress={() => navigation.navigate('ForgotPassword')}><Text style={styles.link}>¿Olvidaste tu contraseña?</Text></Pressable>
     <Pressable onPress={() => navigation.navigate('Register')}><Text style={styles.link}>Crear una cuenta</Text></Pressable>
@@ -33,17 +33,17 @@ export function RegisterScreen({ navigation, onSession }: Props) {
   const [referralCode, setReferralCode] = useState('')
   const [referralMessage, setReferralMessage] = useState('')
   const register = useRegister(onSession)
-  return <KeyboardAwareScreen contentContainerStyle={authStyles.registerContent} keyboardVerticalOffset={20}><Text style={styles.title}>Crea tu cuenta</Text><Text style={styles.subtitle}>Solicita tu primer servicio en minutos.</Text>
+  return <KeyboardAwareScreen contentContainerStyle={authStyles.registerContent} keyboardVerticalOffset={20}><Image source={require('../../../../assets/logo-horizontal-dark.png')} style={authStyles.logo} resizeMode="contain" /><Text style={styles.title}>Crea tu cuenta</Text><Text style={styles.subtitle}>Solicita tu primer servicio en minutos.</Text>
     <Text style={styles.label}>Tipo de cuenta</Text>
     <View style={authStyles.roleRow}>
       <Pressable style={[authStyles.roleButton, role === 'CLIENT' && authStyles.roleButtonActive]} onPress={() => setRole('CLIENT')}><Text style={[authStyles.roleText, role === 'CLIENT' && authStyles.roleTextActive]}>Cliente {role === 'CLIENT' ? '✓' : ''}</Text></Pressable>
       <Pressable style={[authStyles.roleButton, role === 'TECHNICIAN' && authStyles.roleButtonActive]} onPress={() => setRole('TECHNICIAN')}><Text style={[authStyles.roleText, role === 'TECHNICIAN' && authStyles.roleTextActive]}>Técnico {role === 'TECHNICIAN' ? '✓' : ''}</Text></Pressable>
     </View>
-    <Field placeholder="Nombre completo" value={form.fullName} onChangeText={(fullName) => setForm({ ...form, fullName })} />
-    <Field autoCapitalize="none" keyboardType="email-address" placeholder="Correo" value={form.email} onChangeText={(email) => setForm({ ...form, email })} />
-    <SecureField placeholder="Contraseña" value={form.password} onChangeText={(password) => setForm({ ...form, password })} />
-    <SecureField placeholder="Confirmar contraseña" value={form.confirmPassword} onChangeText={(confirmPassword) => setForm({ ...form, confirmPassword })} />
-    <Field autoCapitalize="characters" placeholder="Código de referido (opcional)" value={referralCode} onChangeText={(value) => { setReferralCode(value.toUpperCase()); setReferralMessage('') }} onBlur={() => {
+    <Field style={authStyles.baseInput} placeholder="Nombre completo" value={form.fullName} onChangeText={(fullName) => setForm({ ...form, fullName })} />
+    <Field style={authStyles.baseInput} autoCapitalize="none" keyboardType="email-address" placeholder="Correo" value={form.email} onChangeText={(email) => setForm({ ...form, email })} />
+    <SecureField style={authStyles.baseInput} placeholder="Contraseña" value={form.password} onChangeText={(password) => setForm({ ...form, password })} />
+    <SecureField style={authStyles.baseInput} placeholder="Confirmar contraseña" value={form.confirmPassword} onChangeText={(confirmPassword) => setForm({ ...form, confirmPassword })} />
+    <Field style={authStyles.baseInput} autoCapitalize="characters" placeholder="Código de referido (opcional)" value={referralCode} onChangeText={(value) => { setReferralCode(value.toUpperCase()); setReferralMessage('') }} onBlur={() => {
       if (referralCode.trim()) void authApi.validateReferral(referralCode.trim()).then((value) => setReferralMessage(value.message)).catch(() => setReferralMessage('No fue posible validar el código.'))
     }} />
     {referralMessage && <Text style={styles.muted}>{referralMessage}</Text>}
@@ -59,11 +59,14 @@ export function RegisterScreen({ navigation, onSession }: Props) {
 
 const authStyles = StyleSheet.create({
   registerContent: { paddingBottom: 220 },
+  logo: { alignSelf: 'center', width: 230, height: 82, marginBottom: 18 },
   roleRow: { flexDirection: 'row', gap: 10, marginBottom: 12 },
-  roleButton: { flex: 1, borderColor: '#1e293b', borderRadius: 14, borderWidth: 1, paddingVertical: 12 },
-  roleButtonActive: { borderColor: '#22d3ee', backgroundColor: '#083344' },
-  roleText: { color: '#94a3b8', fontWeight: '800', textAlign: 'center' },
-  roleTextActive: { color: '#22d3ee' },
+  roleButton: { flex: 1, borderColor: colors.border, borderRadius: 14, borderWidth: 1, paddingVertical: 12, backgroundColor: colors.card },
+  roleButtonActive: { borderColor: colors.brand, backgroundColor: colors.dark },
+  roleText: { color: colors.muted, fontWeight: '800', textAlign: 'center' },
+  roleTextActive: { color: colors.brand },
+  baseInput: { marginVertical: 8, padding: 12, borderWidth: 1, borderColor: colors.border, borderRadius: 14 },
+
 })
 
 export function ForgotPasswordScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'ForgotPassword'>) {

@@ -113,7 +113,7 @@ export function CaptureIdentityDocumentScreen({ navigation, route }: NativeStack
 const local = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   overlay: { flex: 1, justifyContent: 'flex-end', padding: 24, paddingBottom: 46 },
-  frame: { alignSelf: 'center', position: 'absolute', top: '20%', width: '86%', height: 235, borderRadius: 20, borderWidth: 4, borderColor: colors.brand, backgroundColor: 'rgba(34,211,238,.05)' },
+  frame: { alignSelf: 'center', position: 'absolute', top: '20%', width: '86%', height: 235, borderRadius: 20, borderWidth: 4, borderColor: colors.brand, backgroundColor: 'rgba(0,216,74,.06)' },
   title: { color: colors.text, textAlign: 'center', fontSize: 18, fontWeight: '900', backgroundColor: 'rgba(2,6,23,.74)', padding: 12, borderRadius: 14 },
   tip: { color: colors.text, textAlign: 'center', marginTop: 10 },
   help: { color: colors.brand, textAlign: 'center', fontSize: 22, fontWeight: '900', marginVertical: 12 },

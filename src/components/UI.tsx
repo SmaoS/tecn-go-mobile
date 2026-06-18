@@ -2,7 +2,17 @@ import type { ReactNode } from 'react'
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-export const colors = { bg: '#020617', card: '#0f172a', border: '#1e293b', text: '#f8fafc', muted: '#94a3b8', brand: '#22d3ee', dark: '#083344', danger: '#fb7185' }
+export const colors = {
+  bg: '#020817',
+  card: '#111827',
+  border: '#243044',
+  text: '#FFFFFF',
+  muted: '#94A3B8',
+  brand: '#00D84A',
+  brandDark: '#00B83E',
+  dark: '#063A18',
+  danger: '#FB7185',
+}
 
 export function Screen({ children }: { children: ReactNode }) {
   return <SafeAreaView style={styles.screen}><View style={styles.container}>{children}</View></SafeAreaView>

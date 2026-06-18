@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { colors } from '../../../components/UI'
 import { QueryState } from '../../../shared/QueryState'
 import { apiMessage } from '../../../shared/apiMessage'
 import { formatCopCurrency } from '../../../shared/format'
@@ -100,30 +101,30 @@ export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: 18, paddingBottom: 30 },
-  title: { color: '#0f172a', fontSize: 28, fontWeight: '900', marginBottom: 18 },
-  summary: { backgroundColor: '#fff', borderRadius: 18, padding: 20, borderWidth: StyleSheet.hairlineWidth, borderColor: '#cbd5e1', marginBottom: 18 },
-  label: { color: '#64748b', fontWeight: '700' },
-  amount: { color: '#0f172a', fontSize: 32, fontWeight: '900', marginTop: 6 },
-  meta: { color: '#64748b', fontSize: 12, marginTop: 4 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#fff', paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#e2e8f0' },
-  rowTitle: { color: '#1e293b', fontWeight: '800' },
-  rowAmount: { color: '#0e7490', fontWeight: '900' },
+  title: { color: colors.text, fontSize: 28, fontWeight: '900', marginBottom: 18 },
+  summary: { backgroundColor: colors.card, borderRadius: 18, padding: 20, borderWidth: 1, borderColor: colors.border, marginBottom: 18 },
+  label: { color: colors.muted, fontWeight: '700' },
+  amount: { color: colors.text, fontSize: 32, fontWeight: '900', marginTop: 6 },
+  meta: { color: colors.muted, fontSize: 12, marginTop: 4 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: colors.card, paddingVertical: 16, paddingHorizontal: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  rowTitle: { color: colors.text, fontWeight: '800' },
+  rowAmount: { color: colors.brand, fontWeight: '900' },
   error: { color: '#be123c', marginBottom: 10 },
-  sectionTitle: { color: '#0f172a', fontSize: 20, fontWeight: '900', marginBottom: 12, marginTop: 8 },
+  sectionTitle: { color: colors.text, fontSize: 20, fontWeight: '900', marginBottom: 12, marginTop: 8 },
   negativeAmount: { color: '#be123c' },
-  input: { backgroundColor: '#f8fafc', borderColor: '#cbd5e1', borderRadius: 14, borderWidth: StyleSheet.hairlineWidth, color: '#0f172a', fontWeight: '800', marginTop: 16, paddingHorizontal: 14, paddingVertical: 12 },
-  button: { alignItems: 'center', backgroundColor: '#06b6d4', borderRadius: 14, marginTop: 14, paddingVertical: 14 },
+  input: { backgroundColor: colors.bg, borderColor: colors.border, borderRadius: 14, borderWidth: 1, color: colors.text, fontWeight: '800', marginTop: 16, paddingHorizontal: 14, paddingVertical: 12 },
+  button: { alignItems: 'center', backgroundColor: colors.brand, borderRadius: 14, marginTop: 14, paddingVertical: 14 },
   buttonDisabled: { opacity: 0.45 },
-  buttonText: { color: '#082f49', fontWeight: '900' },
-  secondaryButton: { alignItems: 'center', borderColor: '#0891b2', borderRadius: 14, borderWidth: 1, marginBottom: 14, paddingVertical: 13 },
-  secondaryButtonText: { color: '#0e7490', fontWeight: '900' },
-  periodSwitch: { backgroundColor: '#e2e8f0', borderRadius: 16, flexDirection: 'row', gap: 6, marginBottom: 12, padding: 4 },
+  buttonText: { color: colors.bg, fontWeight: '900' },
+  secondaryButton: { alignItems: 'center', borderColor: colors.brand, borderRadius: 14, borderWidth: 1, marginBottom: 14, paddingVertical: 13 },
+  secondaryButtonText: { color: colors.brand, fontWeight: '900' },
+  periodSwitch: { backgroundColor: colors.card, borderRadius: 16, flexDirection: 'row', gap: 6, marginBottom: 12, padding: 4 },
   periodButton: { flex: 1, alignItems: 'center', borderRadius: 12, paddingVertical: 10 },
-  periodButtonActive: { backgroundColor: '#fff' },
-  periodText: { color: '#64748b', fontWeight: '900' },
-  periodTextActive: { color: '#0e7490' },
+  periodButtonActive: { backgroundColor: colors.dark },
+  periodText: { color: colors.muted, fontWeight: '900' },
+  periodTextActive: { color: colors.brand },
   rowContent: { flex: 1, paddingRight: 10 },
 })
 

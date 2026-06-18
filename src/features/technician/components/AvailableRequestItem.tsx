@@ -3,6 +3,7 @@ import { PrivateImage } from '../../../components/PrivateImage'
 import type { ServiceRequest } from '../../../types'
 import { formatCopCurrency, formatElapsedTime } from '../../../shared/format'
 import { paymentMethodLabels } from '../../payments/paymentMethods'
+import { colors } from '../../../components/UI'
 
 export function AvailableRequestItem({ request, onPress }: { request: ServiceRequest; onPress: () => void }) {
   return <Pressable onPress={onPress} style={styles.item}>
@@ -33,22 +34,22 @@ export function AvailableRequestItem({ request, onPress }: { request: ServiceReq
 }
 
 const styles = StyleSheet.create({
-  item: { flexDirection: 'row', backgroundColor: '#fff', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#cbd5e1', paddingVertical: 16, paddingHorizontal: 14 },
-  client: { width: 104, alignItems: 'center', paddingRight: 12, borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: '#e2e8f0' },
-  avatar: { width: 48, height: 48, borderRadius: 24 },
-  avatarFallback: { backgroundColor: '#cffafe', alignItems: 'center', justifyContent: 'center' },
-  initial: { color: '#0e7490', fontSize: 20, fontWeight: '900' },
-  clientName: { color: '#0f172a', fontWeight: '800', marginTop: 6, maxWidth: 96 },
-  meta: { color: '#64748b', fontSize: 11, marginTop: 2 },
-  elapsed: { color: '#0891b2', fontSize: 11, fontWeight: '800', marginTop: 5 },
+  item: { flexDirection: 'row', backgroundColor: colors.card, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, paddingVertical: 16, paddingHorizontal: 14 },
+  client: { width: 104, alignItems: 'center', paddingRight: 12, borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: colors.border },
+  avatar: { width: 48, height: 48, borderRadius: 24, borderWidth: 1, borderColor: colors.brand },
+  avatarFallback: { backgroundColor: colors.dark, alignItems: 'center', justifyContent: 'center' },
+  initial: { color: colors.brand, fontSize: 20, fontWeight: '900' },
+  clientName: { color: colors.text, fontWeight: '800', marginTop: 6, maxWidth: 96 },
+  meta: { color: colors.muted, fontSize: 11, marginTop: 2 },
+  elapsed: { color: colors.brand, fontSize: 11, fontWeight: '800', marginTop: 5 },
   main: { flex: 1, paddingLeft: 14, minHeight: 124 },
   topLine: { flexDirection: 'row', justifyContent: 'space-between' },
-  distance: { color: '#475569', fontSize: 13, fontWeight: '700' },
+  distance: { color: colors.muted, fontSize: 13, fontWeight: '700' },
   more: { color: '#94a3b8', fontSize: 20, lineHeight: 14 },
-  price: { color: '#0f172a', fontSize: 25, fontWeight: '900', marginTop: 5 },
-  address: { color: '#334155', fontSize: 13, marginTop: 4 },
-  category: { color: '#0891b2', fontSize: 12, fontWeight: '800', marginTop: 5 },
-  payment: { color: '#475569', fontSize: 12, fontWeight: '700', marginTop: 4 },
+  price: { color: colors.text, fontSize: 25, fontWeight: '900', marginTop: 5 },
+  address: { color: '#DCE6F3', fontSize: 13, marginTop: 4 },
+  category: { color: colors.brand, fontSize: 12, fontWeight: '800', marginTop: 5 },
+  payment: { color: colors.muted, fontSize: 12, fontWeight: '700', marginTop: 4 },
   imageWrap: { position: 'absolute', right: 0, bottom: 0 },
   thumbnail: { width: 54, height: 42, borderRadius: 8 },
   imageCount: { position: 'absolute', right: 3, bottom: 3, color: '#fff', backgroundColor: 'rgba(15,23,42,.75)', borderRadius: 8, paddingHorizontal: 5, fontSize: 10, fontWeight: '800' },

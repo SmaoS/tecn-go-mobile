@@ -1,5 +1,6 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { colors } from '../../../components/UI'
 import { PrivateImage } from '../../../components/PrivateImage'
 import type { UserProfile } from '../../../types'
 
@@ -48,19 +49,19 @@ function MenuItem({ label, onPress, danger = false }: { label: string; onPress: 
 }
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, flexDirection: 'row', backgroundColor: 'rgba(15,23,42,.45)' },
-  drawer: { width: '82%', maxWidth: 340, backgroundColor: '#fff', paddingTop: 16 },
+  overlay: { flex: 1, flexDirection: 'row', backgroundColor: 'rgba(2,8,23,.72)' },
+  drawer: { width: '82%', maxWidth: 340, backgroundColor: colors.card, paddingTop: 16 },
   menu: { flex: 1 },
-  logout: { paddingBottom: 12, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#e2e8f0' },
+  logout: { paddingBottom: 12, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   dismiss: { flex: 1 },
-  profile: { flexDirection: 'row', alignItems: 'center', padding: 20, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#cbd5e1' },
-  avatar: { width: 64, height: 64, borderRadius: 32 },
-  fallback: { backgroundColor: '#cffafe', alignItems: 'center', justifyContent: 'center' },
-  initial: { color: '#0e7490', fontSize: 24, fontWeight: '900' },
+  profile: { flexDirection: 'row', alignItems: 'center', padding: 20, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  avatar: { width: 64, height: 64, borderRadius: 32, borderWidth: 2, borderColor: colors.brand },
+  fallback: { backgroundColor: colors.dark, alignItems: 'center', justifyContent: 'center' },
+  initial: { color: colors.brand, fontSize: 24, fontWeight: '900' },
   profileText: { flex: 1, marginLeft: 14 },
-  name: { color: '#0f172a', fontSize: 18, fontWeight: '900' },
-  reputation: { color: '#0891b2', fontSize: 12, fontWeight: '800', marginTop: 5 },
-  item: { paddingHorizontal: 22, paddingVertical: 18, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#e2e8f0' },
-  itemText: { color: '#1e293b', fontSize: 16, fontWeight: '800' },
+  name: { color: colors.text, fontSize: 18, fontWeight: '900' },
+  reputation: { color: colors.brand, fontSize: 12, fontWeight: '800', marginTop: 5 },
+  item: { paddingHorizontal: 22, paddingVertical: 18, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  itemText: { color: colors.text, fontSize: 16, fontWeight: '800' },
   danger: { color: '#be123c' },
 })

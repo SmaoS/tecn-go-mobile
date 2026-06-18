@@ -266,7 +266,7 @@ function UploadStatus({ label, ready }: { label: string; ready: boolean }) {
 const screenStyles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 10, marginBottom: 12 },
   choice: { flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 14, alignItems: 'center' },
-  choiceActive: { borderColor: colors.brand, backgroundColor: '#083344' },
+  choiceActive: { borderColor: colors.brand, backgroundColor: '#063A18' },
   choiceText: { color: colors.muted, fontWeight: '800' },
   choiceTextActive: { color: colors.brand },
   uploadRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 },

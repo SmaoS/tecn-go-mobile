@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
   container: { flexDirection: 'row', borderRadius: 20, backgroundColor: '#e5e7eb', padding: 3 },
   option: { minWidth: 78, paddingVertical: 7, paddingHorizontal: 10, borderRadius: 17, alignItems: 'center' },
   busy: { backgroundColor: '#64748b' },
-  available: { backgroundColor: '#16a34a' },
+  available: { backgroundColor: colors.brandDark },
   text: { color: '#475569', fontSize: 12, fontWeight: '800' },
   activeText: { color: '#fff' },
 })
