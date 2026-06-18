@@ -18,8 +18,14 @@ export function Screen({ children }: { children: ReactNode }) {
   return <SafeAreaView style={styles.screen}><View style={styles.container}>{children}</View></SafeAreaView>
 }
 
-export function Field(props: TextInputProps) {
-  return <TextInput placeholderTextColor={colors.muted} style={styles.field} {...props} />
+export function Field({ style, placeholderTextColor = colors.muted, ...props }: TextInputProps) {
+  return <TextInput
+    {...props}
+    placeholderTextColor={placeholderTextColor}
+    selectionColor={props.selectionColor ?? colors.brand}
+    cursorColor={props.cursorColor ?? colors.brand}
+    style={[styles.field, style]}
+  />
 }
 
 export function Button({ title, onPress, loading, disabled }: { title: string; onPress: () => void; loading?: boolean; disabled?: boolean }) {
