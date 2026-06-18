@@ -147,8 +147,9 @@ solicitudes disponibles y los mensajes abren el chat.
 
 ## Referidos y actualización obligatoria
 
-El técnico dispone de **Invita y gana**, con copia y Share API. El registro acepta un
-código opcional y lo valida contra el backend.
+El técnico dispone de **Invita y gana**, con copia y Share API. La invitación incluye
+la URL de Google Play definida en `EXPO_PUBLIC_PLAY_STORE_URL` y el código que debe
+digitarse durante el registro. El registro valida el código contra el backend.
 
 Al iniciar, `AppVersionGate` consulta `/v1/app-version/check` usando
 `Constants.expoConfig.version`. Una actualización obligatoria bloquea la navegación y

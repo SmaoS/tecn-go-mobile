@@ -5,15 +5,19 @@ import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
 import { QueryState } from '../../../shared/QueryState'
 import { useTechnicianReferrals } from '../hooks'
 
+const playStoreUrl = process.env.EXPO_PUBLIC_PLAY_STORE_URL
+  ?? 'https://play.google.com/store/apps/details?id=com.tecngo'
+
 export function TechnicianReferralsScreen() {
   const { code, referrals, rewards } = useTechnicianReferrals()
-  const shareUrl = code.data ? `https://tecn-go.com/register?ref=${code.data.code}` : ''
   return <KeyboardAwareScreen><Text style={styles.title}>Invita y gana</Text>
     <Text style={styles.subtitle}>Invita clientes o técnicos. Cuando completen un servicio con 5 estrellas, ganas un servicio sin comisión.</Text>
     <QueryState pending={code.isPending || referrals.isPending || rewards.isPending} error={code.error ?? referrals.error ?? rewards.error}>
       {code.data && <><Card><Text style={styles.muted}>Tu código</Text><Text style={[styles.title, { color: colors.brand }]}>{code.data.code}</Text>
         <Button title="Copiar código" onPress={() => void Clipboard.setStringAsync(code.data!.code)} />
-        <Button title="Compartir invitación" onPress={() => void Share.share({ message: `Únete a TecnGo con mi código ${code.data!.code}: ${shareUrl}` })} />
+        <Button title="Compartir invitación" onPress={() => void Share.share({
+          message: `Descarga TecnGo desde Google Play y regístrate con mi código ${code.data!.code}:\n${playStoreUrl}`,
+        })} />
       </Card>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         <Card style={{ flexGrow: 1 }}><Text style={styles.cardTitle}>{code.data.registered}</Text><Text style={styles.muted}>Registrados</Text></Card>
