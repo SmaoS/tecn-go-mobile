@@ -6,7 +6,7 @@ import { SecureField } from '../../../components/SecureField'
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
 import { apiMessage } from '../../../shared/apiMessage'
 import type { RootStackParamList, Session } from '../../../types'
-import { useForgotPassword, useLogin, useRegister, useResetPassword } from '../hooks'
+import { useForgotPassword, useLogin, useRegister, useRegisterByPhone, useResetPassword, useSendPhoneOtp, useVerifyPhoneOtp } from '../hooks'
 import { authApi } from '../api'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login' | 'Register'> & {
@@ -14,33 +14,57 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Login' | 'Register'> & 
 }
 
 export function LoginScreen({ navigation, onSession }: Props) {
-  const [email, setEmail] = useState('')
+  const [method, setMethod] = useState<'email' | 'phone'>('email')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const login = useLogin(onSession)
-  const canLogin = email.trim().length > 0 && password.length > 0
+  const canLogin = identifier.trim().length > 0 && password.length > 0
   return <KeyboardAwareScreen><Image source={require('../../../../assets/logo-horizontal-dark.png')} style={authStyles.logo} resizeMode="contain" /><Text style={styles.title}>Bienvenido de nuevo</Text><Text style={styles.subtitle}>Ayuda técnica cerca de ti.</Text>
-    <Field style={authStyles.baseInput}  autoCapitalize="none" keyboardType="email-address" placeholder="Correo" value={email} onChangeText={setEmail} />
+    <View style={authStyles.roleRow}>
+      <Pressable style={[authStyles.roleButton, method === 'email' && authStyles.roleButtonActive]} onPress={() => { setMethod('email'); setIdentifier('') }}><Text style={[authStyles.roleText, method === 'email' && authStyles.roleTextActive]}>Correo</Text></Pressable>
+      <Pressable style={[authStyles.roleButton, method === 'phone' && authStyles.roleButtonActive]} onPress={() => { setMethod('phone'); setIdentifier('') }}><Text style={[authStyles.roleText, method === 'phone' && authStyles.roleTextActive]}>Celular</Text></Pressable>
+    </View>
+    <Field style={authStyles.baseInput} autoCapitalize="none" keyboardType={method === 'email' ? 'email-address' : 'phone-pad'} placeholder={method === 'email' ? 'Correo' : 'Celular, ej. 3001234567'} value={identifier} onChangeText={setIdentifier} />
     <SecureField style={authStyles.baseInput}  placeholder="Contraseña" value={password} onChangeText={setPassword} />
-    {login.error && <Text style={styles.error}>{apiMessage(login.error)}</Text>}<Button title="Ingresar" onPress={() => login.mutate({ email: email.trim(), password })} loading={login.isPending} disabled={!canLogin} />
+    {login.error && <Text style={styles.error}>{apiMessage(login.error)}</Text>}<Button title="Ingresar" onPress={() => login.mutate({ identifier: identifier.trim(), password, method })} loading={login.isPending} disabled={!canLogin} />
     <Pressable onPress={() => navigation.navigate('ForgotPassword')}><Text style={styles.link}>¿Olvidaste tu contraseña?</Text></Pressable>
     <Pressable onPress={() => navigation.navigate('Register')}><Text style={styles.link}>Crear una cuenta</Text></Pressable>
   </KeyboardAwareScreen>
 }
 
 export function RegisterScreen({ navigation, onSession }: Props) {
-  const [form, setForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '' })
+  const [method, setMethod] = useState<'email' | 'phone'>('email')
+  const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '', confirmPassword: '' })
+  const [otpCode, setOtpCode] = useState('')
+  const [verificationToken, setVerificationToken] = useState('')
+  const [otpNotice, setOtpNotice] = useState('')
   const [role, setRole] = useState<'CLIENT' | 'TECHNICIAN'>('CLIENT')
   const [referralCode, setReferralCode] = useState('')
   const [referralMessage, setReferralMessage] = useState('')
   const register = useRegister(onSession)
+  const registerByPhone = useRegisterByPhone(onSession)
+  const sendOtp = useSendPhoneOtp()
+  const verifyOtp = useVerifyPhoneOtp()
   return <KeyboardAwareScreen contentContainerStyle={authStyles.registerContent} keyboardVerticalOffset={20}><Image source={require('../../../../assets/logo-horizontal-dark.png')} style={authStyles.logo} resizeMode="contain" /><Text style={styles.title}>Crea tu cuenta</Text><Text style={styles.subtitle}>Solicita tu primer servicio en minutos.</Text>
     <Text style={styles.label}>Tipo de cuenta</Text>
     <View style={authStyles.roleRow}>
       <Pressable style={[authStyles.roleButton, role === 'CLIENT' && authStyles.roleButtonActive]} onPress={() => setRole('CLIENT')}><Text style={[authStyles.roleText, role === 'CLIENT' && authStyles.roleTextActive]}>Cliente {role === 'CLIENT' ? '✓' : ''}</Text></Pressable>
       <Pressable style={[authStyles.roleButton, role === 'TECHNICIAN' && authStyles.roleButtonActive]} onPress={() => setRole('TECHNICIAN')}><Text style={[authStyles.roleText, role === 'TECHNICIAN' && authStyles.roleTextActive]}>Técnico {role === 'TECHNICIAN' ? '✓' : ''}</Text></Pressable>
     </View>
+    <Text style={styles.label}>Forma de registro</Text>
+    <View style={authStyles.roleRow}>
+      <Pressable style={[authStyles.roleButton, method === 'email' && authStyles.roleButtonActive]} onPress={() => setMethod('email')}><Text style={[authStyles.roleText, method === 'email' && authStyles.roleTextActive]}>Correo</Text></Pressable>
+      <Pressable style={[authStyles.roleButton, method === 'phone' && authStyles.roleButtonActive]} onPress={() => setMethod('phone')}><Text style={[authStyles.roleText, method === 'phone' && authStyles.roleTextActive]}>Celular</Text></Pressable>
+    </View>
     <Field style={authStyles.baseInput} placeholder="Nombre completo" value={form.fullName} onChangeText={(fullName) => setForm({ ...form, fullName })} />
-    <Field style={authStyles.baseInput} autoCapitalize="none" keyboardType="email-address" placeholder="Correo" value={form.email} onChangeText={(email) => setForm({ ...form, email })} />
+    {method === 'email'
+      ? <Field style={authStyles.baseInput} autoCapitalize="none" keyboardType="email-address" placeholder="Correo" value={form.email} onChangeText={(email) => setForm({ ...form, email })} />
+      : <><Field style={authStyles.baseInput} keyboardType="phone-pad" placeholder="Celular, ej. 3001234567" value={form.phone} onChangeText={(phone) => { setForm({ ...form, phone }); setVerificationToken('') }} />
+        <Button title="Enviar código" onPress={() => sendOtp.mutate(form.phone, { onSuccess: (data) => setOtpNotice(data.debugCode ? `Código de desarrollo: ${data.debugCode}` : 'Código enviado por SMS.') })} loading={sendOtp.isPending} disabled={!form.phone.trim()} />
+        <Field style={authStyles.baseInput} keyboardType="number-pad" maxLength={8} placeholder="Código OTP" value={otpCode} onChangeText={(value) => setOtpCode(value.replace(/\D/g, ''))} />
+        <Button title={verificationToken ? 'Celular verificado' : 'Verificar código'} onPress={() => verifyOtp.mutate({ phone: form.phone, code: otpCode }, { onSuccess: (data) => { setVerificationToken(data.verificationToken); setOtpNotice('Celular verificado correctamente.') } })} loading={verifyOtp.isPending} disabled={!otpCode || Boolean(verificationToken)} />
+        {otpNotice && <Text style={styles.muted}>{otpNotice}</Text>}
+        {(sendOtp.error || verifyOtp.error) && <Text style={styles.error}>{apiMessage(sendOtp.error ?? verifyOtp.error)}</Text>}</>}
     <SecureField style={authStyles.baseInput} placeholder="Contraseña" value={form.password} onChangeText={(password) => setForm({ ...form, password })} />
     <SecureField style={authStyles.baseInput} placeholder="Confirmar contraseña" value={form.confirmPassword} onChangeText={(confirmPassword) => setForm({ ...form, confirmPassword })} />
     <Field style={authStyles.baseInput} autoCapitalize="characters" placeholder="Código de referido (opcional)" value={referralCode} onChangeText={(value) => { setReferralCode(value.toUpperCase()); setReferralMessage('') }} onBlur={() => {
@@ -49,10 +73,11 @@ export function RegisterScreen({ navigation, onSession }: Props) {
     {referralMessage && <Text style={styles.muted}>{referralMessage}</Text>}
     <Text style={styles.muted}>Al ingresar podrás completar el perfil y subir el documento para verificación.</Text>
     {form.confirmPassword && form.password !== form.confirmPassword && <Text style={styles.error}>Las contraseñas no coinciden</Text>}
-    {register.error && <Text style={styles.error}>{apiMessage(register.error)}</Text>}<Button title="Registrarme" onPress={() => {
+    {(register.error || registerByPhone.error) && <Text style={styles.error}>{apiMessage(register.error ?? registerByPhone.error)}</Text>}<Button title="Registrarme" onPress={() => {
       if (form.password !== form.confirmPassword) return
-      register.mutate({ ...form, role, referralCode: referralCode.trim() || undefined })
-    }} loading={register.isPending} />
+      if (method === 'email') register.mutate({ fullName: form.fullName, email: form.email, password: form.password, confirmPassword: form.confirmPassword, role, referralCode: referralCode.trim() || undefined })
+      else if (verificationToken) registerByPhone.mutate({ fullName: form.fullName, phone: form.phone, verificationToken, password: form.password, confirmPassword: form.confirmPassword, role, referralCode: referralCode.trim() || undefined })
+    }} loading={register.isPending || registerByPhone.isPending} disabled={method === 'phone' && !verificationToken} />
     <Pressable onPress={() => navigation.navigate('Login')}><Text style={styles.link}>Ya tengo cuenta</Text></Pressable>
   </KeyboardAwareScreen>
 }

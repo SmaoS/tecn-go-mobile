@@ -25,7 +25,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>()
 
 export function ClientNavigator() {
   const { session, logout } = useSession()
-  const initialRoute = !session?.emailVerified
+  const initialRoute = !session?.emailVerified && !session?.phoneVerified
     ? 'EmailConfirmationRequired'
     : !session.onboardingCompleted
       ? 'OnboardingRequired'

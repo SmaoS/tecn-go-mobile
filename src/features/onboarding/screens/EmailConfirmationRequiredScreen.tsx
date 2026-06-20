@@ -15,7 +15,7 @@ export function EmailConfirmationRequiredScreen({ navigation }: NativeStackScree
     <Text style={styles.muted}>Debes confirmar tu correo electrónico para continuar usando TecnGo.</Text>
     <Button title="Reenviar correo" onPress={() => resend.mutate()} loading={resend.isPending} />
     <Button title="Ya confirmé mi correo" onPress={() => void status.refetch().then((result) => {
-      if (result.data?.emailVerified) navigation.replace(result.data.onboardingCompleted ? 'Home' : 'OnboardingRequired')
+      if (result.data?.emailVerified || result.data?.phoneVerified) navigation.replace(result.data.onboardingCompleted ? 'Home' : 'OnboardingRequired')
     })} />
     <Button title="Cerrar sesión" onPress={logout} />
     {resend.isSuccess && <Text style={styles.muted}>Correo enviado.</Text>}

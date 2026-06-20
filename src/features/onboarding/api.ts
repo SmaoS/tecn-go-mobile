@@ -2,6 +2,7 @@ import { api } from '../../api/client'
 
 export interface OnboardingStatus {
   emailVerified: boolean
+  phoneVerified: boolean
   onboardingCompleted: boolean
   currentStep: 'MAIN_DATA' | 'LEGAL_ACCEPTANCE' | 'PROFILE_SELFIE' | 'IDENTITY_DOCUMENT' | 'TECHNICIAN_PROFESSIONAL_PROFILE' | 'TECHNICIAN_CERTIFICATE' | 'COMPLETED'
   requiredSteps: string[]

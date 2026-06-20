@@ -5,7 +5,9 @@ export interface Session {
   token: string
   userId: string
   fullName: string
-  email: string
+  email?: string
+  roles?: Role[]
+  activeMode?: 'CLIENT' | 'TECHNICIAN'
   role: Role
   verificationStatus: VerificationStatus
   emailVerified: boolean

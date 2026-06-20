@@ -12,6 +12,8 @@ import { PasswordChangeModal } from '../components/PasswordChangeModal'
 import { useDoubleBackExit } from '../../../hooks/useDoubleBackExit'
 import { CatalogSelect } from '../../catalogs/CatalogSelect'
 import { useCities, useCountries, useDepartments } from '../../catalogs/hooks'
+import { authApi } from '../../auth/api'
+import { useMutation } from '@tanstack/react-query'
 
 export function ProfileScreen({ session, onLogout, navigation, rootExit = false }: { session: Session; onLogout: () => void; navigation?: { navigate: (screen: 'CaptureProfilePhoto' | 'Legal') => void }; rootExit?: boolean }) {
   useDoubleBackExit(rootExit)
@@ -20,6 +22,7 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
   const [draft, setDraft] = useState<UserProfile | null>(null)
   const [notice, setNotice] = useState('')
   const [passwordModal, setPasswordModal] = useState(false)
+  const [phoneCode, setPhoneCode] = useState('')
   const location = useCurrentLocation()
   const profileImage = useProfileImageUpload()
   const document = useDocumentUpload()
@@ -28,6 +31,16 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
   const countries = useCountries()
   const departments = useDepartments(current?.countryId)
   const cities = useCities(current?.departmentId)
+  const sendPhoneOtp = useMutation({
+    mutationFn: authApi.sendPhoneOtp,
+    onSuccess: (data) => setNotice(data.debugCode ? `Código de desarrollo: ${data.debugCode}` : 'Código enviado por SMS.'),
+    onError: (error) => setNotice(apiMessage(error)),
+  })
+  const verifyPhoneOtp = useMutation({
+    mutationFn: ({ phone, code }: { phone: string; code: string }) => authApi.verifyPhoneOtp(phone, code),
+    onSuccess: () => { setNotice('Celular verificado.'); void profile.refetch() },
+    onError: (error) => setNotice(apiMessage(error)),
+  })
   function update(value: Partial<UserProfile>) {
     if (current) setDraft({ ...current, ...value })
   }
@@ -52,9 +65,14 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       : 'Carga tu documento para iniciar la verificación'
   return <KeyboardAwareScreen><Text style={styles.title}>Mi perfil</Text><QueryState pending={profile.isPending} error={profile.error}>
     {current && <><Card><Text style={[styles.muted, { color: colors.brand }]}>{verificationLabel}</Text><Text style={styles.muted}>Correo: {current.emailVerified ? 'verificado' : 'pendiente'} · Documentos: {current.documentsVerified ? 'verificados' : 'pendientes'}</Text><Text style={[styles.muted, { color: colors.brand }]}>★ {current.averageRating.toFixed(1)} · {current.paidServicesCount} servicios pagados</Text></Card>
-      <Field value={session.email} editable={false} selectTextOnFocus={false} accessibilityLabel="Correo registrado" />
+      <Field value={session.email ?? current.phone ?? 'Cuenta por celular'} editable={false} selectTextOnFocus={false} accessibilityLabel="Contacto registrado" />
       <Field placeholder="Nombre completo" value={current.fullName} onChangeText={(fullName) => update({ fullName })} />
       <Field placeholder="Teléfono" value={current.phone ?? ''} onChangeText={(phone) => update({ phone })} />
+      {!current.phoneVerified && current.phone && <>
+        <Button title="Enviar código al celular" onPress={() => sendPhoneOtp.mutate(current.phone!)} loading={sendPhoneOtp.isPending} />
+        <Field placeholder="Código OTP" keyboardType="number-pad" value={phoneCode} onChangeText={(value) => setPhoneCode(value.replace(/\D/g, ''))} />
+        <Button title="Verificar celular" onPress={() => verifyPhoneOtp.mutate({ phone: current.phone!, code: phoneCode })} loading={verifyPhoneOtp.isPending} disabled={!phoneCode} />
+      </>}
       <CatalogSelect label="País" value={current.countryId} items={countries.data} onChange={(country) => update({ countryId: country.id, countryName: country.name, departmentId: undefined, departmentName: undefined, cityId: undefined, cityName: undefined, homeCity: undefined })} />
       <CatalogSelect label="Departamento" value={current.departmentId} items={departments.data} disabled={!current.countryId} onChange={(department) => update({ departmentId: department.id, departmentName: department.name, cityId: undefined, cityName: undefined, homeCity: undefined })} />
       <CatalogSelect label="Ciudad" value={current.cityId} items={cities.data} disabled={!current.departmentId} onChange={(city) => update({ cityId: city.id, cityName: city.name, homeCity: city.name })} />
