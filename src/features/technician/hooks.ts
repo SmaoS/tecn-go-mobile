@@ -30,12 +30,12 @@ export function useSaveTechnicianProfile(exists: boolean) {
   })
 }
 
-export function useSendQuote(radiusKm: string) {
+export function useSendQuote() {
   const client = useQueryClient()
   return useMutation({
     mutationFn: ({ id, price, description }: { id: string; price: number; description?: string }) =>
       technicianApi.quote(id, price, description),
-    onSuccess: () => client.invalidateQueries({ queryKey: requestKeys.available(radiusKm) }),
+    onSuccess: () => client.invalidateQueries({ queryKey: requestKeys.availableRoot }),
   })
 }
 
@@ -62,7 +62,7 @@ export function useTechnicianAvailability() {
     },
     onSuccess: (data) => {
       client.setQueryData(technicianAvailabilityKey, data)
-      void client.invalidateQueries({ queryKey: requestKeys.available('10') })
+      void client.invalidateQueries({ queryKey: requestKeys.availableRoot })
     },
   })
   return { ...query, update }

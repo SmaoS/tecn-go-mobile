@@ -1,6 +1,13 @@
 import { api } from '../../api/client'
 import type { Category, NearbyTechnician, ServiceQuote, ServiceRequest, TechnicianLocation } from '../../types'
 
+export interface AvailableRequestSearch {
+  cityId?: string
+  categoryId?: string
+  useRadius?: boolean
+  radiusKm?: number
+}
+
 export const serviceRequestApi = {
   categories: () => api.get<Category[]>('/v1/services').then(({ data }) => data),
   clientRequests: () => api.get<ServiceRequest[]>('/v1/service-requests/my?activeOnly=true').then(({ data }) => data),
@@ -8,7 +15,8 @@ export const serviceRequestApi = {
   detail: (requestId: string) => api.get<ServiceRequest>(`/v1/service-requests/${requestId}`).then(({ data }) => data),
   assigned: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned?activeOnly=true').then(({ data }) => data),
   assignedHistory: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned/history').then(({ data }) => data),
-  available: (radiusKm: string) => api.get<ServiceRequest[]>(`/v1/service-requests/available?radiusKm=${radiusKm}`).then(({ data }) => data),
+  available: (search: AvailableRequestSearch = {}) =>
+    api.get<ServiceRequest[]>('/v1/service-requests/available', { params: search }).then(({ data }) => data),
   quotes: (requestId: string) => api.get<ServiceQuote[]>(`/v1/service-requests/${requestId}/quotes`).then(({ data }) => data),
   technicianLocation: (requestId: string) => api.get<TechnicianLocation>(`/v1/service-requests/${requestId}/technician-location`).then(({ data }) => data),
   nearbyTechnicians: (latitude: number, longitude: number, radiusKm = 25, cityId?: string) =>

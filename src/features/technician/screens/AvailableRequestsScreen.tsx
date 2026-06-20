@@ -19,10 +19,9 @@ export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<R
   useDoubleBackExit()
   const [menu, setMenu] = useState(false)
   const [selected, setSelected] = useState<ServiceRequest | null>(null)
-  const radiusKm = '10'
   const availability = useTechnicianAvailability()
   const available = availability.data?.available ?? true
-  const requests = useAvailableRequests(radiusKm)
+  const requests = useAvailableRequests()
   const profile = useTechnicianProfile()
   const { logout } = useSession()
   const unread = useUnreadNotifications()
@@ -38,12 +37,12 @@ export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<R
     />
     <View style={styles.heading}>
       <Text style={styles.title}>Solicitudes disponibles</Text>
-      <Text style={styles.subtitle}>{available ? 'Ofertas cercanas actualizadas cada 10 segundos' : 'Modo ocupado: puedes ver ofertas, pero no recibirás avisos nuevos'}</Text>
+      <Text style={styles.subtitle}>{available ? `Ofertas en ${profile.data?.cityName ?? 'tu ciudad'}, actualizadas cada 10 segundos` : 'Modo ocupado: puedes ver ofertas, pero no recibirás avisos nuevos'}</Text>
     </View>
     {availability.error || availability.update.error
       ? <Text style={styles.error}>{apiMessage(availability.error ?? availability.update.error)}</Text>
       : requests.isPending
-        ? <View style={styles.center}><ActivityIndicator color={colors.brand} /><Text style={styles.empty}>Buscando solicitudes cercanas...</Text></View>
+        ? <View style={styles.center}><ActivityIndicator color={colors.brand} /><Text style={styles.empty}>Buscando solicitudes en tu ciudad...</Text></View>
         : requests.error
           ? <View style={styles.center}><Text style={styles.error}>{apiMessage(requests.error)}</Text></View>
           : <FlatList
@@ -52,11 +51,11 @@ export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<R
             renderItem={({ item }) => <AvailableRequestItem request={item} onPress={() => setSelected(item)} />}
             contentContainerStyle={styles.list}
             refreshControl={<RefreshControl refreshing={requests.isRefetching} onRefresh={() => void requests.refetch()} />}
-            ListEmptyComponent={<View style={styles.center}><Text style={styles.empty}>No hay solicitudes cercanas por ahora.</Text></View>}
+            ListEmptyComponent={<View style={styles.center}><Text style={styles.empty}>No hay solicitudes disponibles en tu ciudad por ahora.</Text></View>}
           />}
     <TechnicianFooter active="available" onSelect={(tab) => tab === 'earnings' && navigation.navigate('TechnicianEarnings')} />
     <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)} onLogout={logout} />
-    <AvailableRequestDetailModal request={selected} radiusKm={radiusKm} onClose={() => setSelected(null)} />
+    <AvailableRequestDetailModal request={selected} onClose={() => setSelected(null)} />
   </View>
 }
 

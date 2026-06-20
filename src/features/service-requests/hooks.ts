@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ServiceRequest } from '../../types'
-import { serviceRequestApi } from './api'
+import { serviceRequestApi, type AvailableRequestSearch } from './api'
 import { uploadServiceImage } from '../../services/files'
 
 export const requestKeys = {
@@ -8,7 +8,8 @@ export const requestKeys = {
   clientHistory: ['service-requests', 'client', 'history'] as const,
   assigned: ['service-requests', 'assigned'] as const,
   assignedHistory: ['service-requests', 'assigned', 'history'] as const,
-  available: (radiusKm: string) => ['service-requests', 'available', radiusKm] as const,
+  available: (search: AvailableRequestSearch = {}) => ['service-requests', 'available', search] as const,
+  availableRoot: ['service-requests', 'available'] as const,
   detail: (requestId: string) => ['service-requests', 'detail', requestId] as const,
   quotes: (requestId: string) => ['service-requests', 'quotes', requestId] as const,
   location: (requestId: string) => ['service-requests', 'location', requestId] as const,
@@ -48,10 +49,10 @@ export function useAssignedRequestHistory() {
   })
 }
 
-export function useAvailableRequests(radiusKm: string, enabled = true) {
+export function useAvailableRequests(search: AvailableRequestSearch = {}, enabled = true) {
   return useQuery({
-    queryKey: requestKeys.available(radiusKm),
-    queryFn: () => serviceRequestApi.available(radiusKm),
+    queryKey: requestKeys.available(search),
+    queryFn: () => serviceRequestApi.available(search),
     enabled,
     refetchInterval: 10_000,
   })

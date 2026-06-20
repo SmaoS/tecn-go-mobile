@@ -9,15 +9,14 @@ import { apiMessage, hasApiStatus } from '../../../shared/apiMessage'
 import { useLiveCurrentLocation } from '../../location/hooks'
 import { useSendQuote } from '../hooks'
 
-export function AvailableRequestDetailModal({ request, radiusKm, onClose }: {
+export function AvailableRequestDetailModal({ request, onClose }: {
   request: ServiceRequest | null
-  radiusKm: string
   onClose: () => void
 }) {
   const [price, setPrice] = useState('')
   const [comment, setComment] = useState('')
   const [largeImage, setLargeImage] = useState<string | null>(null)
-  const quote = useSendQuote(radiusKm)
+  const quote = useSendQuote()
   const location = useLiveCurrentLocation(Boolean(request))
   if (!request) return null
   const current = request
