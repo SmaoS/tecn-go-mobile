@@ -1,6 +1,6 @@
 export function formatCopCurrency(value?: number | null) {
   if (value == null || !Number.isFinite(value)) return 'Sin estimado'
-  return `COL$${Math.round(value).toLocaleString('es-CO')}`
+  return `$${Math.round(value).toLocaleString('es-CO')} COP`
 }
 
 export function formatElapsedTime(createdAt: string, now = Date.now()) {

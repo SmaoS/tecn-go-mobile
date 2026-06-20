@@ -139,6 +139,7 @@ export interface TechnicianProfile {
   status: TechnicianStatus
   profilePhotoUrl?: string
   documentPhotoUrl: string
+  profilePhotoFaceValidated?: boolean
   certificatePhotoUrl?: string
   workExperienceDescription: string
   averageRating: number

@@ -32,6 +32,57 @@ export function useCurrentLocation() {
   return { getCurrent, isLocating, error, clearError: () => setError('') }
 }
 
+export function useLiveCurrentLocation(enabled: boolean) {
+  const [coordinates, setCoordinates] = useState<Coordinates>()
+  const [error, setError] = useState('')
+  const [isLocating, setIsLocating] = useState(enabled)
+
+  useEffect(() => {
+    if (!enabled) {
+      setIsLocating(false)
+      return
+    }
+    let active = true
+    let subscription: Location.LocationSubscription | undefined
+
+    const start = async () => {
+      setIsLocating(true)
+      setError('')
+      try {
+        const permission = await Location.requestForegroundPermissionsAsync()
+        if (!permission.granted) {
+          if (active) setError('Debes permitir la ubicación para consultar el recorrido.')
+          return
+        }
+        subscription = await Location.watchPositionAsync({
+          accuracy: Location.Accuracy.High,
+          timeInterval: 10_000,
+          distanceInterval: 10,
+        }, (location) => {
+          if (!active) return
+          setCoordinates({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          })
+          setIsLocating(false)
+        })
+      } catch (reason) {
+        if (active) setError(apiMessage(reason))
+      } finally {
+        if (active && !subscription) setIsLocating(false)
+      }
+    }
+
+    void start()
+    return () => {
+      active = false
+      subscription?.remove()
+    }
+  }, [enabled])
+
+  return { coordinates, error, isLocating }
+}
+
 export function useTechnicianLocationTracking(intervalMs = 10_000) {
   const [online, setOnline] = useState(false)
   const [error, setError] = useState('')

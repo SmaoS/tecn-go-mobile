@@ -7,6 +7,7 @@ import type { RootStackParamList } from '../../../types'
 import { useSession } from '../../../context/useSession'
 import { navigationRef } from '../../../navigation/navigationRef'
 import { openNotification } from '../../../navigation/notificationNavigation'
+import { notificationTitle } from '../labels'
 
 export function NotificationsScreen(_: NativeStackScreenProps<RootStackParamList, 'Notifications'>) {
   const items = useNotifications()
@@ -24,7 +25,7 @@ export function NotificationsScreen(_: NativeStackScreenProps<RootStackParamList
     <FlatList data={items.data ?? []} keyExtractor={(item) => item.id} renderItem={({ item }) => <Card>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
         <Pressable onPress={() => select(item)} style={{ flex: 1 }}>
-          <Text style={[styles.cardTitle, item.read && { color: colors.muted }]}>{item.title}{item.read ? '' : ' · Nueva'}</Text>
+          <Text style={[styles.cardTitle, item.read && { color: colors.muted }]}>{notificationTitle(item)}{item.read ? '' : ' · Nueva'}</Text>
           <Text style={styles.muted}>{item.message}</Text>
           <Text style={styles.muted}>{new Date(item.createdAt).toLocaleString()}</Text>
         </Pressable>

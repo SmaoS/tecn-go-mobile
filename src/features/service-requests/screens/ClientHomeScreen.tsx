@@ -14,6 +14,7 @@ import { ClientHeader } from '../components/ClientHeader'
 import { ClientMenu } from '../components/ClientMenu'
 import { useProfile } from '../../profile/hooks'
 import { useSession } from '../../../context/useSession'
+import { formatCopCurrency } from '../../../shared/format'
 
 export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) {
   useDoubleBackExit()
@@ -41,14 +42,14 @@ export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStac
             {quote.technicianProfilePhotoUrl
               ? <PrivateImage url={quote.technicianProfilePhotoUrl} style={{ width: 44, height: 44, borderRadius: 22 }} />
               : <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center' }}><Text style={styles.cardTitle}>{quote.technicianName.charAt(0)}</Text></View>}
-            <View style={{ flex: 1 }}><Text style={styles.cardTitle} numberOfLines={1}>{quote.technicianName}</Text><Text style={styles.muted} numberOfLines={1}>{request.categoryName}</Text><Text style={[styles.cardTitle, { color: colors.brand }]}>${quote.price.toLocaleString()}</Text></View>
+            <View style={{ flex: 1 }}><Text style={styles.cardTitle} numberOfLines={1}>{quote.technicianName}</Text>{quote.certifiedTechnician && <Text style={{ color: colors.brand, fontWeight: '900', fontSize: 12 }}>✓ Certificado</Text>}<Text style={styles.muted} numberOfLines={1}>{request.categoryName}</Text><Text style={[styles.cardTitle, { color: colors.brand }]}>{formatCopCurrency(quote.price)}</Text></View>
           </View></Card>
         </Pressable>)}
       </View>
     </>}
     <Text style={screenStyles.sectionLabel}>Solicitudes recientes</Text>
     <QueryState pending={requests.isPending || (hasPendingQuoteRequests && recentQuotes.isPending)} error={requests.error ?? recentQuotes.error ?? unread.error} empty={requests.data?.length === 0} emptyText="Aún no tienes solicitudes.">
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>{recentRequests.map((item) => <Pressable key={item.id} style={{ width: cardWidth }} onPress={() => navigation.navigate('RequestDetail', { request: item })}><Card style={screenStyles.compactCard}><View style={screenStyles.cardHeader}><Text style={styles.cardTitle} numberOfLines={1}>{item.categoryName}</Text><Text style={screenStyles.statusText}>{requestStatusLabels[item.status]}</Text></View><Text style={styles.muted} numberOfLines={2}>{item.description}</Text>{item.finalPrice != null && <Text style={screenStyles.price}>${item.finalPrice.toLocaleString()}</Text>}</Card></Pressable>)}</View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>{recentRequests.map((item) => <Pressable key={item.id} style={{ width: cardWidth }} onPress={() => navigation.navigate('RequestDetail', { request: item })}><Card style={screenStyles.compactCard}><View style={screenStyles.cardHeader}><Text style={styles.cardTitle} numberOfLines={1}>{item.categoryName}</Text><Text style={screenStyles.statusText}>{requestStatusLabels[item.status]}</Text></View><Text style={styles.muted} numberOfLines={2}>{item.description}</Text>{item.finalPrice != null && <Text style={screenStyles.price}>{formatCopCurrency(item.finalPrice)}</Text>}</Card></Pressable>)}</View>
       {(requests.data?.length ?? 0) > recentRequests.length && <Pressable onPress={() => navigation.navigate('ClientRequests')}><Text style={screenStyles.viewAll}>Ver todas mis solicitudes</Text></Pressable>}
     </QueryState>
     </ScrollView>

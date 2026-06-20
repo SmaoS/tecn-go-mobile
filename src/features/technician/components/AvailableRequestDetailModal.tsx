@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { Button, colors, Field } from '../../../components/UI'
 import { PrivateImage } from '../../../components/PrivateImage'
+import { RoutePreviewMap } from '../../../components/RoutePreviewMap'
 import type { ServiceRequest } from '../../../types'
 import { formatCopCurrency, formatElapsedTime } from '../../../shared/format'
 import { apiMessage, hasApiStatus } from '../../../shared/apiMessage'
+import { useLiveCurrentLocation } from '../../location/hooks'
 import { useSendQuote } from '../hooks'
 
 export function AvailableRequestDetailModal({ request, radiusKm, onClose }: {
@@ -16,8 +18,12 @@ export function AvailableRequestDetailModal({ request, radiusKm, onClose }: {
   const [comment, setComment] = useState('')
   const [largeImage, setLargeImage] = useState<string | null>(null)
   const quote = useSendQuote(radiusKm)
+  const location = useLiveCurrentLocation(Boolean(request))
   if (!request) return null
   const current = request
+  const destination = Number.isFinite(request.latitude) && Number.isFinite(request.longitude)
+    ? { latitude: request.latitude, longitude: request.longitude }
+    : undefined
   const pendingMessage = quote.error && hasApiStatus(quote.error, 409)
     ? 'Ya tienes una cotización pendiente para este servicio.'
     : quote.error ? apiMessage(quote.error) : ''
@@ -25,14 +31,22 @@ export function AvailableRequestDetailModal({ request, radiusKm, onClose }: {
     if (!Number.isFinite(value) || value <= 0) return
     quote.mutate({ id: current.id, price: value, description }, { onSuccess: onClose })
   }
+  function openRoute() {
+    if (!location.coordinates || !destination) return
+    const origin = `${location.coordinates.latitude},${location.coordinates.longitude}`
+    const target = `${destination.latitude},${destination.longitude}`
+    void Linking.openURL(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${target}&travelmode=driving`)
+  }
   return <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <View style={styles.map}>
-          <Text style={styles.mapTitle}>Recorrido aproximado</Text>
-          <Text style={styles.mapText}>El mapa detallado estará disponible cuando el cliente acepte una cotización.</Text>
-          <Text style={styles.mapDistance}>~{request.distanceKm?.toLocaleString('es-CO', { maximumFractionDigits: 1 }) ?? '?'} km</Text>
-        </View>
+        <Text style={styles.mapTitle}>Recorrido aproximado</Text>
+        <Text style={styles.mapText}>Consulta tu ubicación en tiempo real y el sector aproximado del servicio antes de cotizar. La dirección exacta se habilita cuando el cliente acepta.</Text>
+        <RoutePreviewMap origin={location.coordinates} destination={destination} distanceKm={request.distanceKm} />
+        {location.error && <Text style={styles.error}>{location.error}</Text>}
+        {location.coordinates && destination && <Pressable onPress={openRoute} style={styles.routeButton}>
+          <Text style={styles.routeButtonText}>Abrir ruta vial en Google Maps</Text>
+        </Pressable>}
         <View style={styles.summary}>
           {request.clientProfilePhotoUrl
             ? <PrivateImage url={request.clientProfilePhotoUrl} style={styles.avatar} />
@@ -79,10 +93,10 @@ export function AvailableRequestDetailModal({ request, radiusKm, onClose }: {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: 18, paddingBottom: 40 },
-  map: { minHeight: 180, borderRadius: 18, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  mapTitle: { color: colors.text, fontSize: 20, fontWeight: '900' },
-  mapText: { color: colors.muted, textAlign: 'center', marginTop: 8 },
-  mapDistance: { color: colors.brand, fontSize: 24, fontWeight: '900', marginTop: 12 },
+  mapTitle: { color: colors.text, fontSize: 20, fontWeight: '900', marginBottom: 6 },
+  mapText: { color: colors.muted, marginBottom: 14, lineHeight: 18 },
+  routeButton: { alignItems: 'center', borderColor: colors.brand, borderRadius: 14, borderWidth: 1, marginTop: 12, paddingVertical: 12 },
+  routeButtonText: { color: colors.brand, fontWeight: '900' },
   summary: { flexDirection: 'row', paddingVertical: 20, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   avatar: { width: 62, height: 62, borderRadius: 31 },
   fallback: { backgroundColor: colors.dark, alignItems: 'center', justifyContent: 'center' },
