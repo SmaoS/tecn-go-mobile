@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ServiceRequest } from '../../types'
 import { serviceRequestApi, type AvailableRequestSearch } from './api'
 import { uploadServiceImage } from '../../services/files'
+import { useSmartPolling } from '../../hooks/useSmartPolling'
 
 export const requestKeys = {
   client: ['service-requests', 'client'] as const,
@@ -18,43 +19,47 @@ export const requestKeys = {
 }
 
 export function useClientRequests() {
+  const polling = useSmartPolling()
   return useQuery({
     queryKey: requestKeys.client,
     queryFn: serviceRequestApi.clientRequests,
-    refetchInterval: 10_000,
+    ...polling,
   })
 }
 
 export function useAssignedRequests() {
+  const polling = useSmartPolling()
   return useQuery({
     queryKey: requestKeys.assigned,
     queryFn: serviceRequestApi.assigned,
-    refetchInterval: 10_000,
+    ...polling,
   })
 }
 
 export function useClientRequestHistory() {
+  const polling = useSmartPolling()
   return useQuery({
     queryKey: requestKeys.clientHistory,
     queryFn: serviceRequestApi.clientHistory,
-    refetchInterval: 10_000,
+    ...polling,
   })
 }
 
 export function useAssignedRequestHistory() {
+  const polling = useSmartPolling()
   return useQuery({
     queryKey: requestKeys.assignedHistory,
     queryFn: serviceRequestApi.assignedHistory,
-    refetchInterval: 10_000,
+    ...polling,
   })
 }
 
 export function useAvailableRequests(search: AvailableRequestSearch = {}, enabled = true) {
+  const polling = useSmartPolling(10_000, enabled)
   return useQuery({
     queryKey: requestKeys.available(search),
     queryFn: () => serviceRequestApi.available(search),
-    enabled,
-    refetchInterval: 10_000,
+    ...polling,
   })
 }
 
@@ -65,10 +70,11 @@ export function useServiceCategories() {
 }
 
 export function useRequestDetail(initial: ServiceRequest) {
+  const polling = useSmartPolling()
   return useQuery({
     queryKey: requestKeys.detail(initial.id),
     initialData: initial,
-    refetchInterval: 10_000,
+    ...polling,
     queryFn: async () => {
       return serviceRequestApi.detail(initial.id)
     },
@@ -76,27 +82,29 @@ export function useRequestDetail(initial: ServiceRequest) {
 }
 
 export function useNotificationRequest(requestId: string) {
+  const polling = useSmartPolling()
   return useQuery({
     queryKey: requestKeys.detail(requestId),
     queryFn: () => serviceRequestApi.detail(requestId),
-    refetchInterval: 10_000,
+    ...polling,
   })
 }
 
 export function useRequestQuotes(requestId: string) {
+  const polling = useSmartPolling()
   return useQuery({
     queryKey: requestKeys.quotes(requestId),
     queryFn: () => serviceRequestApi.quotes(requestId),
-    refetchInterval: 10_000,
+    ...polling,
   })
 }
 
 export function useRecentClientQuotes(requests: ServiceRequest[]) {
   const pending = requests.filter((item) => item.status === 'QUOTE_PENDING')
+  const polling = useSmartPolling(10_000, pending.length > 0)
   return useQuery({
     queryKey: requestKeys.recentQuotes(pending.map((item) => item.id)),
-    enabled: pending.length > 0,
-    refetchInterval: 10_000,
+    ...polling,
     queryFn: async () => (await Promise.all(pending.map(async (request) =>
       (await serviceRequestApi.quotes(request.id))
         .filter((quote) => quote.status === 'PENDING')
@@ -106,22 +114,22 @@ export function useRecentClientQuotes(requests: ServiceRequest[]) {
 }
 
 export function useNearbyTechnicians(latitude?: number, longitude?: number, cityId?: string) {
+  const polling = useSmartPolling(10_000, latitude != null && longitude != null)
   return useQuery({
     queryKey: requestKeys.nearbyTechnicians(latitude ?? 0, longitude ?? 0, cityId),
     queryFn: () => serviceRequestApi.nearbyTechnicians(latitude!, longitude!, 25, cityId),
-    enabled: latitude != null && longitude != null,
-    refetchInterval: 10_000,
+    ...polling,
   })
 }
 
 export function useTechnicianLocation(request: ServiceRequest) {
   const enabled = Boolean(request.technicianId)
     && ['QUOTE_ACCEPTED', 'ON_THE_WAY', 'ARRIVED', 'IN_PROGRESS'].includes(request.status)
+  const polling = useSmartPolling(10_000, enabled)
   return useQuery({
     queryKey: requestKeys.location(request.id),
     queryFn: () => serviceRequestApi.technicianLocation(request.id),
-    enabled,
-    refetchInterval: 10_000,
+    ...polling,
     retry: false,
   })
 }

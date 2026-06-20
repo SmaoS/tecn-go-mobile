@@ -162,3 +162,13 @@ bloqueados por una versión que todavía no existe en Google Play. El perfil
 `production` mantiene el control activo. Para probar un AAB de producción antes de
 publicarlo, configure temporalmente en el panel web `APP_VERSION_CHECK_ENABLED=false`
 o deje Android en versión mínima/última `1.0.0` con **Forzar actualización** apagado.
+# TecnGo Mobile
+
+## Sincronización en tiempo real
+
+- FCM avisa eventos importantes y dispara invalidación selectiva de caché.
+- Polling de respaldo cada 10 segundos; chat cada 5 segundos.
+- Las consultas periódicas se detienen cuando la app pasa a segundo plano.
+- Las pantallas fuera de foco no mantienen polling.
+- Al regresar a la app o abrir una notificación se refrescan los datos relacionados.
+- La API REST sigue siendo la fuente de verdad; el contenido del push no reemplaza la consulta.

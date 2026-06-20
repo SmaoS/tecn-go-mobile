@@ -14,7 +14,7 @@ export function NearbyTechniciansScreen() {
   const profile = useProfile()
   useEffect(() => { void location.getCurrent().then((value) => value && setCoordinates(value)) }, [])
   const technicians = useNearbyTechnicians(coordinates?.latitude, coordinates?.longitude, profile.data?.cityId)
-  return <KeyboardAwareScreen><Text style={styles.title}>Técnicos cercanos</Text><Text style={styles.subtitle}>Técnicos en línea alrededor de tu ubicación actual.</Text>
+  return <KeyboardAwareScreen><Text style={styles.title}>Técnicos cercanos</Text><Text style={styles.subtitle}>Se muestran zonas aproximadas. La ubicación exacta se habilita al aceptar una cotización.</Text>
     <Button title={location.isLocating ? 'Ubicando...' : 'Volver a ubicarme'} loading={location.isLocating} onPress={() => void location.getCurrent().then((value) => value && setCoordinates(value))} />
     {(location.error || technicians.error) && <Text style={styles.error}>{location.error || 'No fue posible consultar técnicos cercanos.'}</Text>}
     <View style={{ flex: 1, minHeight: 260, marginVertical: 12 }}><NearbyMap client={coordinates} technicians={technicians.data ?? []} /></View>

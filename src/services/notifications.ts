@@ -29,8 +29,20 @@ export async function preparePushNotifications() {
   return typeof token.data === 'string' ? token.data : JSON.stringify(token.data)
 }
 
-export function addNotificationListeners(onResponse: (data: Record<string, unknown>) => void) {
-  const received = Notifications.addNotificationReceivedListener(() => undefined)
+export function addPushTokenListener(onToken: (token: string) => void) {
+  const subscription = Notifications.addPushTokenListener((token) => {
+    onToken(typeof token.data === 'string' ? token.data : JSON.stringify(token.data))
+  })
+  return () => subscription.remove()
+}
+
+export function addNotificationListeners(
+  onReceived: (data: Record<string, unknown>) => void,
+  onResponse: (data: Record<string, unknown>) => void,
+) {
+  const received = Notifications.addNotificationReceivedListener((event) => {
+    onReceived(event.request.content.data)
+  })
   const response = Notifications.addNotificationResponseReceivedListener((event) => {
     onResponse(event.notification.request.content.data)
   })

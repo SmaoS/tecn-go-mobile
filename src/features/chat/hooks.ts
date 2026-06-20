@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { chatApi } from './api'
+import { CHAT_POLLING_MS, useSmartPolling } from '../../hooks/useSmartPolling'
 
-const chatKey = (requestId: string) => ['chat', requestId] as const
+export const chatKey = (requestId: string) => ['chat', requestId] as const
 
 export function useChat(requestId: string) {
+  const polling = useSmartPolling(CHAT_POLLING_MS)
   return useQuery({
     queryKey: chatKey(requestId),
     queryFn: async () => {
@@ -11,7 +13,7 @@ export function useChat(requestId: string) {
       await chatApi.read(requestId)
       return messages
     },
-    refetchInterval: 5_000,
+    ...polling,
   })
 }
 

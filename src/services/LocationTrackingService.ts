@@ -20,11 +20,15 @@ class LocationTrackingService {
   }
 
   async stopTracking(markOffline = true) {
-    this.subscription?.remove()
-    this.subscription = null
+    this.pauseTracking()
     if (!markOffline) return
     const location = await Location.getLastKnownPositionAsync()
     if (location) await this.updateBackendLocation(location, false)
+  }
+
+  pauseTracking() {
+    this.subscription?.remove()
+    this.subscription = null
   }
 
   async updateBackendLocation(location: Location.LocationObject, online = true) {

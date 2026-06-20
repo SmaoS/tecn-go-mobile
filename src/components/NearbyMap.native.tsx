@@ -16,7 +16,7 @@ export function NearbyMap({ client, technicians }: { client?: Coordinates; techn
       }}
     >
       {client && <Marker coordinate={client} title="Tu ubicación" pinColor={colors.brand} />}
-      {technicians.map((item) => <Marker key={item.technicianId} coordinate={{ latitude: item.latitude, longitude: item.longitude }} title={item.technicianName} description={`${item.distanceKm.toFixed(1)} km · ★ ${item.averageRating.toFixed(1)}`} />)}
+      {technicians.map((item) => <Marker key={item.technicianId} coordinate={{ latitude: item.latitude, longitude: item.longitude }} title={`${item.technicianName} · zona aproximada`} description={`${item.distanceKm.toFixed(1)} km · ★ ${item.averageRating.toFixed(1)}`} />)}
     </MapView>
   )
 }

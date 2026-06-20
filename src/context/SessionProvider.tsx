@@ -23,7 +23,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setSession(null)
     queryClient.clear()
   }), [queryClient])
-  usePushRegistration(Boolean(session))
+  usePushRegistration(session?.userId)
 
   async function logout() {
     if (session?.role === 'TECHNICIAN') {

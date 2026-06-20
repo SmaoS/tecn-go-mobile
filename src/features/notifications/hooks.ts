@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { notificationsApi } from './api'
+import { useSmartPolling } from '../../hooks/useSmartPolling'
 
 export const notificationKeys = {
   all: ['notifications'] as const,
@@ -7,18 +8,20 @@ export const notificationKeys = {
 }
 
 export function useNotifications() {
+  const polling = useSmartPolling()
   return useQuery({
     queryKey: notificationKeys.all,
     queryFn: notificationsApi.all,
-    refetchInterval: 10_000,
+    ...polling,
   })
 }
 
 export function useUnreadNotifications() {
+  const polling = useSmartPolling()
   return useQuery({
     queryKey: notificationKeys.unread,
     queryFn: notificationsApi.unread,
-    refetchInterval: 10_000,
+    ...polling,
   })
 }
 

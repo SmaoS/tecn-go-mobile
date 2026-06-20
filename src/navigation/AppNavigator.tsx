@@ -13,6 +13,8 @@ import { openNotification } from './notificationNavigation'
 import type { LinkingOptions } from '@react-navigation/native'
 import type { RootStackParamList } from '../types'
 import { setOperationBlockedHandler } from '../api/client'
+import { useQueryClient } from '@tanstack/react-query'
+import { syncNotificationData } from '../features/notifications/sync'
 
 const theme = {
   ...DarkTheme,
@@ -30,6 +32,7 @@ const linking: LinkingOptions<RootStackParamList> = {
 
 export function AppNavigator() {
   const { session, ready } = useSession()
+  const queryClient = useQueryClient()
   useEffect(() => {
     if (!session) return
     setOperationBlockedHandler((code) => {
@@ -43,15 +46,25 @@ export function AppNavigator() {
         navigationRef.navigate('OnboardingRequired')
       }
     })
-    return addNotificationListeners((data) => {
+    const sync = (data: Record<string, unknown>) => {
+      void syncNotificationData(queryClient, {
+        notificationType: typeof data.notificationType === 'string' ? data.notificationType : undefined,
+        type: typeof data.type === 'string' ? data.type : undefined,
+        requestId: typeof data.requestId === 'string' ? data.requestId : undefined,
+      })
+    }
+    return addNotificationListeners(sync, (data) => {
+      sync(data)
       if (!navigationRef.isReady()) return
       openNotification(navigationRef, session.role, {
         route: typeof data.route === 'string' ? data.route : undefined,
         requestId: typeof data.requestId === 'string' ? data.requestId : undefined,
-        type: typeof data.type === 'string' ? data.type as import('../types').UserNotification['type'] : 'SERVICE_STATUS_CHANGED',
+        type: typeof data.notificationType === 'string'
+          ? data.notificationType as import('../types').UserNotification['type']
+          : 'SERVICE_STATUS_CHANGED',
       })
     })
-  }, [session])
+  }, [queryClient, session])
 
   if (!ready) return <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center' }}><ActivityIndicator color={colors.brand} /></View>
   return <NavigationContainer ref={navigationRef} theme={theme} linking={linking}>

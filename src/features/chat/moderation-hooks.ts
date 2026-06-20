@@ -1,13 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { chatModerationApi } from './moderation-api'
+import { useSmartPolling } from '../../hooks/useSmartPolling'
 
 const moderationKey = ['admin', 'chat-moderation'] as const
 
 export function useChatModerationQueue() {
+  const polling = useSmartPolling()
   return useQuery({
     queryKey: moderationKey,
     queryFn: chatModerationApi.queue,
-    refetchInterval: 10_000,
+    ...polling,
   })
 }
 
