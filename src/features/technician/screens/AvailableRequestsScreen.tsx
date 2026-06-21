@@ -72,7 +72,7 @@ export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<R
           />}
     <TechnicianFooter active="available" onSelect={(tab) => tab === 'earnings' && navigation.navigate('TechnicianEarnings')} />
     <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)}
-      onSwitchMode={session?.roles?.includes('CLIENT') ? () => void switchMode('CLIENT').catch((error) => showToast(apiMessage(error), 'error')) : undefined}
+      onSwitchMode={() => void switchMode('CLIENT').catch((error) => showToast(apiMessage(error), 'error'))}
       onLogout={logout} />
     <AvailableRequestDetailModal request={selected} onClose={() => setSelected(null)} />
   </View>

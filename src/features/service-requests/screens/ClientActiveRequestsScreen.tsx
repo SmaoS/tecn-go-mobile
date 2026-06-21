@@ -48,7 +48,7 @@ export function ClientActiveRequestsScreen({ navigation }: NativeStackScreenProp
     </ScrollView>
     <ClientFooter active="requests" onSelect={(tab) => navigation.navigate(tab === 'request' ? 'Home' : 'ClientRequests')} />
     <ClientMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)}
-      onSwitchMode={session?.roles?.includes('TECHNICIAN') ? () => void switchMode('TECHNICIAN').catch((error) => showToast(apiMessage(error), 'error')) : undefined}
+      onSwitchMode={() => void switchMode('TECHNICIAN').catch((error) => showToast(apiMessage(error), 'error'))}
       onLogout={logout} />
   </View>
 }

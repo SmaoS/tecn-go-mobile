@@ -85,7 +85,7 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
     </ScrollView>
     <TechnicianFooter active="available" onSelect={(tab) => navigation.navigate(tab === 'available' ? 'AvailableRequests' : 'TechnicianEarnings')} />
     <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)}
-      onSwitchMode={session?.roles?.includes('CLIENT') ? () => void switchMode('CLIENT').catch((error) => showToast(apiMessage(error), 'error')) : undefined}
+      onSwitchMode={() => void switchMode('CLIENT').catch((error) => showToast(apiMessage(error), 'error'))}
       onLogout={logout} />
   </View>
 }

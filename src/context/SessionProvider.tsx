@@ -29,7 +29,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   async function switchMode(mode: 'CLIENT' | 'TECHNICIAN') {
     if (!session || session.activeMode === mode) return
-    if (!session.roles?.includes(mode)) throw new Error(`Tu cuenta no tiene el modo ${mode}`)
     if (session.activeMode === 'TECHNICIAN') {
       await locationTrackingService.stopTracking(false)
     }
@@ -37,6 +36,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       token: string
       roles: Session['roles']
       activeMode: 'CLIENT' | 'TECHNICIAN'
+      roleCreated: boolean
+      onboardingCompleted: boolean
     }>('/v1/users/me/active-mode', { mode })
     const next: Session = {
       ...session,
@@ -44,11 +45,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       roles: data.roles,
       activeMode: data.activeMode,
       role: data.activeMode,
+      onboardingCompleted: data.onboardingCompleted,
     }
     await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(next))
     queryClient.clear()
     setSession(next)
-    showToast(mode === 'CLIENT' ? 'Modo cliente activado' : 'Modo técnico activado')
+    showToast(data.roleCreated
+      ? mode === 'CLIENT' ? 'Modo cliente creado y activado' : 'Modo técnico creado. Completa tu inscripción'
+      : mode === 'CLIENT' ? 'Modo cliente activado' : 'Modo técnico activado')
   }
 
   async function logout() {

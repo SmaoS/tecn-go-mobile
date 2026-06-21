@@ -57,7 +57,7 @@ export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStac
     </ScrollView>
     <ClientFooter active="request" onSelect={(tab) => navigation.navigate(tab === 'request' ? 'Home' : 'ClientRequests')} />
     <ClientMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)}
-      onSwitchMode={session?.roles?.includes('TECHNICIAN') ? () => void switchMode('TECHNICIAN').catch((error) => showToast(apiMessage(error), 'error')) : undefined}
+      onSwitchMode={() => void switchMode('TECHNICIAN').catch((error) => showToast(apiMessage(error), 'error'))}
       onLogout={logout} />
   </View>
 }

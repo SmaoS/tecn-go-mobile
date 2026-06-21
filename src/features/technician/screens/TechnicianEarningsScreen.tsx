@@ -98,7 +98,7 @@ export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<
     </ScrollView>
     <TechnicianFooter active="earnings" onSelect={(tab) => tab === 'available' && navigation.navigate('AvailableRequests')} />
     <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)}
-      onSwitchMode={session?.roles?.includes('CLIENT') ? () => void switchMode('CLIENT').catch((error) => showToast(apiMessage(error), 'error')) : undefined}
+      onSwitchMode={() => void switchMode('CLIENT').catch((error) => showToast(apiMessage(error), 'error'))}
       onLogout={logout} />
   </View>
 }
