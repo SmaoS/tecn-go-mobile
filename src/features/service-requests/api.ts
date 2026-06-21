@@ -1,5 +1,5 @@
 import { api } from '../../api/client'
-import type { Category, NearbyTechnician, ServiceQuote, ServiceRequest, TechnicianLocation } from '../../types'
+import type { Category, NearbyTechnician, PageResponse, ServiceQuote, ServiceRequest, TechnicianLocation } from '../../types'
 
 export interface AvailableRequestSearch {
   cityId?: string
@@ -10,13 +10,15 @@ export interface AvailableRequestSearch {
 
 export const serviceRequestApi = {
   categories: () => api.get<Category[]>('/v1/services').then(({ data }) => data),
-  clientRequests: () => api.get<ServiceRequest[]>('/v1/service-requests/my?activeOnly=true').then(({ data }) => data),
-  clientHistory: () => api.get<ServiceRequest[]>('/v1/service-requests/my/history').then(({ data }) => data),
+  clientRequests: () => api.get<PageResponse<ServiceRequest>>('/v1/service-requests/my/page?activeOnly=true&page=0&size=20').then(({ data }) => data.content),
+  clientHistory: () => api.get<PageResponse<ServiceRequest>>('/v1/service-requests/my/history/page?page=0&size=20').then(({ data }) => data.content),
   detail: (requestId: string) => api.get<ServiceRequest>(`/v1/service-requests/${requestId}`).then(({ data }) => data),
-  assigned: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned?activeOnly=true').then(({ data }) => data),
-  assignedHistory: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned/history').then(({ data }) => data),
+  assigned: () => api.get<PageResponse<ServiceRequest>>('/v1/service-requests/my-assigned/page?activeOnly=true&page=0&size=20').then(({ data }) => data.content),
+  assignedHistory: () => api.get<PageResponse<ServiceRequest>>('/v1/service-requests/my-assigned/history/page?page=0&size=20').then(({ data }) => data.content),
   available: (search: AvailableRequestSearch = {}) =>
-    api.get<ServiceRequest[]>('/v1/service-requests/available', { params: search }).then(({ data }) => data),
+    api.get<PageResponse<ServiceRequest>>('/v1/service-requests/available/page', {
+      params: { ...search, page: 0, size: 30 },
+    }).then(({ data }) => data.content),
   quotes: (requestId: string) => api.get<ServiceQuote[]>(`/v1/service-requests/${requestId}/quotes`).then(({ data }) => data),
   technicianLocation: (requestId: string) => api.get<TechnicianLocation>(`/v1/service-requests/${requestId}/technician-location`).then(({ data }) => data),
   nearbyTechnicians: (latitude: number, longitude: number, radiusKm = 25, cityId?: string) =>
