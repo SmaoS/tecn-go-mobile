@@ -9,6 +9,7 @@
     "icon": "./assets/icon.png",
     "plugins": [
       "expo-notifications",
+      "expo-secure-store",
       [
         "expo-camera",
         {

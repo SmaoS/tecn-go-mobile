@@ -1,7 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios from 'axios'
+import { getStoredSession, removeStoredSession, SESSION_KEY } from '../services/sessionStorage'
 
-export const SESSION_KEY = 'tecngo.session'
+export { SESSION_KEY }
 
 const apiUrl = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '')
 if (!apiUrl) throw new Error('EXPO_PUBLIC_API_URL is required')
@@ -21,7 +21,7 @@ export const api = axios.create({
 })
 
 api.interceptors.request.use(async (config) => {
-  const raw = await AsyncStorage.getItem(SESSION_KEY)
+  const raw = await getStoredSession()
   if (raw) config.headers.Authorization = `Bearer ${JSON.parse(raw).token}`
   return config
 })
@@ -30,7 +30,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      await AsyncStorage.removeItem(SESSION_KEY)
+      await removeStoredSession()
       unauthorizedHandler?.()
     }
     if (error.response?.status === 403 && typeof error.response.data?.code === 'string') {

@@ -7,7 +7,6 @@ import { Button, Card, Field, colors, styles as uiStyles } from '../../../compon
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
 import type { RootStackParamList } from '../../../types'
 import { useSession } from '../../../context/useSession'
-import { SESSION_KEY } from '../../../api/client'
 import { apiMessage } from '../../../shared/apiMessage'
 import { CatalogSelect } from '../../catalogs/CatalogSelect'
 import { useCities, useCountries, useDepartments } from '../../catalogs/hooks'
@@ -15,6 +14,7 @@ import { useProfile } from '../../profile/hooks'
 import { pickAndUploadEvidence, pickAndUploadImageAsset, uploadAsset } from '../../../services/files'
 import { onboardingApi, type DocumentType, type OnboardingMainData } from '../api'
 import { TechnicianProfessionalProfileOnboardingScreen } from './TechnicianProfessionalProfileOnboardingScreen'
+import { setStoredSession } from '../../../services/sessionStorage'
 
 const labels: Record<string, string> = {
   MAIN_DATA: 'Datos principales',
@@ -117,7 +117,7 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       if (session && !session.onboardingCompleted) {
         const next = { ...session, onboardingCompleted: true }
         setSession(next)
-        void AsyncStorage.setItem(SESSION_KEY, JSON.stringify(next))
+        void setStoredSession(JSON.stringify(next))
       }
       navigation.reset({ index: 0, routes: [{ name: session?.role === 'TECHNICIAN' ? 'AvailableRequests' : 'Home' }] })
     }

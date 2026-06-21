@@ -6,7 +6,7 @@ import { SecureField } from '../../../components/SecureField'
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
 import { apiMessage } from '../../../shared/apiMessage'
 import type { RootStackParamList, Session } from '../../../types'
-import { useForgotPassword, useLogin, useRegister, useRegisterByPhone, useResetPassword, useSendPhoneOtp, useVerifyPhoneOtp } from '../hooks'
+import { useForgotPassword, useLogin, useRegister, useRegisterByPhone, useResetPassword, useSendPhoneOtp, useVerifyAdminMfa, useVerifyPhoneOtp } from '../hooks'
 import { authApi } from '../api'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login' | 'Register'> & {
@@ -17,8 +17,28 @@ export function LoginScreen({ navigation, onSession }: Props) {
   const [method, setMethod] = useState<'email' | 'phone'>('email')
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
-  const login = useLogin(onSession)
+  const [mfaChallenge, setMfaChallenge] = useState('')
+  const [mfaCode, setMfaCode] = useState('')
+  const login = useLogin()
+  const verifyMfa = useVerifyAdminMfa(onSession)
   const canLogin = identifier.trim().length > 0 && password.length > 0
+  if (mfaChallenge) {
+    return <KeyboardAwareScreen>
+      <Image source={require('../../../../assets/logo-horizontal-dark.png')} style={authStyles.logo} resizeMode="contain" />
+      <Text style={styles.title}>Verificación administrativa</Text>
+      <Text style={styles.subtitle}>Enviamos un código de seis dígitos al correo de la cuenta.</Text>
+      <Field style={authStyles.baseInput} keyboardType="number-pad" maxLength={6}
+        placeholder="Código MFA" value={mfaCode}
+        onChangeText={(value) => setMfaCode(value.replace(/\D/g, ''))} />
+      {verifyMfa.error && <Text style={styles.error}>{apiMessage(verifyMfa.error)}</Text>}
+      <Button title="Verificar e ingresar"
+        onPress={() => verifyMfa.mutate({ challengeToken: mfaChallenge, code: mfaCode })}
+        loading={verifyMfa.isPending} disabled={mfaCode.length !== 6} />
+      <Pressable onPress={() => { setMfaChallenge(''); setMfaCode('') }}>
+        <Text style={styles.link}>Volver al inicio de sesión</Text>
+      </Pressable>
+    </KeyboardAwareScreen>
+  }
   return <KeyboardAwareScreen><Image source={require('../../../../assets/logo-horizontal-dark.png')} style={authStyles.logo} resizeMode="contain" /><Text style={styles.title}>Bienvenido de nuevo</Text><Text style={styles.subtitle}>Ayuda técnica cerca de ti.</Text>
     <View style={authStyles.roleRow}>
       <Pressable style={[authStyles.roleButton, method === 'email' && authStyles.roleButtonActive]} onPress={() => { setMethod('email'); setIdentifier('') }}><Text style={[authStyles.roleText, method === 'email' && authStyles.roleTextActive]}>Correo</Text></Pressable>
@@ -26,7 +46,12 @@ export function LoginScreen({ navigation, onSession }: Props) {
     </View>
     <Field style={authStyles.baseInput} autoCapitalize="none" keyboardType={method === 'email' ? 'email-address' : 'phone-pad'} placeholder={method === 'email' ? 'Correo' : 'Celular, ej. 3001234567'} value={identifier} onChangeText={setIdentifier} />
     <SecureField style={authStyles.baseInput}  placeholder="Contraseña" value={password} onChangeText={setPassword} />
-    {login.error && <Text style={styles.error}>{apiMessage(login.error)}</Text>}<Button title="Ingresar" onPress={() => login.mutate({ identifier: identifier.trim(), password, method })} loading={login.isPending} disabled={!canLogin} />
+    {login.error && <Text style={styles.error}>{apiMessage(login.error)}</Text>}<Button title="Ingresar" onPress={() => login.mutate(
+      { identifier: identifier.trim(), password, method },
+      { onSuccess: (result) => result.mfaRequired && result.mfaChallengeToken
+        ? setMfaChallenge(result.mfaChallengeToken)
+        : onSession(result) },
+    )} loading={login.isPending} disabled={!canLogin} />
     <Pressable onPress={() => navigation.navigate('ForgotPassword')}><Text style={styles.link}>¿Olvidaste tu contraseña?</Text></Pressable>
     <Pressable onPress={() => navigation.navigate('Register')}><Text style={styles.link}>Crear una cuenta</Text></Pressable>
   </KeyboardAwareScreen>

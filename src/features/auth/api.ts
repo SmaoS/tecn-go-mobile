@@ -1,17 +1,31 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { api, SESSION_KEY } from '../../api/client'
+import { api } from '../../api/client'
 import type { Session } from '../../types'
+import { setStoredSession } from '../../services/sessionStorage'
 
 async function persist(response: Promise<{ data: Session }>) {
   const { data } = await response
-  await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(data))
+  await setStoredSession(JSON.stringify(data))
+  return data
+}
+
+export type LoginResult = Session & {
+  mfaRequired?: boolean
+  mfaChallengeToken?: string
+  mfaExpiresAt?: string
+}
+
+async function login(response: Promise<{ data: LoginResult }>) {
+  const { data } = await response
+  if (!data.mfaRequired) await setStoredSession(JSON.stringify(data))
   return data
 }
 
 export const authApi = {
   login: (identifier: string, password: string, method: 'email' | 'phone') =>
-    persist(api.post<Session>(method === 'email' ? '/v1/auth/login' : '/v1/auth/login-by-phone',
+    login(api.post<LoginResult>(method === 'email' ? '/v1/auth/login' : '/v1/auth/login-by-phone',
       method === 'email' ? { email: identifier, password } : { phone: identifier, password })),
+  verifyAdminMfa: (challengeToken: string, code: string) =>
+    persist(api.post<Session>('/v1/auth/mfa/verify', { challengeToken, code })),
   register: (payload: { fullName: string; email: string; password: string; confirmPassword: string; role: 'CLIENT' | 'TECHNICIAN'; referralCode?: string }) =>
     persist(api.post<Session>('/v1/auth/register', payload)),
   registerByPhone: (payload: { fullName: string; phone: string; verificationToken: string; password: string; confirmPassword: string; role: 'CLIENT' | 'TECHNICIAN'; referralCode?: string }) =>

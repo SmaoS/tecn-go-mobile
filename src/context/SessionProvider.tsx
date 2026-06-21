@@ -1,8 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useQueryClient } from '@tanstack/react-query'
 import * as Location from 'expo-location'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { SESSION_KEY, setUnauthorizedHandler } from '../api/client'
+import { setUnauthorizedHandler } from '../api/client'
 import { usePushRegistration } from '../features/notifications/usePushRegistration'
 import { technicianApi } from '../features/technician/api'
 import type { Session } from '../types'
@@ -10,6 +9,7 @@ import { locationTrackingService } from '../services/LocationTrackingService'
 import { SessionContext } from './session-context'
 import { api } from '../api/client'
 import { showToast } from '../components/Toast'
+import { getStoredSession, removeStoredSession, setStoredSession } from '../services/sessionStorage'
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
@@ -17,7 +17,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    AsyncStorage.getItem(SESSION_KEY)
+    getStoredSession()
       .then((raw) => { if (raw) setSession(JSON.parse(raw) as Session) })
       .finally(() => setReady(true))
   }, [])
@@ -47,7 +47,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       role: data.activeMode,
       onboardingCompleted: data.onboardingCompleted,
     }
-    await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(next))
+    await setStoredSession(JSON.stringify(next))
     queryClient.clear()
     setSession(next)
     showToast(data.roleCreated
@@ -69,7 +69,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         // Logout continues if the final location update is unavailable.
       }
     }
-    await AsyncStorage.removeItem(SESSION_KEY)
+    try {
+      await api.post('/v1/auth/logout')
+    } catch {
+      // Local logout must continue when the backend is unavailable.
+    }
+    await removeStoredSession()
     queryClient.clear()
     setSession(null)
   }

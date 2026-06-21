@@ -2,8 +2,12 @@ import { useMutation } from '@tanstack/react-query'
 import type { Session } from '../../types'
 import { authApi } from './api'
 
-export const useLogin = (onSuccess: (session: Session) => void) => useMutation({
+export const useLogin = () => useMutation({
   mutationFn: ({ identifier, password, method }: { identifier: string; password: string; method: 'email' | 'phone' }) => authApi.login(identifier, password, method),
+})
+export const useVerifyAdminMfa = (onSuccess: (session: Session) => void) => useMutation({
+  mutationFn: ({ challengeToken, code }: { challengeToken: string; code: string }) =>
+    authApi.verifyAdminMfa(challengeToken, code),
   onSuccess,
 })
 export const useRegister = (onSuccess: (session: Session) => void) => useMutation({

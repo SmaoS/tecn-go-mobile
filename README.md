@@ -172,3 +172,14 @@ o deje Android en versión mínima/última `1.0.0` con **Forzar actualización**
 - Las pantallas fuera de foco no mantienen polling.
 - Al regresar a la app o abrir una notificación se refrescan los datos relacionados.
 - La API REST sigue siendo la fuente de verdad; el contenido del push no reemplaza la consulta.
+
+## Almacenamiento seguro de sesión
+
+El JWT se guarda en `expo-secure-store` usando almacenamiento ligado al dispositivo.
+Al actualizar desde una versión anterior, la app migra una vez la sesión desde
+AsyncStorage y elimina la copia antigua. AsyncStorage queda reservado para borradores
+no sensibles del onboarding.
+
+Los accesos `ADMIN` y `VERIFIER` muestran una segunda pantalla para ingresar el código
+MFA enviado por correo. Cerrar sesión llama `/v1/auth/logout` y luego elimina el token
+local incluso si la red no está disponible.
