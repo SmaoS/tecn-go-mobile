@@ -23,6 +23,7 @@ export function useSaveTechnicianProfile(exists: boolean) {
   return useMutation({
     mutationFn: (form: TechnicianProfileForm) => technicianApi.saveProfile(exists, {
       ...form,
+      description: form.workExperienceDescription,
       latitude: Number(form.latitude), longitude: Number(form.longitude),
       homeLatitude: Number(form.homeLatitude), homeLongitude: Number(form.homeLongitude),
     }),

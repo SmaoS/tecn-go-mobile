@@ -14,13 +14,14 @@ import { CatalogSelect } from '../../catalogs/CatalogSelect'
 import { useCities, useCountries, useDepartments } from '../../catalogs/hooks'
 import { authApi } from '../../auth/api'
 import { useMutation } from '@tanstack/react-query'
+import { showToast } from '../../../components/Toast'
+import { profileApi } from '../api'
 
 export function ProfileScreen({ session, onLogout, navigation, rootExit = false }: { session: Session; onLogout: () => void; navigation?: { navigate: (screen: 'CaptureProfilePhoto' | 'Legal') => void }; rootExit?: boolean }) {
   useDoubleBackExit(rootExit)
   const profile = useProfile()
   const save = useSaveProfile()
   const [draft, setDraft] = useState<UserProfile | null>(null)
-  const [notice, setNotice] = useState('')
   const [passwordModal, setPasswordModal] = useState(false)
   const [phoneCode, setPhoneCode] = useState('')
   const location = useCurrentLocation()
@@ -33,13 +34,19 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
   const cities = useCities(current?.departmentId)
   const sendPhoneOtp = useMutation({
     mutationFn: authApi.sendPhoneOtp,
-    onSuccess: (data) => setNotice(data.debugCode ? `Código de desarrollo: ${data.debugCode}` : 'Código enviado por SMS.'),
-    onError: (error) => setNotice(apiMessage(error)),
+    onSuccess: (data) => showToast(data.debugCode ? `Código de desarrollo: ${data.debugCode}` : 'Código enviado por SMS', 'info'),
+    onError: (error) => showToast(apiMessage(error), 'error'),
   })
   const verifyPhoneOtp = useMutation({
-    mutationFn: ({ phone, code }: { phone: string; code: string }) => authApi.verifyPhoneOtp(phone, code),
-    onSuccess: () => { setNotice('Celular verificado.'); void profile.refetch() },
-    onError: (error) => setNotice(apiMessage(error)),
+    mutationFn: async ({ phone, code }: { phone: string; code: string }) => {
+      const verification = await authApi.verifyPhoneOtp(phone, code)
+      return profileApi.verifyPhone(phone, verification.verificationToken)
+    },
+    onSuccess: async () => {
+      await profile.refetch()
+      showToast('Celular verificado correctamente')
+    },
+    onError: (error) => showToast(apiMessage(error), 'error'),
   })
   function update(value: Partial<UserProfile>) {
     if (current) setDraft({ ...current, ...value })
@@ -49,13 +56,13 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
     if (coordinates) update({ homeLatitude: coordinates.latitude, homeLongitude: coordinates.longitude })
   }
   function submit() {
-    if (!current?.documentPhotoUrl) { setNotice('El documento es obligatorio'); return }
+    if (!current?.documentPhotoUrl) { showToast('El documento es obligatorio', 'error'); return }
     if (!current.countryId || !current.departmentId || !current.cityId) {
-      setNotice('Selecciona país, departamento y ciudad')
+      showToast('Selecciona país, departamento y ciudad', 'error')
       return
     }
     save.mutate(current, {
-      onSuccess: () => { setDraft(null); setNotice('Perfil actualizado.') },
+      onSuccess: () => { setDraft(null); showToast('Perfil actualizado') },
     })
   }
   const verificationLabel = current?.verificationStatus === 'VERIFIED'
@@ -83,9 +90,9 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       <Button title={current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'} onPress={useHomeGps} loading={location.isLocating} />      
       {navigation && !current.profilePhotoFaceValidated && <Button title="Tomar foto de perfil con cámara" onPress={() => navigation.navigate('CaptureProfilePhoto')} />}
       <Button title={current.documentPhotoUrl ? 'Documento cargado' : 'Subir documento obligatorio'} onPress={() => document.mutate('DOCUMENT', { onSuccess: (url) => update({ documentPhotoUrl: url ?? current.documentPhotoUrl }) })} loading={document.isPending} />
-      {(notice || location.error || save.error || profileImage.error || document.error) && <Text style={(save.error || profileImage.error || document.error) ? styles.error : styles.muted}>{save.error || profileImage.error || document.error ? apiMessage(save.error ?? profileImage.error ?? document.error) : location.error || notice}</Text>}
+      {(location.error || save.error || profileImage.error || document.error) && <Text style={(save.error || profileImage.error || document.error) ? styles.error : styles.muted}>{save.error || profileImage.error || document.error ? apiMessage(save.error ?? profileImage.error ?? document.error) : location.error}</Text>}
       <Button title="Guardar perfil" onPress={submit} loading={save.isPending} />      
-      {!current.emailVerified && <Button title="Verificar correo" loading={verifyEmail.isPending} onPress={() => verifyEmail.mutate(undefined, { onSuccess: () => setNotice('Correo de verificación enviado'), onError: (error) => setNotice(apiMessage(error)) })} />}</>}
+      {!current.emailVerified && <Button title="Verificar correo" loading={verifyEmail.isPending} onPress={() => verifyEmail.mutate(undefined, { onSuccess: () => showToast('Correo de verificación enviado', 'info'), onError: (error) => showToast(apiMessage(error), 'error') })} />}</>}
       <Button title="Modificar contraseña" onPress={() => setPasswordModal(true)} />
   </QueryState><Button title="Cerrar sesión" onPress={onLogout} />
     <PasswordChangeModal visible={passwordModal} onClose={() => setPasswordModal(false)} />

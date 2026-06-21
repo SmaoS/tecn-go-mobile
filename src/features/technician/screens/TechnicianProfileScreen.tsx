@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { Pressable, Text } from 'react-native'
 import { Button, Card, Field, colors, styles } from '../../../components/UI'
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
@@ -11,9 +12,13 @@ import { useCurrentLocation } from '../../location/hooks'
 import { PasswordChangeModal } from '../../profile/components/PasswordChangeModal'
 import { CatalogSelect } from '../../catalogs/CatalogSelect'
 import { useCities, useCountries, useDepartments } from '../../catalogs/hooks'
+import { authApi } from '../../auth/api'
+import { profileApi } from '../../profile/api'
+import { showToast } from '../../../components/Toast'
+import { useSession } from '../../../context/useSession'
 
 const empty: TechnicianProfileForm = {
-  documentNumber: '', phone: '', categoryIds: [], description: '', profilePhotoUrl: '',
+  documentNumber: '', phone: '', categoryIds: [], profilePhotoUrl: '',
   documentPhotoUrl: '', certificatePhotoUrl: '', workExperienceDescription: '',
   latitude: '', longitude: '', homeAddress: '', homeLatitude: '', homeLongitude: '',
   homeCity: '', homeNeighborhood: '', countryId: '', departmentId: '', cityId: '',
@@ -24,18 +29,47 @@ export function TechnicianProfileScreen() {
   const categories = useTechnicianCategories()
   const [form, setForm] = useState(empty)
   const [passwordModal, setPasswordModal] = useState(false)
+  const [phoneCode, setPhoneCode] = useState('')
+  const [phoneVerificationToken, setPhoneVerificationToken] = useState('')
+  const [verifiedPhone, setVerifiedPhone] = useState('')
+  const { session, setSession } = useSession()
   const location = useCurrentLocation()
   const profileImage = useProfileImageUpload()
   const document = useDocumentUpload()
   const countries = useCountries()
   const departments = useDepartments(form.countryId)
   const cities = useCities(form.departmentId)
+  const sendPhoneOtp = useMutation({
+    mutationFn: authApi.sendPhoneOtp,
+    onSuccess: (data) => showToast(data.debugCode ? `Código de desarrollo: ${data.debugCode}` : 'Código enviado por SMS', 'info'),
+    onError: (error) => showToast(apiMessage(error), 'error'),
+  })
+  const verifyPhoneOtp = useMutation({
+    mutationFn: ({ phone, code }: { phone: string; code: string }) => authApi.verifyPhoneOtp(phone, code),
+    onSuccess: (data) => {
+      setPhoneVerificationToken(data.verificationToken)
+      showToast('Código OTP verificado')
+    },
+    onError: (error) => showToast(apiMessage(error), 'error'),
+  })
+  const confirmPhone = useMutation({
+    mutationFn: () => profileApi.verifyPhone(form.phone, phoneVerificationToken),
+    onSuccess: async () => {
+      setPhoneCode('')
+      setPhoneVerificationToken('')
+      setVerifiedPhone(normalizePhone(form.phone))
+      if (session) setSession({ ...session, phoneVerified: true })
+      showToast('Celular verificado correctamente')
+    },
+    onError: (error) => showToast(apiMessage(error), 'error'),
+  })
   useEffect(() => {
     if (!profile.data) return
     const data = profile.data
+    if (data.phoneVerified) setVerifiedPhone(normalizePhone(data.phone))
     setForm({
       documentNumber: data.documentNumber, phone: data.phone,
-      categoryIds: data.categories.map((item) => item.id), description: data.description,
+      categoryIds: data.categories.map((item) => item.id),
       profilePhotoUrl: data.profilePhotoUrl ?? '', documentPhotoUrl: data.documentPhotoUrl,
       certificatePhotoUrl: data.certificatePhotoUrl ?? '', workExperienceDescription: data.workExperienceDescription,
       latitude: String(data.latitude ?? ''), longitude: String(data.longitude ?? ''),
@@ -64,18 +98,30 @@ export function TechnicianProfileScreen() {
     : profile.data?.verificationStatus === 'PENDING_VERIFICATION'
       ? 'Documento pendiente de verificación'
       : 'Completa el documento para iniciar la verificación'
+  const requiresPhoneVerification = Boolean(form.phone)
+    && normalizePhone(form.phone) !== verifiedPhone
   return <KeyboardAwareScreen><Text style={styles.title}>Perfil técnico</Text><Text style={styles.subtitle}>{profile.data ? `Estado profesional: ${profile.data.status} · ${identityStatus}` : 'Completa tus datos para solicitar aprobación.'}</Text>
     <QueryState pending={profile.isPending || categories.isPending} error={profileError ?? categories.error}>
       <>{profile.data?.email && <><Text style={styles.label}>Correo</Text><Field value={profile.data.email} editable={false} selectTextOnFocus={false} accessibilityLabel="Correo registrado" /></>}
         <Text style={styles.label}>Nro Documento</Text>
         <Field placeholder="Nro Documento" value={form.documentNumber} onChangeText={(documentNumber) => setForm({ ...form, documentNumber })} />
         <Text style={styles.label}>Teléfono</Text>
-        <Field placeholder="Teléfono" value={form.phone} onChangeText={(phone) => setForm({ ...form, phone })} />
+        <Field placeholder="Teléfono" value={form.phone} keyboardType="phone-pad" onChangeText={(phone) => {
+          setForm({ ...form, phone })
+          setPhoneCode('')
+          setPhoneVerificationToken('')
+        }} />
+        {requiresPhoneVerification && <>
+          <Button title="Enviar código OTP" onPress={() => sendPhoneOtp.mutate(form.phone)} loading={sendPhoneOtp.isPending} />
+          <Field placeholder="Código OTP" keyboardType="number-pad" value={phoneCode} onChangeText={(value) => setPhoneCode(value.replace(/\D/g, ''))} />
+          {!phoneVerificationToken
+            ? <Button title="Validar código" disabled={!phoneCode} loading={verifyPhoneOtp.isPending} onPress={() => verifyPhoneOtp.mutate({ phone: form.phone, code: phoneCode })} />
+            : <Button title="Confirmar celular verificado" loading={confirmPhone.isPending} onPress={() => confirmPhone.mutate()} />}
+        </>}
+        {!requiresPhoneVerification && <Text style={[styles.muted, { color: colors.brand }]}>Celular verificado</Text>}
         <Text style={styles.label}>Categorías</Text>{categories.data?.map((category) => <Pressable key={category.id} onPress={() => setForm({ ...form, categoryIds: form.categoryIds.includes(category.id) ? form.categoryIds.filter((id) => id !== category.id) : [...form.categoryIds, category.id] })}><Card><Text style={[styles.cardTitle, form.categoryIds.includes(category.id) && { color: colors.brand }]}>{form.categoryIds.includes(category.id) ? '✓ ' : ''}{category.name}</Text></Card></Pressable>)}
-        <Text style={styles.label}>Descripción profesional</Text>
-        <Field multiline placeholder="Descripción profesional" value={form.description} onChangeText={(description) => setForm({ ...form, description })} />
         <Text style={styles.label}>Experiencia laboral</Text>
-        <Field multiline placeholder="Experiencia laboral" value={form.workExperienceDescription} onChangeText={(workExperienceDescription) => setForm({ ...form, workExperienceDescription })} />
+        <Field multiline placeholder="Describe tu experiencia laboral" value={form.workExperienceDescription} onChangeText={(workExperienceDescription) => setForm({ ...form, workExperienceDescription })} />
         {!profile.data?.profilePhotoFaceValidated && <Button title={form.profilePhotoUrl ? 'Foto de perfil cargada' : 'Subir foto de perfil'} onPress={() => profileImage.mutate(undefined, { onSuccess: (url) => setForm({ ...form, profilePhotoUrl: url ?? form.profilePhotoUrl }) })} loading={profileImage.isPending} />}
         <Button title={form.documentPhotoUrl ? 'Documento de Identidad cargado' : 'Subir documento de identidad obligatorio'} onPress={() => document.mutate('DOCUMENT', { onSuccess: (url) => setForm({ ...form, documentPhotoUrl: url ?? form.documentPhotoUrl }) })} loading={document.isPending} />
         <Button title={form.certificatePhotoUrl ? 'Certificado De estudio cargado' : 'Subir certificado de estudio opcional'} onPress={() => document.mutate('CERTIFICATE', { onSuccess: (url) => setForm({ ...form, certificatePhotoUrl: url ?? form.certificatePhotoUrl }) })} loading={document.isPending} />
@@ -91,10 +137,14 @@ export function TechnicianProfileScreen() {
         {(location.error || profileImage.error || document.error || save.error) && <Text style={styles.error}>{location.error || apiMessage(profileImage.error ?? document.error ?? save.error)}</Text>}
         <Button title={profile.data ? 'Actualizar perfil' : 'Crear perfil'} onPress={() => {
           if (!form.countryId || !form.departmentId || !form.cityId) return
-          save.mutate(form)
+          save.mutate(form, { onSuccess: () => showToast('Perfil técnico actualizado') })
         }} loading={save.isPending} />
         <Button title="Modificar contraseña" onPress={() => setPasswordModal(true)} />
         <PasswordChangeModal visible={passwordModal} onClose={() => setPasswordModal(false)} /></>
     </QueryState>
   </KeyboardAwareScreen>
+}
+
+function normalizePhone(value?: string) {
+  return (value ?? '').replace(/\D/g, '')
 }

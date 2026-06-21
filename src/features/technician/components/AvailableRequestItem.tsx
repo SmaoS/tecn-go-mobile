@@ -5,7 +5,12 @@ import { formatCopCurrency, formatElapsedTime } from '../../../shared/format'
 import { paymentMethodLabels } from '../../payments/paymentMethods'
 import { colors } from '../../../components/UI'
 
-export function AvailableRequestItem({ request, onPress }: { request: ServiceRequest; onPress: () => void }) {
+export function AvailableRequestItem({ request, onPress, onAccept, accepting = false }: {
+  request: ServiceRequest
+  onPress: () => void
+  onAccept: () => void
+  accepting?: boolean
+}) {
   return <Pressable onPress={onPress} style={styles.item}>
     <View style={styles.client}>
       {request.clientProfilePhotoUrl
@@ -25,6 +30,16 @@ export function AvailableRequestItem({ request, onPress }: { request: ServiceReq
       <Text numberOfLines={1} style={styles.address}>{request.address}</Text>
       <Text numberOfLines={1} style={styles.category}>{request.categoryName}</Text>
       <Text numberOfLines={1} style={styles.payment}>Pago: {paymentMethodLabels[request.requestedPaymentMethod] ?? request.requestedPaymentMethod}</Text>
+      {request.estimatedPrice != null && <Pressable
+        disabled={accepting}
+        onPress={(event) => {
+          event.stopPropagation()
+          onAccept()
+        }}
+        style={[styles.accept, accepting && styles.acceptDisabled]}
+      >
+        <Text style={styles.acceptText}>{accepting ? 'Enviando...' : `Aceptar oferta por ${formatCopCurrency(request.estimatedPrice)}`}</Text>
+      </Pressable>}
       {request.firstServiceImageUrl && <View style={styles.imageWrap}>
         <PrivateImage url={request.firstServiceImageUrl} style={styles.thumbnail} />
         {request.serviceImagesCount > 1 && <Text style={styles.imageCount}>+{request.serviceImagesCount - 1}</Text>}
@@ -50,6 +65,9 @@ const styles = StyleSheet.create({
   address: { color: '#DCE6F3', fontSize: 13, marginTop: 4 },
   category: { color: colors.brand, fontSize: 12, fontWeight: '800', marginTop: 5 },
   payment: { color: colors.muted, fontSize: 12, fontWeight: '700', marginTop: 4 },
+  accept: { alignSelf: 'flex-start', backgroundColor: colors.brand, borderRadius: 10, marginTop: 10, paddingHorizontal: 10, paddingVertical: 8 },
+  acceptDisabled: { opacity: 0.5 },
+  acceptText: { color: colors.bg, fontSize: 12, fontWeight: '900' },
   imageWrap: { position: 'absolute', right: 0, bottom: 0 },
   thumbnail: { width: 54, height: 42, borderRadius: 8 },
   imageCount: { position: 'absolute', right: 3, bottom: 3, color: '#fff', backgroundColor: 'rgba(15,23,42,.75)', borderRadius: 8, paddingHorizontal: 5, fontSize: 10, fontWeight: '800' },

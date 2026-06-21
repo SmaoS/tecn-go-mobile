@@ -13,6 +13,7 @@ import { TechnicianHeader } from '../components/TechnicianHeader'
 import { TechnicianMenu } from '../components/TechnicianMenu'
 import { useSession } from '../../../context/useSession'
 import { useUnreadNotifications } from '../../notifications/hooks'
+import { showToast } from '../../../components/Toast'
 
 export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'TechnicianEarnings'>) {
   const [menu, setMenu] = useState(false)
@@ -24,7 +25,7 @@ export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<
   const recharge = useRechargeTechnicianWallet()
   const profile = useTechnicianProfile()
   const availability = useTechnicianAvailability()
-  const { logout } = useSession()
+  const { logout, session, switchMode } = useSession()
   const unread = useUnreadNotifications()
   const periodPayments = (earnings.data?.payments ?? []).filter((payment) => inPeriod(payment.createdAt, period))
   const periodTotal = periodPayments.reduce((total, payment) => total + payment.technicianAmount, 0)
@@ -96,7 +97,9 @@ export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<
       </QueryState>
     </ScrollView>
     <TechnicianFooter active="earnings" onSelect={(tab) => tab === 'available' && navigation.navigate('AvailableRequests')} />
-    <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)} onLogout={logout} />
+    <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)}
+      onSwitchMode={session?.roles?.includes('CLIENT') ? () => void switchMode('CLIENT').catch((error) => showToast(apiMessage(error), 'error')) : undefined}
+      onLogout={logout} />
   </View>
 }
 

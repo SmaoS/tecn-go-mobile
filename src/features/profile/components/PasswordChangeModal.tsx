@@ -5,16 +5,15 @@ import { Button, colors, styles } from '../../../components/UI'
 import { SecureField } from '../../../components/SecureField'
 import { apiMessage } from '../../../shared/apiMessage'
 import { useChangePassword } from '../hooks'
+import { showToast } from '../../../components/Toast'
 
 export function PasswordChangeModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const [form, setForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
-  const [notice, setNotice] = useState('')
   const change = useChangePassword()
 
   useEffect(() => {
     if (!visible) {
       setForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
-      setNotice('')
       change.reset()
     }
   }, [visible])
@@ -33,13 +32,14 @@ export function PasswordChangeModal({ visible, onClose }: { visible: boolean; on
         <Text style={modalStyles.label}>Confirmar nueva contraseña</Text>
         <SecureField value={form.confirmPassword} onChangeText={(confirmPassword) => setForm({ ...form, confirmPassword })} />
         {form.confirmPassword && form.newPassword !== form.confirmPassword && <Text style={styles.error}>Las contraseñas no coinciden</Text>}
-        {(notice || change.error) && <Text style={change.error ? styles.error : styles.muted}>{change.error ? apiMessage(change.error) : notice}</Text>}
+        {change.error && <Text style={styles.error}>{apiMessage(change.error)}</Text>}
         <Button title="Actualizar contraseña" loading={change.isPending} onPress={() => {
           if (form.newPassword !== form.confirmPassword) return
           change.mutate(form, {
             onSuccess: ({ message }) => {
-              setNotice(message)
+              showToast(message)
               setForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
+              onClose()
             },
           })
         }} />

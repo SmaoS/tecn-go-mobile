@@ -4,11 +4,12 @@ import { colors } from '../../../components/UI'
 import { PrivateImage } from '../../../components/PrivateImage'
 import type { TechnicianProfile } from '../../../types'
 
-export function TechnicianMenu({ visible, profile, onClose, onNavigate, onLogout }: {
+export function TechnicianMenu({ visible, profile, onClose, onNavigate, onSwitchMode, onLogout }: {
   visible: boolean
   profile?: TechnicianProfile
   onClose: () => void
   onNavigate: (screen: 'TechnicianProfile' | 'TechnicianHome' | 'TechnicianReferrals' | 'Legal') => void
+  onSwitchMode?: () => void
   onLogout: () => void
 }) {
   function go(screen: 'TechnicianProfile' | 'TechnicianHome' | 'TechnicianReferrals' | 'Legal') {
@@ -33,6 +34,7 @@ export function TechnicianMenu({ visible, profile, onClose, onNavigate, onLogout
           <MenuItem label="Compromisos y términos" onPress={() => go('Legal')} />
         </View>
         <View style={styles.logout}>
+          {onSwitchMode && <MenuItem label="Modo cliente" onPress={() => { onClose(); onSwitchMode() }} />}
           <MenuItem label="Cerrar sesión" danger onPress={() => { onClose(); onLogout() }} />
         </View>
       </SafeAreaView>

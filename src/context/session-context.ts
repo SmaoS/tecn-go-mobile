@@ -5,6 +5,7 @@ export interface SessionContextValue {
   session: Session | null
   ready: boolean
   setSession: (session: Session | null) => void
+  switchMode: (mode: 'CLIENT' | 'TECHNICIAN') => Promise<void>
   logout: () => Promise<void>
 }
 

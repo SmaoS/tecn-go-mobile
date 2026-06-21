@@ -6,11 +6,12 @@ import type { UserProfile } from '../../../types'
 
 type ClientMenuRoute = 'Profile' | 'ClientPayments' | 'RequestHistory' | 'Legal'
 
-export function ClientMenu({ visible, profile, onClose, onNavigate, onLogout }: {
+export function ClientMenu({ visible, profile, onClose, onNavigate, onSwitchMode, onLogout }: {
   visible: boolean
   profile?: UserProfile
   onClose: () => void
   onNavigate: (screen: ClientMenuRoute) => void
+  onSwitchMode?: () => void
   onLogout: () => void
 }) {
   function go(screen: ClientMenuRoute) {
@@ -36,6 +37,7 @@ export function ClientMenu({ visible, profile, onClose, onNavigate, onLogout }: 
           <MenuItem label="Seguridad y términos" onPress={() => go('Legal')} />
         </View>
         <View style={styles.logout}>
+          {onSwitchMode && <MenuItem label="Modo técnico" onPress={() => { onClose(); onSwitchMode() }} />}
           <MenuItem label="Cerrar sesión" danger onPress={() => { onClose(); onLogout() }} />
         </View>
       </SafeAreaView>

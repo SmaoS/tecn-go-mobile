@@ -4,6 +4,7 @@ import { SessionProvider } from './src/context/SessionProvider'
 import { queryClient } from './src/lib/queryClient'
 import { AppNavigator } from './src/navigation/AppNavigator'
 import { AppVersionGate } from './src/features/app-version/AppVersionGate'
+import { ToastHost } from './src/components/Toast'
 
 export default function App() {
   return <QueryClientProvider client={queryClient}>
@@ -11,6 +12,7 @@ export default function App() {
       <AppVersionGate>
         <StatusBar style="light" />
         <AppNavigator />
+        <ToastHost />
       </AppVersionGate>
     </SessionProvider>
   </QueryClientProvider>

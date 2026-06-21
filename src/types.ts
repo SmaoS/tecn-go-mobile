@@ -149,6 +149,7 @@ export interface TechnicianProfile {
   completedServicesCount: number
   paidServicesCount: number
   verificationStatus: VerificationStatus
+  phoneVerified: boolean
   homeAddress: string
   homeLatitude: number
   homeLongitude: number

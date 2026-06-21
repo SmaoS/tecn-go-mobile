@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { KeyboardAvoidingView, Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { Button, colors, Field } from '../../../components/UI'
 import { PrivateImage } from '../../../components/PrivateImage'
 import { RoutePreviewMap } from '../../../components/RoutePreviewMap'
@@ -8,6 +9,7 @@ import { formatCopCurrency, formatElapsedTime } from '../../../shared/format'
 import { apiMessage, hasApiStatus } from '../../../shared/apiMessage'
 import { useLiveCurrentLocation } from '../../location/hooks'
 import { useSendQuote } from '../hooks'
+import { showToast } from '../../../components/Toast'
 
 export function AvailableRequestDetailModal({ request, onClose }: {
   request: ServiceRequest | null
@@ -16,8 +18,14 @@ export function AvailableRequestDetailModal({ request, onClose }: {
   const [price, setPrice] = useState('')
   const [comment, setComment] = useState('')
   const [largeImage, setLargeImage] = useState<string | null>(null)
+  const scroll = useRef<ScrollView>(null)
   const quote = useSendQuote()
   const location = useLiveCurrentLocation(Boolean(request))
+  useEffect(() => {
+    setPrice('')
+    setComment('')
+    quote.reset()
+  }, [request?.id])
   if (!request) return null
   const current = request
   const destination = Number.isFinite(request.latitude) && Number.isFinite(request.longitude)
@@ -28,7 +36,12 @@ export function AvailableRequestDetailModal({ request, onClose }: {
     : quote.error ? apiMessage(quote.error) : ''
   function send(value: number, description?: string) {
     if (!Number.isFinite(value) || value <= 0) return
-    quote.mutate({ id: current.id, price: value, description }, { onSuccess: onClose })
+    quote.mutate({ id: current.id, price: value, description }, {
+      onSuccess: () => {
+        showToast('Cotización enviada correctamente')
+        onClose()
+      },
+    })
   }
   function openRoute() {
     if (!location.coordinates || !destination) return
@@ -36,9 +49,16 @@ export function AvailableRequestDetailModal({ request, onClose }: {
     const target = `${destination.latitude},${destination.longitude}`
     void Linking.openURL(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${target}&travelmode=driving`)
   }
+  const formattedPrice = price ? formatCopCurrency(Number(price)) : ''
   return <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-    <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <SafeAreaView style={styles.screen}>
+      <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView
+        ref={scroll}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+      >
         <Text style={styles.mapTitle}>Recorrido aproximado</Text>
         <Text style={styles.mapText}>Consulta tu ubicación en tiempo real y el sector aproximado del servicio antes de cotizar. La dirección exacta se habilita cuando el cliente acepta.</Text>
         <RoutePreviewMap origin={location.coordinates} destination={destination} distanceKm={request.distanceKm} />
@@ -69,18 +89,31 @@ export function AvailableRequestDetailModal({ request, onClose }: {
           </ScrollView>
           : <Text style={styles.empty}>Sin imágenes adjuntas</Text>}
         {request.estimatedPrice != null && <Button
-          title={`Aceptar por ${formatCopCurrency(request.estimatedPrice)}`}
+          title={`Aceptar oferta por ${formatCopCurrency(request.estimatedPrice)}`}
           loading={quote.isPending}
           onPress={() => send(request.estimatedPrice!, 'Acepto el valor estimado por el cliente')}
         />}
         <Text style={styles.sectionTitle}>Enviar tu oferta</Text>
-        <Field keyboardType="numeric" placeholder="Valor de la cotización" value={price} onChangeText={setPrice} />
-        <Field multiline placeholder="Comentario para el cliente" value={comment} onChangeText={setComment} />
+        <Field
+          keyboardType="numeric"
+          placeholder="Valor de la cotización"
+          value={formattedPrice}
+          onFocus={() => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 250)}
+          onChangeText={(value) => setPrice(value.replace(/\D/g, ''))}
+        />
+        <Field
+          multiline
+          placeholder="Comentario para el cliente"
+          value={comment}
+          onFocus={() => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 250)}
+          onChangeText={setComment}
+        />
         {pendingMessage && <Text style={styles.error}>{pendingMessage}</Text>}
         <Button title="Enviar cotización" loading={quote.isPending} onPress={() => send(Number(price), comment || undefined)} />
         <Pressable disabled={quote.isPending} onPress={onClose} style={styles.close}><Text style={styles.closeText}>Cerrar</Text></Pressable>
       </ScrollView>
-    </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
     <Modal visible={Boolean(largeImage)} transparent animationType="fade" onRequestClose={() => setLargeImage(null)}>
       <Pressable style={styles.viewer} onPress={() => setLargeImage(null)}>
         {largeImage && <PrivateImage url={largeImage} resizeMode="contain" style={styles.largeImage} />}

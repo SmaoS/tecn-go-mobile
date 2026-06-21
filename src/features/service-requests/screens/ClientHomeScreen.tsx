@@ -15,6 +15,8 @@ import { ClientMenu } from '../components/ClientMenu'
 import { useProfile } from '../../profile/hooks'
 import { useSession } from '../../../context/useSession'
 import { formatCopCurrency } from '../../../shared/format'
+import { showToast } from '../../../components/Toast'
+import { apiMessage } from '../../../shared/apiMessage'
 
 export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) {
   useDoubleBackExit()
@@ -24,7 +26,7 @@ export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStac
   const hasPendingQuoteRequests = (requests.data ?? []).some((item) => item.status === 'QUOTE_PENDING')
   const unread = useUnreadNotifications()
   const profile = useProfile()
-  const { logout } = useSession()
+  const { logout, session, switchMode } = useSession()
   const { width } = useWindowDimensions()
   const cardWidth = width >= 700 ? '48.5%' : '100%'
   const recentRequests = (requests.data ?? []).slice(0, 5)
@@ -54,7 +56,9 @@ export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStac
     </QueryState>
     </ScrollView>
     <ClientFooter active="request" onSelect={(tab) => navigation.navigate(tab === 'request' ? 'Home' : 'ClientRequests')} />
-    <ClientMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)} onLogout={logout} />
+    <ClientMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)}
+      onSwitchMode={session?.roles?.includes('TECHNICIAN') ? () => void switchMode('TECHNICIAN').catch((error) => showToast(apiMessage(error), 'error')) : undefined}
+      onLogout={logout} />
   </View>
 }
 

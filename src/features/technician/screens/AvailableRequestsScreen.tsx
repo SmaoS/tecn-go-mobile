@@ -4,7 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { RootStackParamList, ServiceRequest } from '../../../types'
 import { useDoubleBackExit } from '../../../hooks/useDoubleBackExit'
 import { useAvailableRequests } from '../../service-requests/hooks'
-import { useTechnicianAvailability, useTechnicianProfile } from '../hooks'
+import { useSendQuote, useTechnicianAvailability, useTechnicianProfile } from '../hooks'
 import { AvailableRequestItem } from '../components/AvailableRequestItem'
 import { AvailableRequestDetailModal } from '../components/AvailableRequestDetailModal'
 import { TechnicianFooter } from '../components/TechnicianFooter'
@@ -14,6 +14,7 @@ import { apiMessage } from '../../../shared/apiMessage'
 import { useSession } from '../../../context/useSession'
 import { useUnreadNotifications } from '../../notifications/hooks'
 import { colors } from '../../../components/UI'
+import { showToast } from '../../../components/Toast'
 
 export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'AvailableRequests'>) {
   useDoubleBackExit()
@@ -23,7 +24,8 @@ export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<R
   const available = availability.data?.available ?? true
   const requests = useAvailableRequests()
   const profile = useTechnicianProfile()
-  const { logout } = useSession()
+  const quote = useSendQuote()
+  const { logout, session, switchMode } = useSession()
   const unread = useUnreadNotifications()
 
   return <View style={styles.screen}>
@@ -48,13 +50,30 @@ export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<R
           : <FlatList
             data={requests.data ?? []}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <AvailableRequestItem request={item} onPress={() => setSelected(item)} />}
+            renderItem={({ item }) => <AvailableRequestItem
+              request={item}
+              onPress={() => setSelected(item)}
+              accepting={quote.isPending && quote.variables?.id === item.id}
+              onAccept={() => {
+                if (item.estimatedPrice == null) return
+                quote.mutate({
+                  id: item.id,
+                  price: item.estimatedPrice,
+                  description: 'Acepto el valor estimado por el cliente',
+                }, {
+                  onSuccess: () => showToast('Cotización enviada correctamente'),
+                  onError: (error) => showToast(apiMessage(error), 'error'),
+                })
+              }}
+            />}
             contentContainerStyle={styles.list}
             refreshControl={<RefreshControl refreshing={requests.isRefetching} onRefresh={() => void requests.refetch()} />}
             ListEmptyComponent={<View style={styles.center}><Text style={styles.empty}>No hay solicitudes disponibles en tu ciudad por ahora.</Text></View>}
           />}
     <TechnicianFooter active="available" onSelect={(tab) => tab === 'earnings' && navigation.navigate('TechnicianEarnings')} />
-    <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)} onLogout={logout} />
+    <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)}
+      onSwitchMode={session?.roles?.includes('CLIENT') ? () => void switchMode('CLIENT').catch((error) => showToast(apiMessage(error), 'error')) : undefined}
+      onLogout={logout} />
     <AvailableRequestDetailModal request={selected} onClose={() => setSelected(null)} />
   </View>
 }

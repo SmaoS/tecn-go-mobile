@@ -16,6 +16,7 @@ import { TechnicianMenu } from '../components/TechnicianMenu'
 import { useTechnicianAvailability, useTechnicianProfile } from '../hooks'
 import { useSession } from '../../../context/useSession'
 import { paymentMethodLabels } from '../../payments/paymentMethods'
+import { showToast } from '../../../components/Toast'
 
 export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'TechnicianHome'>) {
   useDoubleBackExit()
@@ -27,7 +28,7 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
   const availability = useTechnicianAvailability()
   const paidIds = (requests.data ?? []).filter((item) => item.status === 'PAID').map((item) => item.id)
   const ratingStatuses = useRatingStatuses(paidIds)
-  const { logout } = useSession()
+  const { logout, session, switchMode } = useSession()
 
   function next(item: ServiceRequest) {
     const states: Partial<Record<RequestStatus, RequestStatus>> = {
@@ -83,7 +84,9 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
       </QueryState>
     </ScrollView>
     <TechnicianFooter active="available" onSelect={(tab) => navigation.navigate(tab === 'available' ? 'AvailableRequests' : 'TechnicianEarnings')} />
-    <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)} onLogout={logout} />
+    <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)}
+      onSwitchMode={session?.roles?.includes('CLIENT') ? () => void switchMode('CLIENT').catch((error) => showToast(apiMessage(error), 'error')) : undefined}
+      onLogout={logout} />
   </View>
 }
 
