@@ -81,6 +81,16 @@ def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBu
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+def sentryUploadEnabled = System.getenv("SENTRY_UPLOAD_SOURCEMAPS") == "true"
+def sentryUploadConfigured = System.getenv("SENTRY_AUTH_TOKEN") &&
+        System.getenv("SENTRY_ORG") &&
+        System.getenv("SENTRY_PROJECT")
+if (sentryUploadEnabled && sentryUploadConfigured) {
+    apply from: new File(["node", "--print", "require('path').dirname(require.resolve('@sentry/react-native/package.json'))"].execute().text.trim(), "sentry.gradle")
+} else {
+    logger.lifecycle("Sentry sourcemap upload disabled. Set SENTRY_UPLOAD_SOURCEMAPS=true with valid credentials to enable it.")
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
 
@@ -94,6 +104,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0.0"
+        manifestPlaceholders.googleMapsApiKey = System.getenv("EXPO_PUBLIC_GOOGLE_MAPS_API_KEY") ?: ""
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
