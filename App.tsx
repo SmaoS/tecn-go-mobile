@@ -5,8 +5,11 @@ import { queryClient } from './src/lib/queryClient'
 import { AppNavigator } from './src/navigation/AppNavigator'
 import { AppVersionGate } from './src/features/app-version/AppVersionGate'
 import { ToastHost } from './src/components/Toast'
+import { initializeObservability, Sentry } from './src/services/observability'
 
-export default function App() {
+initializeObservability()
+
+function App() {
   return <QueryClientProvider client={queryClient}>
     <SessionProvider>
       <AppVersionGate>
@@ -17,3 +20,5 @@ export default function App() {
     </SessionProvider>
   </QueryClientProvider>
 }
+
+export default Sentry.wrap(App)

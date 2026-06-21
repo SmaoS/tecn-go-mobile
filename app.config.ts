@@ -8,6 +8,12 @@ export default ({ config }: ConfigContext) => {
     name: config.name ?? 'TecnGo',
     slug: config.slug ?? 'tecngo',
     owner: 'tecngo',
+    plugins: [
+      ...(config.plugins ?? []),
+      ...((config.plugins ?? []).some((plugin) =>
+        (Array.isArray(plugin) ? plugin[0] : plugin) === '@sentry/react-native')
+        ? [] : ['@sentry/react-native']),
+    ],
     ios: {
       ...config.ios,
       config: {
@@ -30,6 +36,7 @@ export default ({ config }: ConfigContext) => {
       eas: {
         projectId: process.env.EAS_PROJECT_ID || '3bef945c-fdbb-41c1-9990-4a399e8b1ddb',
       },
+      sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
     },
   }
 }

@@ -10,6 +10,7 @@ import { SessionContext } from './session-context'
 import { api } from '../api/client'
 import { showToast } from '../components/Toast'
 import { getStoredSession, removeStoredSession, setStoredSession } from '../services/sessionStorage'
+import { setObservedUser } from '../services/observability'
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
@@ -25,6 +26,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setSession(null)
     queryClient.clear()
   }), [queryClient])
+  useEffect(() => setObservedUser(session?.userId, session?.role), [session])
   usePushRegistration(session?.userId)
 
   async function switchMode(mode: 'CLIENT' | 'TECHNICIAN') {

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { getStoredSession, removeStoredSession, SESSION_KEY } from '../services/sessionStorage'
+import { captureClientError, Sentry } from '../services/observability'
 
 export { SESSION_KEY }
 
@@ -21,14 +22,33 @@ export const api = axios.create({
 })
 
 api.interceptors.request.use(async (config) => {
+  const correlationId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+  config.headers['X-Correlation-ID'] = correlationId
+  config.headers['X-TecnGo-Correlation-ID'] = correlationId
   const raw = await getStoredSession()
   if (raw) config.headers.Authorization = `Bearer ${JSON.parse(raw).token}`
   return config
 })
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const correlationId = response.headers['x-correlation-id']
+    if (correlationId) {
+      Sentry.addBreadcrumb({
+        category: 'api',
+        message: `${response.config.method?.toUpperCase()} ${response.config.url}`,
+        data: { correlationId, status: response.status },
+        level: 'info',
+      })
+    }
+    return response
+  },
   async (error) => {
+    const correlationId = error.response?.headers?.['x-correlation-id']
+      || error.config?.headers?.['X-TecnGo-Correlation-ID']
+    if (!error.response || error.response.status >= 500) {
+      captureClientError(error, correlationId)
+    }
     if (error.response?.status === 401) {
       await removeStoredSession()
       unauthorizedHandler?.()
