@@ -16,6 +16,7 @@ import { authApi } from '../../auth/api'
 import { useMutation } from '@tanstack/react-query'
 import { showToast } from '../../../components/Toast'
 import { profileApi } from '../api'
+import { DataRightsCard } from '../../compliance/components/DataRightsCard'
 
 export function ProfileScreen({ session, onLogout, navigation, rootExit = false }: { session: Session; onLogout: () => void; navigation?: { navigate: (screen: 'CaptureProfilePhoto' | 'Legal') => void }; rootExit?: boolean }) {
   useDoubleBackExit(rootExit)
@@ -94,6 +95,7 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       <Button title="Guardar perfil" onPress={submit} loading={save.isPending} />      
       {!current.emailVerified && <Button title="Verificar correo" loading={verifyEmail.isPending} onPress={() => verifyEmail.mutate(undefined, { onSuccess: () => showToast('Correo de verificación enviado', 'info'), onError: (error) => showToast(apiMessage(error), 'error') })} />}</>}
       <Button title="Modificar contraseña" onPress={() => setPasswordModal(true)} />
+      <DataRightsCard />
   </QueryState><Button title="Cerrar sesión" onPress={onLogout} />
     <PasswordChangeModal visible={passwordModal} onClose={() => setPasswordModal(false)} />
   </KeyboardAwareScreen>

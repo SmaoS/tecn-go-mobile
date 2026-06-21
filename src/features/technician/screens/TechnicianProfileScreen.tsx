@@ -16,6 +16,7 @@ import { authApi } from '../../auth/api'
 import { profileApi } from '../../profile/api'
 import { showToast } from '../../../components/Toast'
 import { useSession } from '../../../context/useSession'
+import { DataRightsCard } from '../../compliance/components/DataRightsCard'
 
 const empty: TechnicianProfileForm = {
   documentNumber: '', phone: '', categoryIds: [], profilePhotoUrl: '',
@@ -140,6 +141,7 @@ export function TechnicianProfileScreen() {
           save.mutate(form, { onSuccess: () => showToast('Perfil técnico actualizado') })
         }} loading={save.isPending} />
         <Button title="Modificar contraseña" onPress={() => setPasswordModal(true)} />
+        <DataRightsCard />
         <PasswordChangeModal visible={passwordModal} onClose={() => setPasswordModal(false)} /></>
     </QueryState>
   </KeyboardAwareScreen>
