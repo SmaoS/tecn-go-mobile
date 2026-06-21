@@ -183,3 +183,14 @@ no sensibles del onboarding.
 Los accesos `ADMIN` y `VERIFIER` muestran una segunda pantalla para ingresar el código
 MFA enviado por correo. Cerrar sesión llama `/v1/auth/logout` y luego elimina el token
 local incluso si la red no está disponible.
+
+## Calidad
+
+```bash
+npm run test:coverage
+npm run typecheck
+npm run doctor
+```
+
+Jest Expo y React Native Testing Library generan el reporte en `coverage/`. CodeQL y
+Dependabot están configurados en `.github`.
