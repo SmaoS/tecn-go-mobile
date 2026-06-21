@@ -23,7 +23,9 @@
       "autoIncrement": true,
       "environment": "production",
       "env": {
-        "EXPO_PUBLIC_ENFORCE_VERSION_CHECK": "true"
+        "EXPO_PUBLIC_ENFORCE_VERSION_CHECK": "true",
+        "NODE_ENV": "production",
+        "SENTRY_UPLOAD_SOURCEMAPS": "false"
       },
       "android": {
         "buildType": "app-bundle"

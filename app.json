@@ -27,8 +27,7 @@
         {
           "photosPermission": "TecnGo usa tus fotos para completar tu perfil y evidencias."
         }
-      ],
-      "sentry-expo"
+      ]
     ],
     "ios": {
       "supportsTablet": true,

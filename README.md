@@ -194,3 +194,20 @@ npm run doctor
 
 Jest Expo y React Native Testing Library generan el reporte en `coverage/`. CodeQL y
 Dependabot están configurados en `.github`.
+## Sentry y builds de producción
+
+La captura de errores mediante `EXPO_PUBLIC_SENTRY_DSN` funciona sin subir
+sourcemaps. La subida automática está deshabilitada por defecto para que una
+configuración incompleta de Sentry no bloquee la generación del AAB.
+
+Para habilitarla, configure en EAS o en el entorno de compilación:
+
+```text
+SENTRY_UPLOAD_SOURCEMAPS=true
+SENTRY_AUTH_TOKEN=
+SENTRY_ORG=
+SENTRY_PROJECT=
+```
+
+`SENTRY_ORG` y `SENTRY_PROJECT` son los slugs visibles en Sentry, no sus nombres
+descriptivos. El token debe tener permisos para publicar releases y artefactos.

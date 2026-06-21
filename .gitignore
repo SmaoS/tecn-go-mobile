@@ -11,3 +11,6 @@ coverage/
 google-services.json
 GoogleService-Info.plist
 *.aab
+sentry.properties
+**/sentry.properties
+.env.sentry-build-plugin
