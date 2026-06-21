@@ -1,5 +1,5 @@
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
-import { ActivityIndicator, View } from 'react-native'
+import { ActivityIndicator, Linking, View } from 'react-native'
 import { useEffect } from 'react'
 import { colors } from '../components/UI'
 import { useSession } from '../context/useSession'
@@ -15,6 +15,8 @@ import type { RootStackParamList } from '../types'
 import { setOperationBlockedHandler } from '../api/client'
 import { useQueryClient } from '@tanstack/react-query'
 import { syncNotificationData } from '../features/notifications/sync'
+import { paymentsApi } from '../features/payments/api'
+import { technicianWalletKey, technicianWalletTransactionsKey } from '../features/payments/hooks'
 
 const theme = {
   ...DarkTheme,
@@ -65,6 +67,27 @@ export function AppNavigator() {
       })
     })
   }, [queryClient, session])
+
+  useEffect(() => {
+    if (session?.role !== 'TECHNICIAN') return
+    const reconcile = async (url: string | null) => {
+      if (!url) return
+      const parsed = new URL(url)
+      if (parsed.hostname !== 'payment-result' && !parsed.pathname.includes('payment-result')) return
+      const transactionId = parsed.searchParams.get('id')
+      if (!transactionId) return
+      await paymentsApi.reconcileTechnicianRecharge(transactionId)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: technicianWalletKey }),
+        queryClient.invalidateQueries({ queryKey: technicianWalletTransactionsKey }),
+      ])
+    }
+    void Linking.getInitialURL().then(reconcile).catch(() => undefined)
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      void reconcile(url).catch(() => undefined)
+    })
+    return () => subscription.remove()
+  }, [queryClient, session?.role])
 
   if (!ready) return <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center' }}><ActivityIndicator color={colors.brand} /></View>
   return <NavigationContainer ref={navigationRef} theme={theme} linking={linking}>
