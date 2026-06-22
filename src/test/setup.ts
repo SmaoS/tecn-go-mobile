@@ -75,13 +75,17 @@ jest.mock('expo-document-picker', () => ({
 jest.mock('expo-camera', () => {
   const React = require('react')
   const { View } = require('react-native')
+  const takePictureAsync = jest.fn(async () => ({ uri: 'file://camera-capture.jpg' }))
   return {
-    CameraView: React.forwardRef((props: object, ref: unknown) =>
-      React.createElement(View, { ...props, ref })),
+    CameraView: React.forwardRef((props: object, ref: unknown) => {
+      React.useImperativeHandle(ref, () => ({ takePictureAsync }))
+      return React.createElement(View, props)
+    }),
     useCameraPermissions: jest.fn(() => [
       { granted: true },
       jest.fn(async () => ({ granted: true })),
     ]),
+    __takePictureAsync: takePictureAsync,
   }
 })
 

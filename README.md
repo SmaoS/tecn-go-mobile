@@ -229,6 +229,21 @@ La suite de hooks y estado verifica:
 - disponibilidad, perfil y cotización del técnico;
 - saldo, movimientos y apertura de recargas Wompi;
 - estados compartidos de carga, vacío y error.
+
+La suite de flujos críticos verifica:
+
+- inicio de sesión por correo, MFA, teléfono y persistencia correcta de sesión;
+- registro por celular bloqueado hasta validar el OTP;
+- captura de selfie y documento de identidad por ambos lados;
+- onboarding profesional con categoría y experiencia obligatorias;
+- creación de solicitudes usando ciudad y ubicación del perfil;
+- cotización con valor COP, comentario y limpieza al cambiar de solicitud;
+- calificación única, ocultamiento tras enviarla y reportes de usuarios/contenido;
+- carga y consulta de evidencias y comprobantes con invalidación de caché.
+
+La captura de cédula conserva por separado la vista previa frontal y posterior, y
+solo permite volver al wizard cuando ambas imágenes fueron capturadas.
+
 ## Sentry y builds de producción
 
 La captura de errores mediante `EXPO_PUBLIC_SENTRY_DSN` funciona sin subir

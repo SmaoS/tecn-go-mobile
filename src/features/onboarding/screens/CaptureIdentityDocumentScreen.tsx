@@ -92,7 +92,9 @@ export function CaptureIdentityDocumentScreen({ navigation, route }: NativeStack
       <Image source={{ uri: previewUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
       <View style={local.previewPanel}>
         <Text style={local.title}>Foto capturada correctamente.</Text>
-        <Button title={documentType === 'CC' && side === 'front' ? 'Usar frente y capturar reverso' : 'Usar foto'} onPress={usePhoto} />
+        <Button title={documentType === 'CC' && previewSide === 'front'
+          ? 'Usar frente y capturar reverso'
+          : 'Usar foto'} onPress={usePhoto} />
         <Button title="Repetir" onPress={repeat} />
       </View>
     </View>
