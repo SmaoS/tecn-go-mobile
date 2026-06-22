@@ -1,6 +1,10 @@
 process.env.EXPO_PUBLIC_API_URL ??= 'https://api.test.tecngo.local/api'
 process.env.EXPO_PUBLIC_APP_ENVIRONMENT ??= 'test'
 
+const { act } = require('@testing-library/react-native')
+const { notifyManager } = require('@tanstack/react-query')
+notifyManager.setNotifyFunction((callback: () => void) => act(callback))
+
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'))
 

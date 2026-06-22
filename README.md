@@ -219,6 +219,16 @@ La suite de seguridad, sesión y navegación verifica:
 - cambio entre modos cliente/técnico y limpieza de caché;
 - control de versión previo al login;
 - selección de navegación por rol y apertura de rutas desde notificaciones.
+
+La suite de hooks y estado verifica:
+
+- polling activo solo con pantalla enfocada y frecuencias de 10/5 segundos;
+- invalidación selectiva de caché al recibir eventos FCM;
+- consultas y mutaciones de solicitudes, cotizaciones y seguimiento;
+- fusión incremental de chat y notificaciones sin duplicados;
+- disponibilidad, perfil y cotización del técnico;
+- saldo, movimientos y apertura de recargas Wompi;
+- estados compartidos de carga, vacío y error.
 ## Sentry y builds de producción
 
 La captura de errores mediante `EXPO_PUBLIC_SENTRY_DSN` funciona sin subir

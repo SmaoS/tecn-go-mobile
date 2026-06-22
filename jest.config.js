@@ -3,9 +3,18 @@ const phaseOneCoverageTargets = [
   'src/components/SecureField.tsx',
   'src/context/SessionProvider.tsx',
   'src/features/app-version/AppVersionGate.tsx',
+  'src/features/chat/hooks.ts',
+  'src/features/notifications/hooks.ts',
   'src/features/notifications/labels.ts',
+  'src/features/notifications/sync.ts',
+  'src/features/payments/hooks.ts',
+  'src/features/service-requests/hooks.ts',
+  'src/features/technician/hooks.ts',
+  'src/hooks/useSmartPolling.ts',
   'src/navigation/notificationNavigation.ts',
   'src/services/sessionStorage.ts',
+  'src/shared/QueryState.tsx',
+  'src/shared/apiMessage.ts',
   'src/shared/format.ts',
 ]
 

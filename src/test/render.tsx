@@ -10,7 +10,7 @@ export function createTestQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: { retry: false, gcTime: Infinity },
-      mutations: { retry: false },
+      mutations: { retry: false, gcTime: Infinity },
     },
   })
 }
@@ -27,6 +27,13 @@ export function createSessionContext(
     logout: jest.fn(async () => undefined),
     ...overrides,
   }
+}
+
+export function createQueryWrapper(queryClient = createTestQueryClient()) {
+  function QueryWrapper({ children }: { children: ReactNode }) {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  }
+  return { queryClient, QueryWrapper }
 }
 
 type ProviderOptions = {
