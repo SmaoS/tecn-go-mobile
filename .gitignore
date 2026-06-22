@@ -11,6 +11,8 @@ coverage/
 google-services.json
 GoogleService-Info.plist
 *.aab
+*.apk
+.maestro/results/
 sentry.properties
 **/sentry.properties
 .env.sentry-build-plugin

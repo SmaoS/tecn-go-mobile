@@ -50,13 +50,13 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
       <Text style={styles.muted}>{profile.data?.cityName ?? profile.data?.homeCity ?? 'No configurada en tu perfil'}</Text>
       <Text style={styles.muted}>Se toma automáticamente de tu perfil. Puedes cambiar dirección y ubicación exacta para este servicio.</Text>
     </Card>
-    <Field multiline placeholder="Describe el problema" value={form.description} onChangeText={(description) => setForm({ ...form, description })} />
-    <Field placeholder="Dirección" value={form.address} onChangeText={(address) => setForm({ ...form, address })} />
+    <Field testID="e2e.request.description" multiline placeholder="Describe el problema" value={form.description} onChangeText={(description) => setForm({ ...form, description })} />
+    <Field testID="e2e.request.address" placeholder="Dirección" value={form.address} onChangeText={(address) => setForm({ ...form, address })} />
     <Text style={styles.label}>Ubicación del servicio</Text>
     <Text style={styles.muted}>Activa la ubicación para usar tu GPS o elige manualmente el punto en el mapa.</Text>
     <Button title={form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener ubicación GPS'} onPress={useGps} loading={location.isLocating} />
     <Button title="Elegir ubicación en mapa" onPress={() => setMapVisible(true)} />
-    <Field keyboardType="numeric" placeholder="Presupuesto estimado (opcional)" value={form.estimatedPrice} onChangeText={(estimatedPrice) => setForm({ ...form, estimatedPrice })} />
+    <Field testID="e2e.request.estimatedPrice" keyboardType="numeric" placeholder="Presupuesto estimado (opcional)" value={form.estimatedPrice} onChangeText={(estimatedPrice) => setForm({ ...form, estimatedPrice })} />
     <Text style={styles.label}>¿Por dónde vas a pagar?</Text>
     {requestPaymentMethods.map((method) => <Pressable key={method} onPress={() => setForm({ ...form, paymentMethod: method })}>
       <Card style={form.paymentMethod === method ? { borderColor: colors.brand } : undefined}>
@@ -68,7 +68,7 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
     {(location.error || picker.error || create.error) && <Text style={styles.error}>{location.error || apiMessage(picker.error ?? create.error)}</Text>}
     {!profile.data?.cityId ? <Text style={styles.error}>Completa la ciudad en Mi perfil antes de crear una solicitud.</Text> : null}
     {!form.latitude || !form.longitude ? <Text style={styles.error}>Se requiere ubicación GPS para publicar la solicitud.</Text> : null}
-    <Button title="Crear solicitud" onPress={() => {
+    <Button testID="e2e.request.submit" title="Crear solicitud" onPress={() => {
       if (!profile.data?.cityId || !form.latitude || !form.longitude) return
       create.mutate({ payload: {
       ...form, cityId: profile.data.cityId, latitude: Number(form.latitude), longitude: Number(form.longitude),

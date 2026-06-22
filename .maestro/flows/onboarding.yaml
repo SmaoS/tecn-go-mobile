@@ -1,0 +1,97 @@
+appId: com.tecngo
+name: Complete client onboarding
+tags:
+  - smoke
+  - onboarding
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "e2e.login.identifier"
+- inputText: ${E2E_ONBOARDING_EMAIL}
+- tapOn:
+    id: "e2e.login.password"
+- inputText: ${E2E_ONBOARDING_PASSWORD}
+- tapOn:
+    id: "e2e.login.submit"
+- extendedWaitUntil:
+    visible: "Completa tu inscripción"
+    timeout: 20000
+- runFlow:
+    when:
+      visible: "Paso actual: Datos principales"
+    commands:
+      - tapOn:
+          id: "e2e.onboarding.fullName"
+      - eraseText
+      - inputText: ${E2E_ONBOARDING_NAME}
+      - tapOn:
+          id: "e2e.onboarding.phone"
+      - eraseText
+      - inputText: ${E2E_ONBOARDING_PHONE}
+      - tapOn: "Selecciona país"
+      - tapOn: ${E2E_ONBOARDING_COUNTRY}
+      - tapOn: "Selecciona departamento"
+      - tapOn: ${E2E_ONBOARDING_DEPARTMENT}
+      - tapOn: "Selecciona ciudad"
+      - tapOn: ${E2E_ONBOARDING_CITY}
+      - tapOn:
+          id: "e2e.onboarding.address"
+      - eraseText
+      - inputText: ${E2E_ONBOARDING_ADDRESS}
+      - tapOn:
+          id: "e2e.onboarding.neighborhood"
+      - eraseText
+      - inputText: ${E2E_ONBOARDING_NEIGHBORHOOD}
+      - tapOn:
+          id: "e2e.onboarding.documentNumber"
+      - eraseText
+      - inputText: ${E2E_ONBOARDING_DOCUMENT}
+      - hideKeyboard
+      - tapOn:
+          id: "e2e.onboarding.main.submit"
+- extendedWaitUntil:
+    visible: "Paso actual: Documentos legales"
+    timeout: 20000
+- tapOn:
+    id: "e2e.onboarding.legal.submit"
+- extendedWaitUntil:
+    visible: "Paso actual: Foto de perfil"
+    timeout: 20000
+- tapOn: "Capturar selfie automáticamente"
+- runFlow:
+    when:
+      visible: "Permitir cámara"
+    commands:
+      - tapOn: "Permitir cámara"
+      - tapOn:
+          text: "Mientras la app está en uso|While using the app"
+          optional: true
+- extendedWaitUntil:
+    visible: "Tomar foto para revisión"
+    timeout: 10000
+- tapOn: "Tomar foto para revisión"
+- extendedWaitUntil:
+    visible: "Usar foto"
+    timeout: 15000
+- tapOn: "Usar foto"
+- extendedWaitUntil:
+    visible: "Paso actual: Documento de identidad"
+    timeout: 30000
+- tapOn: "Capturar frente y reverso automáticamente"
+- extendedWaitUntil:
+    visible: "Tomar foto para revisión"
+    timeout: 10000
+- tapOn: "Tomar foto para revisión"
+- extendedWaitUntil:
+    visible: "Usar frente y capturar reverso"
+    timeout: 15000
+- tapOn: "Usar frente y capturar reverso"
+- tapOn: "Tomar foto para revisión"
+- extendedWaitUntil:
+    visible: "Usar foto"
+    timeout: 15000
+- tapOn: "Usar foto"
+- extendedWaitUntil:
+    visible: "Solicitar servicio"
+    timeout: 30000

@@ -1,0 +1,48 @@
+appId: com.tecngo
+name: Create service request
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "e2e.login.identifier"
+- inputText: ${E2E_CLIENT_EMAIL}
+- tapOn:
+    id: "e2e.login.password"
+- inputText: ${E2E_CLIENT_PASSWORD}
+- tapOn:
+    id: "e2e.login.submit"
+- extendedWaitUntil:
+    visible: "Solicitar servicio"
+    timeout: 20000
+- tapOn: "Solicitar servicio"
+- extendedWaitUntil:
+    visible: "Nuevo servicio"
+    timeout: 10000
+- tapOn: ${E2E_SERVICE_CATEGORY}
+- tapOn:
+    id: "e2e.request.description"
+- inputText: ${E2E_REQUEST_DESCRIPTION}
+- tapOn:
+    id: "e2e.request.address"
+- inputText: ${E2E_REQUEST_ADDRESS}
+- tapOn:
+    id: "e2e.request.estimatedPrice"
+- inputText: ${E2E_REQUEST_ESTIMATED_PRICE}
+- hideKeyboard
+- runFlow:
+    when:
+      visible: "Permitir"
+    commands:
+      - tapOn:
+          text: "Mientras la app está en uso|While using the app"
+          optional: true
+- extendedWaitUntil:
+    visible: "Ubicación GPS lista"
+    timeout: 20000
+- tapOn:
+    id: "e2e.request.submit"
+- extendedWaitUntil:
+    visible: "Solicitudes recientes"
+    timeout: 20000

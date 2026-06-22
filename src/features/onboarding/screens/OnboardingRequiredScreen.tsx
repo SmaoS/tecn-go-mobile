@@ -187,27 +187,27 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
     {error && <Text style={uiStyles.error}>{apiMessage(error)}</Text>}
 
     {step === 'MAIN_DATA' && <Card>
-      <Field placeholder="Nombre completo" value={main.fullName} onChangeText={(fullName) => setMain({ ...main, fullName })} />
-      <Field placeholder="Teléfono" value={main.phone} onChangeText={(phone) => setMain({ ...main, phone })} keyboardType="phone-pad" />
+      <Field testID="e2e.onboarding.fullName" placeholder="Nombre completo" value={main.fullName} onChangeText={(fullName) => setMain({ ...main, fullName })} />
+      <Field testID="e2e.onboarding.phone" placeholder="Teléfono" value={main.phone} onChangeText={(phone) => setMain({ ...main, phone })} keyboardType="phone-pad" />
       <CatalogSelect label="País" value={main.countryId} items={countries.data} onChange={(item) => setMain({ ...main, countryId: item.id, departmentId: '', cityId: '' })} />
       <CatalogSelect label="Departamento" value={main.departmentId} items={departments.data} disabled={!main.countryId} onChange={(item) => setMain({ ...main, departmentId: item.id, cityId: '' })} />
       <CatalogSelect label="Ciudad" value={main.cityId} items={cities.data} disabled={!main.departmentId} onChange={(item) => setMain({ ...main, cityId: item.id })} />
-      <Field placeholder="Dirección" value={main.address} onChangeText={(address) => setMain({ ...main, address })} />
-      <Field placeholder="Barrio" value={main.neighborhood} onChangeText={(neighborhood) => setMain({ ...main, neighborhood })} />
+      <Field testID="e2e.onboarding.address" placeholder="Dirección" value={main.address} onChangeText={(address) => setMain({ ...main, address })} />
+      <Field testID="e2e.onboarding.neighborhood" placeholder="Barrio" value={main.neighborhood} onChangeText={(neighborhood) => setMain({ ...main, neighborhood })} />
       <Text style={uiStyles.label}>Tipo de documento</Text>
       <View style={screenStyles.row}>
         <Choice label="Cédula" active={main.documentType === 'CC'} onPress={() => setMain({ ...main, documentType: 'CC' })} />
         <Choice label="Pasaporte" active={main.documentType === 'PASSPORT'} onPress={() => setMain({ ...main, documentType: 'PASSPORT' })} />
       </View>
-      <Field placeholder="Número de documento" value={main.documentNumber} onChangeText={(documentNumber) => setMain({ ...main, documentNumber })} />
-      <Button title="Guardar y continuar" loading={pending} onPress={() => mainMutation.mutate(main)} />
+      <Field testID="e2e.onboarding.documentNumber" placeholder="Número de documento" value={main.documentNumber} onChangeText={(documentNumber) => setMain({ ...main, documentNumber })} />
+      <Button testID="e2e.onboarding.main.submit" title="Guardar y continuar" loading={pending} onPress={() => mainMutation.mutate(main)} />
     </Card>}
 
     {step === 'LEGAL_ACCEPTANCE' && <Card>
       <Text style={uiStyles.cardTitle}>Documentos legales</Text>
       <Text style={uiStyles.muted}>Debes aceptar términos, privacidad y seguridad para continuar usando TecnGo.</Text>
       <Button title="Ver documentos" onPress={() => navigation.navigate('Legal')} />
-      <Button title="Aceptar y continuar" loading={pending} onPress={() => legalMutation.mutate()} />
+      <Button testID="e2e.onboarding.legal.submit" title="Aceptar y continuar" loading={pending} onPress={() => legalMutation.mutate()} />
     </Card>}
 
     {step === 'PROFILE_SELFIE' && <Card>

@@ -95,6 +95,7 @@ export function AvailableRequestDetailModal({ request, onClose }: {
         />}
         <Text style={styles.sectionTitle}>Enviar tu oferta</Text>
         <Field
+          testID="e2e.quote.price"
           keyboardType="numeric"
           placeholder="Valor de la cotización"
           value={formattedPrice}
@@ -102,6 +103,7 @@ export function AvailableRequestDetailModal({ request, onClose }: {
           onChangeText={(value) => setPrice(value.replace(/\D/g, ''))}
         />
         <Field
+          testID="e2e.quote.comment"
           multiline
           placeholder="Comentario para el cliente"
           value={comment}
@@ -109,7 +111,7 @@ export function AvailableRequestDetailModal({ request, onClose }: {
           onChangeText={setComment}
         />
         {pendingMessage && <Text style={styles.error}>{pendingMessage}</Text>}
-        <Button title="Enviar cotización" loading={quote.isPending} onPress={() => send(Number(price), comment || undefined)} />
+        <Button testID="e2e.quote.submit" title="Enviar cotización" loading={quote.isPending} onPress={() => send(Number(price), comment || undefined)} />
         <Pressable disabled={quote.isPending} onPress={onClose} style={styles.close}><Text style={styles.closeText}>Cerrar</Text></Pressable>
       </ScrollView>
       </KeyboardAvoidingView>

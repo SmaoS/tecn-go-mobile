@@ -1,0 +1,126 @@
+name: Mobile Android E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      apk_url:
+        description: "Optional direct URL to an existing preview APK"
+        required: false
+        type: string
+      run_onboarding:
+        description: "Run the destructive onboarding flow"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  maestro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      E2E_CLIENT_EMAIL: ${{ secrets.E2E_CLIENT_EMAIL }}
+      E2E_CLIENT_PASSWORD: ${{ secrets.E2E_CLIENT_PASSWORD }}
+      E2E_TECHNICIAN_EMAIL: ${{ secrets.E2E_TECHNICIAN_EMAIL }}
+      E2E_TECHNICIAN_PASSWORD: ${{ secrets.E2E_TECHNICIAN_PASSWORD }}
+      E2E_ONBOARDING_EMAIL: ${{ secrets.E2E_ONBOARDING_EMAIL }}
+      E2E_ONBOARDING_PASSWORD: ${{ secrets.E2E_ONBOARDING_PASSWORD }}
+      E2E_ONBOARDING_NAME: ${{ vars.E2E_ONBOARDING_NAME }}
+      E2E_ONBOARDING_PHONE: ${{ secrets.E2E_ONBOARDING_PHONE }}
+      E2E_ONBOARDING_COUNTRY: ${{ vars.E2E_ONBOARDING_COUNTRY }}
+      E2E_ONBOARDING_DEPARTMENT: ${{ vars.E2E_ONBOARDING_DEPARTMENT }}
+      E2E_ONBOARDING_CITY: ${{ vars.E2E_ONBOARDING_CITY }}
+      E2E_ONBOARDING_ADDRESS: ${{ vars.E2E_ONBOARDING_ADDRESS }}
+      E2E_ONBOARDING_NEIGHBORHOOD: ${{ vars.E2E_ONBOARDING_NEIGHBORHOOD }}
+      E2E_ONBOARDING_DOCUMENT: ${{ secrets.E2E_ONBOARDING_DOCUMENT }}
+      E2E_SERVICE_CATEGORY: ${{ vars.E2E_SERVICE_CATEGORY }}
+      E2E_REQUEST_DESCRIPTION: ${{ vars.E2E_REQUEST_DESCRIPTION }}
+      E2E_REQUEST_ADDRESS: ${{ vars.E2E_REQUEST_ADDRESS }}
+      E2E_REQUEST_ESTIMATED_PRICE: ${{ vars.E2E_REQUEST_ESTIMATED_PRICE }}
+      E2E_QUOTE_PRICE: ${{ vars.E2E_QUOTE_PRICE }}
+      E2E_QUOTE_COMMENT: ${{ vars.E2E_QUOTE_COMMENT }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.22.2"
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - run: npm ci
+      - name: Validate E2E configuration
+        shell: bash
+        run: |
+          required=(
+            E2E_CLIENT_EMAIL E2E_CLIENT_PASSWORD
+            E2E_TECHNICIAN_EMAIL E2E_TECHNICIAN_PASSWORD
+            E2E_SERVICE_CATEGORY E2E_REQUEST_DESCRIPTION E2E_REQUEST_ADDRESS
+            E2E_REQUEST_ESTIMATED_PRICE E2E_QUOTE_PRICE E2E_QUOTE_COMMENT
+          )
+          if [ "${{ inputs.run_onboarding }}" = "true" ]; then
+            required+=(
+              E2E_ONBOARDING_EMAIL E2E_ONBOARDING_PASSWORD E2E_ONBOARDING_NAME
+              E2E_ONBOARDING_PHONE E2E_ONBOARDING_COUNTRY
+              E2E_ONBOARDING_DEPARTMENT E2E_ONBOARDING_CITY
+              E2E_ONBOARDING_ADDRESS E2E_ONBOARDING_NEIGHBORHOOD
+              E2E_ONBOARDING_DOCUMENT
+            )
+          fi
+          for name in "${required[@]}"; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is not configured"
+              exit 1
+            fi
+          done
+      - name: Resolve preview APK
+        id: apk
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.apk_url }}" ]; then
+            echo "url=${{ inputs.apk_url }}" >> "$GITHUB_OUTPUT"
+          else
+            npx eas-cli@latest build --platform android --profile preview --non-interactive --wait --json > eas-build.json
+            build_url="$(jq -r '.[0].artifacts.buildUrl // empty' eas-build.json)"
+            if [ -z "$build_url" ]; then
+              echo "::error::EAS did not return a preview APK URL"
+              exit 1
+            fi
+            echo "url=$build_url" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Download preview APK
+        run: curl --fail --location "${{ steps.apk.outputs.url }}" --output app-preview.apk
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Run smoke tests on Android preview APK
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            adb install -r app-preview.apk
+            mkdir -p .maestro/results
+            maestro test --format junit --output .maestro/results/login.xml .maestro/flows/login.yaml
+            if [ "${{ inputs.run_onboarding }}" = "true" ]; then
+              maestro test --format junit --output .maestro/results/onboarding.xml .maestro/flows/onboarding.yaml
+            fi
+            maestro test --format junit --output .maestro/results/create-request.xml .maestro/flows/create-request.yaml
+            maestro test --format junit --output .maestro/results/quote-and-accept.xml .maestro/flows/quote-and-accept.yaml
+      - name: Upload Maestro results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-maestro-results
+          path: |
+            .maestro/results
+            ~/.maestro/tests
+          if-no-files-found: warn
+          retention-days: 14

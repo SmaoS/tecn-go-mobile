@@ -1,0 +1,23 @@
+appId: com.tecngo
+name: Login and logout
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "e2e.login.identifier"
+- inputText: ${E2E_CLIENT_EMAIL}
+- tapOn:
+    id: "e2e.login.password"
+- inputText: ${E2E_CLIENT_PASSWORD}
+- tapOn:
+    id: "e2e.login.submit"
+- extendedWaitUntil:
+    visible: "Solicitar servicio"
+    timeout: 20000
+- tapOn:
+    id: "e2e.client.menu"
+- tapOn:
+    id: "e2e.logout"
+- assertVisible: "Bienvenido de nuevo"

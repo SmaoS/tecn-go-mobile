@@ -9,7 +9,7 @@ export function ClientHeader({ unread = 0, onMenu, onNotifications }: {
 }) {
   return <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
     <View style={styles.header}>
-      <Pressable accessibilityLabel="Abrir menú" onPress={onMenu} style={styles.iconButton}>
+      <Pressable testID="e2e.client.menu" accessibilityLabel="Abrir menú" onPress={onMenu} style={styles.iconButton}>
         <Text style={styles.icon}>☰</Text>
       </Pressable>
       <Image source={require('../../../../assets/logo-horizontal-dark.png')} style={styles.logo} resizeMode="contain" />

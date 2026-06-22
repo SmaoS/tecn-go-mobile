@@ -28,8 +28,14 @@ export function Field({ style, placeholderTextColor = colors.muted, ...props }: 
   />
 }
 
-export function Button({ title, onPress, loading, disabled }: { title: string; onPress: () => void; loading?: boolean; disabled?: boolean }) {
-  return <Pressable disabled={loading || disabled} onPress={onPress} style={[styles.button, disabled && styles.buttonDisabled]}>{loading ? <ActivityIndicator color={colors.bg} /> : <Text style={styles.buttonText}>{title}</Text>}</Pressable>
+export function Button({ title, onPress, loading, disabled, testID }: {
+  title: string
+  onPress: () => void
+  loading?: boolean
+  disabled?: boolean
+  testID?: string
+}) {
+  return <Pressable testID={testID} accessibilityRole="button" disabled={loading || disabled} onPress={onPress} style={[styles.button, disabled && styles.buttonDisabled]}>{loading ? <ActivityIndicator color={colors.bg} /> : <Text style={styles.buttonText}>{title}</Text>}</Pressable>
 }
 
 export function LoadingOverlay({ visible, text = 'Procesando...' }: { visible: boolean; text?: string }) {

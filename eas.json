@@ -17,6 +17,9 @@
       "environment": "preview",
       "env": {
         "EXPO_PUBLIC_ENFORCE_VERSION_CHECK": "false"
+      },
+      "android": {
+        "buildType": "apk"
       }
     },
     "production": {

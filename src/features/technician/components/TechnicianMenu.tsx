@@ -35,7 +35,7 @@ export function TechnicianMenu({ visible, profile, onClose, onNavigate, onSwitch
         </View>
         <View style={styles.logout}>
           {onSwitchMode && <MenuItem label="Modo cliente" onPress={() => { onClose(); onSwitchMode() }} />}
-          <MenuItem label="Cerrar sesión" danger onPress={() => { onClose(); onLogout() }} />
+          <MenuItem testID="e2e.logout" label="Cerrar sesión" danger onPress={() => { onClose(); onLogout() }} />
         </View>
       </SafeAreaView>
       <Pressable style={styles.dismiss} onPress={onClose} />
@@ -43,8 +43,8 @@ export function TechnicianMenu({ visible, profile, onClose, onNavigate, onSwitch
   </Modal>
 }
 
-function MenuItem({ label, onPress, danger = false }: { label: string; onPress: () => void; danger?: boolean }) {
-  return <Pressable onPress={onPress} style={styles.item}><Text style={[styles.itemText, danger && styles.danger]}>{label}</Text></Pressable>
+function MenuItem({ label, onPress, danger = false, testID }: { label: string; onPress: () => void; danger?: boolean; testID?: string }) {
+  return <Pressable testID={testID} onPress={onPress} style={styles.item}><Text style={[styles.itemText, danger && styles.danger]}>{label}</Text></Pressable>
 }
 
 const styles = StyleSheet.create({

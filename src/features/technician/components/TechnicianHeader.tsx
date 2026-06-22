@@ -13,7 +13,7 @@ export function TechnicianHeader({ available, loading, unread = 0, onAvailabilit
 }) {
   return <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
     <View style={styles.header}>
-      <Pressable accessibilityLabel="Abrir menú" onPress={onMenu} style={styles.iconButton}>
+      <Pressable testID="e2e.technician.menu" accessibilityLabel="Abrir menú" onPress={onMenu} style={styles.iconButton}>
         <Text style={styles.icon}>☰</Text>
       </Pressable>
       <View style={styles.center}>

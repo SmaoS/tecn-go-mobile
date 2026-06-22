@@ -256,6 +256,50 @@ La suite de componentes y pantallas verifica:
 - evidencias, comprobantes, denuncias y reportes de contenido;
 - cotizaciones, cancelación, chat, cierre y calificación desde el detalle.
 
+## E2E Android con Maestro
+
+Los smoke tests viven en `.maestro/flows` y se ejecutan sobre un APK real del
+perfil EAS `preview`:
+
+```bash
+eas build --platform android --profile preview
+maestro test .maestro/flows/login.yaml
+maestro test .maestro/flows/onboarding.yaml
+maestro test .maestro/flows/create-request.yaml
+maestro test .maestro/flows/quote-and-accept.yaml
+```
+
+El workflow manual `Mobile Android E2E` permite suministrar una URL de APK ya
+generado o construirlo con `EXPO_TOKEN`. Ejecuta login/logout, onboarding
+opcional, creación de solicitud y el flujo técnico cotiza/cliente acepta.
+
+Antes de ejecutarlo:
+
+- configurar en EAS `preview` las variables públicas de API, Maps y Firebase;
+- crear cuentas E2E exclusivas para cliente, técnico aprobado y onboarding;
+- configurar los secretos `E2E_*` y variables indicados en `.maestro/README.md`;
+- mantener cliente y técnico en la misma ciudad y con ubicación compatible.
+
+Los reportes JUnit, capturas y diagnósticos de Maestro se conservan como
+artefacto de GitHub Actions durante 14 días.
+
+## Cobertura gradual
+
+La CI conserva el umbral estricto por métricas sobre módulos críticos y además
+mide todo `src` con exclusiones para adaptadores puramente nativos, variantes
+web/native, tipos y archivos de estilos.
+
+El umbral global incremental se controla con la variable de repositorio
+`MOBILE_COVERAGE_THRESHOLD`:
+
+1. `35`: etapa actual.
+2. `50`: activar cuando la cobertura global alcance 50%.
+3. `65`: objetivo final.
+
+El control gradual usa cobertura global de líneas; las métricas críticas
+continúan exigiendo 75% en líneas, funciones y statements, y 65% en branches.
+El directorio completo `coverage/` se publica como artefacto en cada ejecución.
+
 ## Sentry y builds de producción
 
 La captura de errores mediante `EXPO_PUBLIC_SENTRY_DSN` funciona sin subir

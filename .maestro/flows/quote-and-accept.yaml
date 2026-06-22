@@ -1,0 +1,59 @@
+appId: com.tecngo
+name: Quote and accept service request
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "e2e.login.identifier"
+- inputText: ${E2E_TECHNICIAN_EMAIL}
+- tapOn:
+    id: "e2e.login.password"
+- inputText: ${E2E_TECHNICIAN_PASSWORD}
+- tapOn:
+    id: "e2e.login.submit"
+- extendedWaitUntil:
+    visible: "Solicitudes disponibles"
+    timeout: 20000
+- tapOn: ${E2E_REQUEST_DESCRIPTION}
+- extendedWaitUntil:
+    visible: "Enviar tu oferta"
+    timeout: 10000
+- tapOn:
+    id: "e2e.quote.price"
+- inputText: ${E2E_QUOTE_PRICE}
+- tapOn:
+    id: "e2e.quote.comment"
+- inputText: ${E2E_QUOTE_COMMENT}
+- hideKeyboard
+- tapOn:
+    id: "e2e.quote.submit"
+- extendedWaitUntil:
+    visible: "Solicitudes disponibles"
+    timeout: 20000
+- tapOn:
+    id: "e2e.technician.menu"
+- tapOn:
+    id: "e2e.logout"
+- assertVisible: "Bienvenido de nuevo"
+- tapOn:
+    id: "e2e.login.identifier"
+- inputText: ${E2E_CLIENT_EMAIL}
+- tapOn:
+    id: "e2e.login.password"
+- inputText: ${E2E_CLIENT_PASSWORD}
+- tapOn:
+    id: "e2e.login.submit"
+- extendedWaitUntil:
+    visible: "Mis solicitudes"
+    timeout: 20000
+- tapOn: "Mis solicitudes"
+- tapOn: ${E2E_REQUEST_DESCRIPTION}
+- extendedWaitUntil:
+    visible: "Aceptar esta cotización"
+    timeout: 20000
+- tapOn: "Aceptar esta cotización"
+- extendedWaitUntil:
+    visible: "Cotización aceptada"
+    timeout: 20000

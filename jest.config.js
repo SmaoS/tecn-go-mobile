@@ -43,7 +43,7 @@ module.exports = {
     '\\.native\\.[jt]sx?$',
     '\\.web\\.[jt]sx?$',
   ],
-  coverageReporters: ['text', 'html', 'lcov'],
+  coverageReporters: ['text', 'html', 'lcov', 'json-summary'],
   coverageThreshold: {
     global: {
       lines: 75,

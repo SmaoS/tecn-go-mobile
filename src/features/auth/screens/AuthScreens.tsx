@@ -63,9 +63,9 @@ export function LoginScreen({ navigation, onSession }: Props) {
       <Pressable style={[authStyles.roleButton, method === 'email' && authStyles.roleButtonActive]} onPress={() => { setMethod('email'); setIdentifier('') }}><Text style={[authStyles.roleText, method === 'email' && authStyles.roleTextActive]}>Correo</Text></Pressable>
       <Pressable style={[authStyles.roleButton, method === 'phone' && authStyles.roleButtonActive]} onPress={() => { setMethod('phone'); setIdentifier('') }}><Text style={[authStyles.roleText, method === 'phone' && authStyles.roleTextActive]}>Celular</Text></Pressable>
     </View>
-    <Field style={authStyles.baseInput} autoCapitalize="none" keyboardType={method === 'email' ? 'email-address' : 'phone-pad'} placeholder={method === 'email' ? 'Correo' : 'Celular, ej. 3001234567'} value={identifier} onChangeText={setIdentifier} />
-    <SecureField style={authStyles.baseInput}  placeholder="Contraseña" value={password} onChangeText={setPassword} />
-    {login.error && <Text style={styles.error}>{apiMessage(login.error)}</Text>}<Button title="Ingresar"
+    <Field testID="e2e.login.identifier" style={authStyles.baseInput} autoCapitalize="none" keyboardType={method === 'email' ? 'email-address' : 'phone-pad'} placeholder={method === 'email' ? 'Correo' : 'Celular, ej. 3001234567'} value={identifier} onChangeText={setIdentifier} />
+    <SecureField testID="e2e.login.password" style={authStyles.baseInput}  placeholder="Contraseña" value={password} onChangeText={setPassword} />
+    {login.error && <Text style={styles.error}>{apiMessage(login.error)}</Text>}<Button testID="e2e.login.submit" title="Ingresar"
       onPress={() => void verifyVersionAndLogin()}
       loading={login.isPending || checkingVersion} disabled={!canLogin || checkingVersion} />
     <Pressable onPress={() => navigation.navigate('ForgotPassword')}><Text style={styles.link}>¿Olvidaste tu contraseña?</Text></Pressable>
