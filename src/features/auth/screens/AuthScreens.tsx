@@ -5,9 +5,10 @@ import { Button, colors, Field, styles } from '../../../components/UI'
 import { SecureField } from '../../../components/SecureField'
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
 import { apiMessage } from '../../../shared/apiMessage'
-import type { RootStackParamList, Session } from '../../../types'
+import type { AppVersionCheck, RootStackParamList, Session } from '../../../types'
 import { useForgotPassword, useLogin, useRegister, useRegisterByPhone, useResetPassword, useSendPhoneOtp, useVerifyAdminMfa, useVerifyPhoneOtp } from '../hooks'
 import { authApi } from '../api'
+import { AppVersionModal, checkAppVersionBeforeLogin } from '../../app-version/AppVersionGate'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login' | 'Register'> & {
   onSession: (session: Session) => void
@@ -19,9 +20,27 @@ export function LoginScreen({ navigation, onSession }: Props) {
   const [password, setPassword] = useState('')
   const [mfaChallenge, setMfaChallenge] = useState('')
   const [mfaCode, setMfaCode] = useState('')
+  const [versionCheck, setVersionCheck] = useState<AppVersionCheck>()
+  const [checkingVersion, setCheckingVersion] = useState(false)
   const login = useLogin()
   const verifyMfa = useVerifyAdminMfa(onSession)
   const canLogin = identifier.trim().length > 0 && password.length > 0
+  const submitLogin = () => login.mutate(
+    { identifier: identifier.trim(), password, method },
+    { onSuccess: (result) => result.mfaRequired && result.mfaChallengeToken
+      ? setMfaChallenge(result.mfaChallengeToken)
+      : onSession(result) },
+  )
+  const verifyVersionAndLogin = async () => {
+    setCheckingVersion(true)
+    const requiredUpdate = await checkAppVersionBeforeLogin()
+    setCheckingVersion(false)
+    if (requiredUpdate) {
+      setVersionCheck(requiredUpdate)
+      return
+    }
+    submitLogin()
+  }
   if (mfaChallenge) {
     return <KeyboardAwareScreen>
       <Image source={require('../../../../assets/logo-horizontal-dark.png')} style={authStyles.logo} resizeMode="contain" />
@@ -46,14 +65,15 @@ export function LoginScreen({ navigation, onSession }: Props) {
     </View>
     <Field style={authStyles.baseInput} autoCapitalize="none" keyboardType={method === 'email' ? 'email-address' : 'phone-pad'} placeholder={method === 'email' ? 'Correo' : 'Celular, ej. 3001234567'} value={identifier} onChangeText={setIdentifier} />
     <SecureField style={authStyles.baseInput}  placeholder="Contraseña" value={password} onChangeText={setPassword} />
-    {login.error && <Text style={styles.error}>{apiMessage(login.error)}</Text>}<Button title="Ingresar" onPress={() => login.mutate(
-      { identifier: identifier.trim(), password, method },
-      { onSuccess: (result) => result.mfaRequired && result.mfaChallengeToken
-        ? setMfaChallenge(result.mfaChallengeToken)
-        : onSession(result) },
-    )} loading={login.isPending} disabled={!canLogin} />
+    {login.error && <Text style={styles.error}>{apiMessage(login.error)}</Text>}<Button title="Ingresar"
+      onPress={() => void verifyVersionAndLogin()}
+      loading={login.isPending || checkingVersion} disabled={!canLogin || checkingVersion} />
     <Pressable onPress={() => navigation.navigate('ForgotPassword')}><Text style={styles.link}>¿Olvidaste tu contraseña?</Text></Pressable>
     <Pressable onPress={() => navigation.navigate('Register')}><Text style={styles.link}>Crear una cuenta</Text></Pressable>
+    <AppVersionModal check={versionCheck} onContinue={() => {
+      setVersionCheck(undefined)
+      submitLogin()
+    }} />
   </KeyboardAwareScreen>
 }
 
