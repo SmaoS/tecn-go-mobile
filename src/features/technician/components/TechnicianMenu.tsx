@@ -30,7 +30,7 @@ export function TechnicianMenu({ visible, profile, onClose, onNavigate, onSwitch
         </Pressable>
         <View style={styles.menu}>
           <MenuItem label="Servicios Asignados" onPress={() => go('TechnicianHome')} />
-          <MenuItem label="Invita y gana" onPress={() => go('TechnicianReferrals')} />
+          <MenuItem label="Invita conocidos" onPress={() => go('TechnicianReferrals')} />
           <MenuItem label="Compromisos y términos" onPress={() => go('Legal')} />
         </View>
         <View style={styles.logout}>

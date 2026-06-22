@@ -1,0 +1,20 @@
+node_modules/
+.expo/
+dist/
+coverage/
+.env
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+*.aab
+sentry.properties
+**/sentry.properties
+.env.sentry-build-plugin
+
+# EAS must generate a fresh native project from app.config.ts.
+/android/
+/ios/

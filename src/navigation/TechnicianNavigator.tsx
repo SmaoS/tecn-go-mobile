@@ -50,6 +50,6 @@ export function TechnicianNavigator() {
     <Stack.Screen name="ServiceSupport" component={ServiceSupportScreen} options={{ title: 'Evidencias y soporte' }} />
     <Stack.Screen name="Legal" component={LegalScreen} options={{ title: 'Compromiso y términos' }} />
     <Stack.Screen name="CaptureProfilePhoto" component={CaptureProfilePhotoScreen} options={{ title: 'Foto de perfil' }} />
-    <Stack.Screen name="TechnicianReferrals" component={TechnicianReferralsScreen} options={{ title: 'Invita y gana' }} />
+    <Stack.Screen name="TechnicianReferrals" component={TechnicianReferralsScreen} options={{ title: 'Invita conocidos' }} />
   </Stack.Navigator></>
 }
