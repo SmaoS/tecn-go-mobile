@@ -187,13 +187,29 @@ local incluso si la red no está disponible.
 ## Calidad
 
 ```bash
+npm test
+npm run test:watch
 npm run test:coverage
+npm run test:coverage:all
 npm run typecheck
 npm run doctor
 ```
 
 Jest Expo y React Native Testing Library generan el reporte en `coverage/`. CodeQL y
 Dependabot están configurados en `.github`.
+
+La infraestructura compartida vive en `src/test`:
+
+- `setup.ts`: mocks configurables para ubicación, cámara, galería, documentos,
+  notificaciones, SecureStore, Maps y Sentry;
+- `render.tsx`: `renderWithProviders`, sesión simulada, QueryClient aislado y
+  NavigationContainer opcional;
+- `fixtures.ts`: datos tipados para usuarios, perfiles, solicitudes, cotizaciones,
+  categorías y notificaciones.
+
+`npm run test:coverage` aplica el umbral obligatorio sobre los módulos incorporados
+a la cobertura por etapas. `npm run test:coverage:all` mide todo `src` sin umbral y
+sirve para observar la deuda real mientras se agregan pruebas de nuevos flujos.
 ## Sentry y builds de producción
 
 La captura de errores mediante `EXPO_PUBLIC_SENTRY_DSN` funciona sin subir
