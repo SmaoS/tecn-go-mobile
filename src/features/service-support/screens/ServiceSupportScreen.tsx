@@ -36,11 +36,11 @@ export function ServiceSupportScreen({ route }: NativeStackScreenProps<RootStack
       <Button title="Elegir y subir evidencia" loading={action.isPending} onPress={() => action.mutate({ kind: 'evidence', evidenceType, description })} />
       {evidences.data?.map((item) => <Card key={item.id}>
         <Text style={styles.muted}>{item.description || evidenceLabels[item.evidenceType]} · {item.uploadedByName}</Text>
-        {item.contentAssetId && <Button title="Reportar contenido" onPress={() =>
+        {item.contentAssetId && <Button title="Reportar contenido o derechos de autor" onPress={() =>
           action.mutate({
             kind: 'contentReport',
             contentAssetId: item.contentAssetId!,
-            reason: 'Contenido inapropiado reportado desde la aplicación móvil',
+            reason: 'Posible contenido inapropiado o infracción de derechos de autor reportada desde la aplicación móvil',
           })} />}
       </Card>)}
     </Card>
