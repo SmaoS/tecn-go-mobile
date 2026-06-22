@@ -1,6 +1,11 @@
 const phaseOneCoverageTargets = [
+  'src/api/client.ts',
   'src/components/SecureField.tsx',
+  'src/context/SessionProvider.tsx',
+  'src/features/app-version/AppVersionGate.tsx',
   'src/features/notifications/labels.ts',
+  'src/navigation/notificationNavigation.ts',
+  'src/services/sessionStorage.ts',
   'src/shared/format.ts',
 ]
 

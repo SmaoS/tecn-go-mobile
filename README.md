@@ -210,6 +210,15 @@ La infraestructura compartida vive en `src/test`:
 `npm run test:coverage` aplica el umbral obligatorio sobre los módulos incorporados
 a la cobertura por etapas. `npm run test:coverage:all` mide todo `src` sin umbral y
 sirve para observar la deuda real mientras se agregan pruebas de nuevos flujos.
+
+La suite de seguridad, sesión y navegación verifica:
+
+- persistencia del JWT en SecureStore y migración desde AsyncStorage;
+- limpieza local ante logout o respuesta `401`;
+- manejo de bloqueos funcionales `403` y correlation IDs;
+- cambio entre modos cliente/técnico y limpieza de caché;
+- control de versión previo al login;
+- selección de navegación por rol y apertura de rutas desde notificaciones.
 ## Sentry y builds de producción
 
 La captura de errores mediante `EXPO_PUBLIC_SENTRY_DSN` funciona sin subir

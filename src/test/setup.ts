@@ -1,11 +1,17 @@
 process.env.EXPO_PUBLIC_API_URL ??= 'https://api.test.tecngo.local/api'
 process.env.EXPO_PUBLIC_APP_ENVIRONMENT ??= 'test'
 
+jest.mock('@react-native-async-storage/async-storage', () =>
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock'))
+
 jest.mock('@sentry/react-native', () => ({
   addBreadcrumb: jest.fn(),
   captureException: jest.fn(),
   init: jest.fn(),
   setUser: jest.fn(),
+  setTag: jest.fn(),
+  withScope: jest.fn((callback: (scope: { setTag: jest.Mock }) => void) =>
+    callback({ setTag: jest.fn() })),
   wrap: <T,>(component: T) => component,
 }))
 
