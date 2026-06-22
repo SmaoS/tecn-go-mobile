@@ -244,6 +244,18 @@ La suite de flujos críticos verifica:
 La captura de cédula conserva por separado la vista previa frontal y posterior, y
 solo permite volver al wizard cuando ambas imágenes fueron capturadas.
 
+La suite de componentes y pantallas verifica:
+
+- campos, botones, estados de carga, toast y ajuste de formularios al teclado;
+- carga directa y autenticada de imágenes privadas;
+- headers, footers, disponibilidad y menús de cliente/técnico;
+- cambio de contraseña con confirmación y limpieza del formulario;
+- exportación de datos y solicitud confirmada de anonimización;
+- envío, revisión y reporte de mensajes de chat;
+- apertura, lectura y eliminación de notificaciones;
+- evidencias, comprobantes, denuncias y reportes de contenido;
+- cotizaciones, cancelación, chat, cierre y calificación desde el detalle.
+
 ## Sentry y builds de producción
 
 La captura de errores mediante `EXPO_PUBLIC_SENTRY_DSN` funciona sin subir
