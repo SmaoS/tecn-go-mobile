@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, Image, Pressable, ScrollView, Text } from 'react-native'
+import { Image, Pressable, ScrollView, Text } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, Card, Field, styles, colors } from '../../../components/UI'
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
@@ -14,12 +14,14 @@ import { useProfile } from '../../profile/hooks'
 import { paymentMethodLabels, requestPaymentMethods, type RequestPaymentMethod } from '../../payments/paymentMethods'
 import { formatCopCurrency } from '../../../shared/format'
 import { FloatingFormFooter } from '../../../components/FloatingFormFooter'
+import { ActionSheet } from '../../../components/ActionSheet'
 
 export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'RequestService'>) {
   const categories = useServiceCategories()
   const [form, setForm] = useState<{ categoryId: string; description: string; address: string; latitude: string; longitude: string; estimatedPrice: string; paymentMethod: RequestPaymentMethod | '' }>({ categoryId: '', description: '', address: '', latitude: '', longitude: '', estimatedPrice: '', paymentMethod: '' })
   const [images, setImages] = useState<{ uri: string; name: string; mimeType: string }[]>([])
   const [mapVisible, setMapVisible] = useState(false)
+  const [imageSheetVisible, setImageSheetVisible] = useState(false)
   const location = useCurrentLocation()
   const picker = useServiceImagePicker()
   const create = useCreateRequest(() => navigation.replace('Home'))
@@ -39,13 +41,12 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
     }))
   }
   useEffect(() => { void useGps() }, [])
-  function chooseImageSource() {
+  function imageSourceOptions() {
     const remaining = Math.max(1, 5 - images.length)
-    Alert.alert('Agregar foto', 'Elige el origen de la imagen.', [
-      { text: 'Cámara', onPress: () => picker.mutate({ source: 'camera', max: 1 }, { onSuccess: (items) => setImages([...images, ...items].slice(0, 5)) }) },
-      { text: 'Galería', onPress: () => picker.mutate({ source: 'gallery', max: remaining }, { onSuccess: (items) => setImages([...images, ...items].slice(0, 5)) }) },
-      { text: 'Cancelar', style: 'cancel' },
-    ])
+    return [
+      { label: 'Tomar foto con cámara', onPress: () => picker.mutate({ source: 'camera', max: 1 }, { onSuccess: (items) => setImages([...images, ...items].slice(0, 5)) }) },
+      { label: 'Seleccionar de galería', onPress: () => picker.mutate({ source: 'gallery', max: remaining }, { onSuccess: (items) => setImages([...images, ...items].slice(0, 5)) }) },
+    ]
   }
   const submitDisabled = !form.categoryId || !form.description.trim()
     || !form.address.trim() || !form.latitude || !form.longitude || !form.paymentMethod
@@ -64,7 +65,7 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
     </QueryState>
     <Text style={styles.label}>Describe el problema *</Text>
     <Field testID="e2e.request.description" multiline placeholder="Describe el problema" value={form.description} onChangeText={(description) => setForm({ ...form, description })} />
-    <Button title={images.length ? `Sube foto del problema (${images.length}/5)` : 'Sube foto del problema'} onPress={chooseImageSource} loading={picker.isPending} />
+    <Button title={images.length ? `Sube foto del problema (${images.length}/5)` : 'Sube foto del problema'} onPress={() => setImageSheetVisible(true)} loading={picker.isPending} />
     {images.length > 0 && <ScrollView horizontal>{images.map((image) => <Image key={image.uri} source={{ uri: image.uri }} style={{ width: 100, height: 100, borderRadius: 12, marginRight: 8 }} />)}</ScrollView>}
     <Field testID="e2e.request.estimatedPrice" keyboardType="numeric" placeholder="Presupuesto estimado (opcional)"
       value={form.estimatedPrice ? formatCopCurrency(Number(form.estimatedPrice)) : ''}
@@ -94,6 +95,13 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
         }).catch(() => undefined)
       }}
       onClose={() => setMapVisible(false)}
+    />
+    <ActionSheet
+      visible={imageSheetVisible}
+      title="Agregar foto"
+      message="Elige cómo quieres subir la foto del problema."
+      options={imageSourceOptions()}
+      onClose={() => setImageSheetVisible(false)}
     />
   </KeyboardAwareScreen>
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, colors } from '../../../components/UI'
 import { useDoubleBackExit } from '../../../hooks/useDoubleBackExit'
@@ -17,6 +17,9 @@ import { useTechnicianAvailability, useTechnicianProfile } from '../hooks'
 import { useSession } from '../../../context/useSession'
 import { paymentMethodLabels } from '../../payments/paymentMethods'
 import { showToast } from '../../../components/Toast'
+import { PaymentConfirmationBottomSheet } from '../components/PaymentConfirmationBottomSheet'
+import { ReportIssueBottomSheet } from '../components/ReportIssueBottomSheet'
+import { RatingBottomSheet } from '../../ratings/components/RatingBottomSheet'
 
 export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'TechnicianHome'>) {
   useDoubleBackExit()
@@ -26,6 +29,9 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
   const advance = useAdvanceRequest()
   const profile = useTechnicianProfile()
   const availability = useTechnicianAvailability()
+  const [paymentRequest, setPaymentRequest] = useState<ServiceRequest>()
+  const [reportRequest, setReportRequest] = useState<ServiceRequest>()
+  const [ratingRequestId, setRatingRequestId] = useState<string>()
   const paidIds = (requests.data ?? []).filter((item) => item.status === 'PAID').map((item) => item.id)
   const ratingStatuses = useRatingStatuses(paidIds)
   const { logout, session, switchMode } = useSession()
@@ -37,11 +43,7 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
       ARRIVED: 'IN_PROGRESS',
     }
     if (item.status === 'IN_PROGRESS') {
-      Alert.alert('Terminar trabajo', '¿El cliente pagó el valor acordado?', [
-        { text: 'No, no pagó', style: 'destructive', onPress: () => advance.mutate({ requestId: item.id, paymentReceived: false, paymentMethod: item.requestedPaymentMethod, comment: 'El cliente no pagó el valor acordado.' }) },
-        { text: 'Sí, pagó', onPress: () => advance.mutate({ requestId: item.id, paymentReceived: true, paymentMethod: item.requestedPaymentMethod }) },
-        { text: 'Cancelar', style: 'cancel' },
-      ])
+      setPaymentRequest(item)
       return
     }
     const status = states[item.status]
@@ -84,6 +86,51 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
       </QueryState>
     </ScrollView>
     <TechnicianFooter active="available" onSelect={(tab) => navigation.navigate(tab === 'available' ? 'AvailableRequests' : 'TechnicianEarnings')} />
+    <PaymentConfirmationBottomSheet
+      visible={Boolean(paymentRequest)}
+      request={paymentRequest}
+      loading={advance.isPending}
+      onClose={() => setPaymentRequest(undefined)}
+      onPaid={() => {
+        if (!paymentRequest) return
+        const requestId = paymentRequest.id
+        advance.mutate({
+          requestId,
+          paymentReceived: true,
+          paymentMethod: paymentRequest.requestedPaymentMethod,
+        }, {
+          onSuccess: () => {
+            setPaymentRequest(undefined)
+            setRatingRequestId(requestId)
+            showToast('Servicio cerrado. Ahora puedes calificar al cliente.')
+          },
+        })
+      }}
+      onUnpaid={() => {
+        if (!paymentRequest) return
+        setReportRequest(paymentRequest)
+        setPaymentRequest(undefined)
+      }}
+    />
+    <ReportIssueBottomSheet
+      visible={Boolean(reportRequest)}
+      requestId={reportRequest?.id}
+      onClose={() => setReportRequest(undefined)}
+      onSubmit={(description) => {
+        if (!reportRequest) return Promise.resolve()
+        return advance.mutateAsync({
+          requestId: reportRequest.id,
+          paymentReceived: false,
+          paymentMethod: reportRequest.requestedPaymentMethod,
+          comment: description,
+        }).then(() => showToast('Reporte de pago enviado para revisión', 'info'))
+      }}
+    />
+    <RatingBottomSheet
+      visible={Boolean(ratingRequestId)}
+      requestId={ratingRequestId}
+      onClose={() => setRatingRequestId(undefined)}
+    />
     <TechnicianMenu visible={menu} profile={profile.data} onClose={() => setMenu(false)} onNavigate={(screen) => navigation.navigate(screen)}
       onSwitchMode={() => void switchMode('CLIENT').catch((error) => showToast(apiMessage(error), 'error'))}
       onLogout={logout} />

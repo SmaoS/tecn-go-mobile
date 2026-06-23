@@ -1,21 +1,22 @@
 import { useRef, useState } from 'react'
-import { Alert, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { Button, colors, Screen, styles } from '../../../components/UI'
 import { useCaptureProfilePhoto } from '../hooks'
+import { showToast } from '../../../components/Toast'
 
 export function CaptureProfilePhotoScreen({ navigation }: { navigation: { goBack: () => void } }) {
   const camera = useRef<CameraView>(null)
   const [permission, requestPermission] = useCameraPermissions()
   const [ready, setReady] = useState(false)
   const capture = useCaptureProfilePhoto(() => {
-      Alert.alert('Foto enviada', 'La detección facial automática no está activa. La foto quedará pendiente de revisión manual.')
+      showToast('Foto enviada. Quedará pendiente de revisión manual.', 'info')
       navigation.goBack()
   })
   async function takePhoto() {
     const photo = await camera.current?.takePictureAsync({ quality: 0.8 })
     if (!photo) {
-      Alert.alert('No fue posible tomar la foto')
+      showToast('No fue posible tomar la foto', 'error')
       return
     }
     capture.mutate(photo.uri)

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, Card, Field, colors, styles as uiStyles } from '../../../components/UI'
@@ -18,6 +18,8 @@ import { setStoredSession } from '../../../services/sessionStorage'
 import { LegalDocumentsContent } from '../../legal/components/LegalDocumentsContent'
 import { FloatingFormFooter } from '../../../components/FloatingFormFooter'
 import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../../shared/phone'
+import { ActionSheet, type ActionSheetOption } from '../../../components/ActionSheet'
+import { showToast } from '../../../components/Toast'
 
 const labels: Record<string, string> = {
   MAIN_DATA: 'Datos principales',
@@ -63,6 +65,11 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
   const [certificateUrl, setCertificateUrl] = useState('')
   const [processedSelfieUri, setProcessedSelfieUri] = useState<string>()
   const [processedDocumentKey, setProcessedDocumentKey] = useState<string>()
+  const [actionSheet, setActionSheet] = useState<{
+    title: string
+    message: string
+    options: ActionSheetOption[]
+  }>()
   const step = status.data?.currentStep ?? 'MAIN_DATA'
 
   useEffect(() => {
@@ -134,7 +141,7 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
         profilePhotoUrl: url,
         faceDetectionStatus: route.params?.faceDetectionStatus ?? 'MANUAL_REVIEW_REQUIRED',
       }))
-      .catch((err) => Alert.alert('No fue posible cargar la selfie', apiMessage(err)))
+      .catch((err) => showToast(apiMessage(err), 'error'))
   }, [processedSelfieUri, route.params?.faceDetectionStatus, route.params?.selfieUri, selfieMutation])
 
   useEffect(() => {
@@ -163,24 +170,30 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
         })
       }
     }
-    void uploadDocuments().catch((err) => Alert.alert('No fue posible cargar el documento', apiMessage(err)))
+    void uploadDocuments().catch((err) => showToast(apiMessage(err), 'error'))
   }, [documentMutation, processedDocumentKey, route.params?.documentBackUri, route.params?.documentFrontUri, route.params?.documentSingleUri, route.params?.identityDocumentCaptureStatus])
 
   async function pickImage(kind: 'PROFILE' | 'DOCUMENT' | 'CERTIFICATE', setUrl: (url: string) => void) {
-    Alert.alert('Seleccionar archivo', 'Elige cómo quieres cargar la imagen.', [
-      { text: 'Cámara', onPress: () => void pickAndUploadImageAsset(kind, 'camera').then((url) => url && setUrl(url)).catch((err) => Alert.alert('No fue posible cargar', apiMessage(err))) },
-      { text: 'Galería', onPress: () => void pickAndUploadImageAsset(kind, 'gallery').then((url) => url && setUrl(url)).catch((err) => Alert.alert('No fue posible cargar', apiMessage(err))) },
-      { text: 'Cancelar', style: 'cancel' },
-    ])
+    setActionSheet({
+      title: 'Seleccionar archivo',
+      message: 'Elige cómo quieres cargar la imagen.',
+      options: [
+        { label: 'Tomar foto con cámara', onPress: () => void pickAndUploadImageAsset(kind, 'camera').then((url) => url && setUrl(url)).catch((err) => showToast(apiMessage(err), 'error')) },
+        { label: 'Seleccionar de galería', onPress: () => void pickAndUploadImageAsset(kind, 'gallery').then((url) => url && setUrl(url)).catch((err) => showToast(apiMessage(err), 'error')) },
+      ],
+    })
   }
 
   async function pickDocument(setUrl: (url: string) => void) {
-    Alert.alert('Documento', 'Puedes tomar una foto, elegir de galería o seleccionar un PDF.', [
-      { text: 'Cámara', onPress: () => void pickAndUploadImageAsset('DOCUMENT', 'camera').then((url) => url && setUrl(url)).catch((err) => Alert.alert('No fue posible cargar', apiMessage(err))) },
-      { text: 'Galería', onPress: () => void pickAndUploadImageAsset('DOCUMENT', 'gallery').then((url) => url && setUrl(url)).catch((err) => Alert.alert('No fue posible cargar', apiMessage(err))) },
-      { text: 'PDF/archivo', onPress: () => void pickAndUploadEvidence('DOCUMENT').then((url) => url && setUrl(url)).catch((err) => Alert.alert('No fue posible cargar', apiMessage(err))) },
-      { text: 'Cancelar', style: 'cancel' },
-    ])
+    setActionSheet({
+      title: 'Documento',
+      message: 'Puedes tomar una foto, elegir de galería o seleccionar un PDF.',
+      options: [
+        { label: 'Tomar foto con cámara', onPress: () => void pickAndUploadImageAsset('DOCUMENT', 'camera').then((url) => url && setUrl(url)).catch((err) => showToast(apiMessage(err), 'error')) },
+        { label: 'Seleccionar de galería', onPress: () => void pickAndUploadImageAsset('DOCUMENT', 'gallery').then((url) => url && setUrl(url)).catch((err) => showToast(apiMessage(err), 'error')) },
+        { label: 'PDF o archivo', onPress: () => void pickAndUploadEvidence('DOCUMENT').then((url) => url && setUrl(url)).catch((err) => showToast(apiMessage(err), 'error')) },
+      ],
+    })
   }
 
   const mainDisabled = !main.fullName.trim() || Boolean(main.phone) && !isValidLocalPhone(main.phone) || !main.countryId || !main.departmentId
@@ -268,6 +281,13 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       <Button title="Guardar certificado" loading={pending} onPress={() => certificateMutation.mutate(certificateUrl)} />
       <Button title="No tengo certificado ahora" loading={pending} onPress={() => skipCertificate.mutate()} />
     </Card>}
+    <ActionSheet
+      visible={Boolean(actionSheet)}
+      title={actionSheet?.title ?? ''}
+      message={actionSheet?.message}
+      options={actionSheet?.options ?? []}
+      onClose={() => setActionSheet(undefined)}
+    />
   </KeyboardAwareScreen>
 }
 

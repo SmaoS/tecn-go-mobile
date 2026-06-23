@@ -23,6 +23,8 @@ export interface PaymentProof {
   reviewComment?: string
 }
 
+type UploadFile = { uri: string; name: string; mimeType: string }
+
 async function pickFile() {
   const result = await DocumentPicker.getDocumentAsync({
     type: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
@@ -33,7 +35,7 @@ async function pickFile() {
   return file ? { uri: file.uri, name: file.name, mimeType: file.mimeType ?? 'application/pdf' } : undefined
 }
 
-function fileBody(file: { uri: string; name: string; mimeType: string }) {
+function fileBody(file: UploadFile) {
   const body = new FormData()
   body.append('file', { uri: file.uri, name: file.name, type: file.mimeType } as unknown as Blob)
   return body
@@ -45,6 +47,9 @@ export const serviceSupportApi = {
   uploadEvidence: async (requestId: string, evidenceType: EvidenceType, description: string) => {
     const file = await pickFile()
     if (!file) return
+    await serviceSupportApi.uploadEvidenceFile(requestId, evidenceType, description, file)
+  },
+  uploadEvidenceFile: async (requestId: string, evidenceType: EvidenceType, description: string, file: UploadFile) => {
     const body = fileBody(file)
     body.append('evidenceType', evidenceType)
     if (description) body.append('description', description)

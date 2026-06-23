@@ -1,6 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, type RenderOptions } from '@testing-library/react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import type { ReactElement, ReactNode } from 'react'
 import { SessionContext, type SessionContextValue } from '../context/session-context'
 import type { Session } from '../types'
@@ -62,7 +63,12 @@ export function renderWithProviders(
       : children
     return (
       <QueryClientProvider client={queryClient}>
-        <SessionContext.Provider value={context}>{content}</SessionContext.Provider>
+        <SafeAreaProvider initialMetrics={{
+          frame: { x: 0, y: 0, width: 390, height: 844 },
+          insets: { top: 24, right: 0, bottom: 34, left: 0 },
+        }}>
+          <SessionContext.Provider value={context}>{content}</SessionContext.Provider>
+        </SafeAreaProvider>
       </QueryClientProvider>
     )
   }

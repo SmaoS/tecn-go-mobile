@@ -1,5 +1,5 @@
 import { fireEvent, waitFor } from '@testing-library/react-native'
-import { Alert, Share } from 'react-native'
+import { Share } from 'react-native'
 import { renderWithProviders } from '../../../test/render'
 import { DataRightsCard } from './DataRightsCard'
 import { complianceApi } from '../api'
@@ -36,18 +36,13 @@ describe('DataRightsCard', () => {
 
   it('requires confirmation before requesting anonymization', async () => {
     jest.mocked(complianceApi.requestAnonymization).mockResolvedValue({} as never)
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
-      buttons?.[1]?.onPress?.()
-    })
     const view = renderWithProviders(<DataRightsCard />)
 
     fireEvent.press(view.getByText('Solicitar anonimización'))
 
-    expect(alert).toHaveBeenCalledWith(
-      'Anonimizar cuenta',
-      expect.stringContaining('administrador'),
-      expect.any(Array),
-    )
+    expect(view.getByText('Anonimizar cuenta')).toBeTruthy()
+    expect(view.getByText(/administrador/)).toBeTruthy()
+    fireEvent.press(view.getByText('Enviar solicitud'))
     await waitFor(() => expect(complianceApi.requestAnonymization).toHaveBeenCalled())
   })
 })

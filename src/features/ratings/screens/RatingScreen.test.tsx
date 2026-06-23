@@ -1,4 +1,5 @@
 import { fireEvent, render } from '@testing-library/react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useSubmitRating } from '../hooks'
 import { RatingScreen } from './RatingScreen'
 
@@ -12,14 +13,19 @@ describe('RatingScreen', () => {
       isPending: false,
       error: null,
     } as never)
-    const view = render(<RatingScreen
-      route={{
-        key: 'Rating',
-        name: 'Rating',
-        params: { requestId: 'request-1' },
-      } as never}
-      navigation={{ popToTop: jest.fn() } as never}
-    />)
+    const view = render(<SafeAreaProvider initialMetrics={{
+      frame: { x: 0, y: 0, width: 390, height: 844 },
+      insets: { top: 24, right: 0, bottom: 34, left: 0 },
+    }}>
+      <RatingScreen
+        route={{
+          key: 'Rating',
+          name: 'Rating',
+          params: { requestId: 'request-1' },
+        } as never}
+        navigation={{ popToTop: jest.fn() } as never}
+      />
+    </SafeAreaProvider>)
 
     fireEvent.press(view.getAllByText('★')[3])
     fireEvent.changeText(

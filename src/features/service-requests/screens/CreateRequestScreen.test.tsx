@@ -1,4 +1,5 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { categoryFixture, userProfileFixture } from '../../../test/fixtures'
 import { useServiceImagePicker } from '../../files/hooks'
 import { useCurrentLocation } from '../../location/hooks'
@@ -51,10 +52,15 @@ describe('CreateRequestScreen', () => {
       }),
     } as never)
     const navigation = { replace: jest.fn() }
-    const view = render(<CreateRequestScreen
-      navigation={navigation as never}
-      route={{ key: 'RequestService', name: 'RequestService' } as never}
-    />)
+    const view = render(<SafeAreaProvider initialMetrics={{
+      frame: { x: 0, y: 0, width: 390, height: 844 },
+      insets: { top: 24, right: 0, bottom: 34, left: 0 },
+    }}>
+      <CreateRequestScreen
+        navigation={navigation as never}
+        route={{ key: 'RequestService', name: 'RequestService' } as never}
+      />
+    </SafeAreaProvider>)
 
     await waitFor(() => expect(getCurrent).toHaveBeenCalled())
     expect(view.queryByText('Ciudad del servicio')).toBeNull()
