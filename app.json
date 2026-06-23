@@ -13,7 +13,9 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "TecnGo usa la cámara para capturar tu foto de perfil y evidencias."
+          "cameraPermission": "TecnGo usa la cámara para capturar tu foto de perfil y evidencias.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
         }
       ],
       [
@@ -27,7 +29,8 @@
         {
           "photosPermission": "TecnGo usa tus fotos para completar tu perfil y evidencias."
         }
-      ]
+      ],
+      "./plugins/withAndroidCompatibility"
     ],
     "ios": {
       "supportsTablet": true,
@@ -36,7 +39,11 @@
     },
     "android": {
       "package": "com.tecngo",
+      "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "resize",
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#00D84A"
