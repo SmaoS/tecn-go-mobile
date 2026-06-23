@@ -48,6 +48,9 @@ export function AppNavigator() {
           && current !== 'OnboardingRequired') {
         navigationRef.navigate('OnboardingRequired')
       }
+      if (code === 'LEGAL_ACCEPTANCE_REQUIRED' && current !== 'Legal') {
+        navigationRef.navigate('Legal', { required: true })
+      }
     })
     const sync = (data: Record<string, unknown>) => {
       void syncNotificationData(queryClient, {

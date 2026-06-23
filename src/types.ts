@@ -260,7 +260,7 @@ export type RootStackParamList = {
   TechnicianHistory: undefined
   TechnicianEarnings: undefined
   ServiceSupport: { requestId: string }
-  Legal: undefined
+  Legal: { required?: boolean } | undefined
   CaptureProfilePhoto: undefined
   TechnicianReferrals: undefined
   ChatModeration: undefined

@@ -3,6 +3,14 @@ import { legalApi } from './api'
 export function useLegalDocuments() {
   const client = useQueryClient()
   const documents = useQuery({ queryKey: ['legal'], queryFn: legalApi.active })
-  const accept = useMutation({ mutationFn: legalApi.accept, onSuccess: () => void client.invalidateQueries({ queryKey: ['legal'] }) })
-  return { documents, accept }
+  const acceptAll = useMutation({
+    mutationFn: legalApi.acceptAll,
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['legal'] }),
+        client.invalidateQueries({ queryKey: ['onboarding-status'] }),
+      ])
+    },
+  })
+  return { documents, acceptAll }
 }

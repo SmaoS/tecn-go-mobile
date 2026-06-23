@@ -95,4 +95,18 @@ describe('api client', () => {
 
     expect(blocked).toHaveBeenCalledWith('ONBOARDING_REQUIRED')
   })
+
+  it('abre documentos legales ante un bloqueo 409', async () => {
+    const blocked = jest.fn()
+    jest.spyOn(sessionStorage, 'getStoredSession').mockResolvedValue(null)
+    setOperationBlockedHandler(blocked)
+
+    await expect(api.post('/protected-action', {}, {
+      adapter: async (config) => rejected(config, 409, {
+        code: 'LEGAL_ACCEPTANCE_REQUIRED',
+      }),
+    })).rejects.toThrow('Request failed')
+
+    expect(blocked).toHaveBeenCalledWith('LEGAL_ACCEPTANCE_REQUIRED')
+  })
 })

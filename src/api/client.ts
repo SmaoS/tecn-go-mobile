@@ -53,7 +53,8 @@ api.interceptors.response.use(
       await removeStoredSession()
       unauthorizedHandler?.()
     }
-    if (error.response?.status === 403 && typeof error.response.data?.code === 'string') {
+    if ((error.response?.status === 403 || error.response?.status === 409)
+        && typeof error.response.data?.code === 'string') {
       operationBlockedHandler?.(error.response.data.code)
     }
     return Promise.reject(error)

@@ -3,4 +3,5 @@ export interface LegalDocument { id: string; title: string; version: string; con
 export const legalApi = {
   active: () => api.get<LegalDocument[]>('/v1/legal/documents/active').then(({ data }) => data),
   accept: (id: string) => api.post(`/v1/legal/documents/${id}/accept`),
+  acceptAll: () => api.post('/v1/legal/documents/accept-all'),
 }

@@ -15,6 +15,7 @@ import { pickAndUploadEvidence, pickAndUploadImageAsset, uploadAsset } from '../
 import { onboardingApi, type DocumentType, type OnboardingMainData } from '../api'
 import { TechnicianProfessionalProfileOnboardingScreen } from './TechnicianProfessionalProfileOnboardingScreen'
 import { setStoredSession } from '../../../services/sessionStorage'
+import { LegalDocumentsContent } from '../../legal/components/LegalDocumentsContent'
 
 const labels: Record<string, string> = {
   MAIN_DATA: 'Datos principales',
@@ -102,14 +103,13 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       await refresh()
     },
   })
-  const legalMutation = useMutation({ mutationFn: onboardingApi.legalAcceptance, onSuccess: refresh })
   const selfieMutation = useMutation({ mutationFn: onboardingApi.profileSelfie, onSuccess: refresh })
   const documentMutation = useMutation({ mutationFn: onboardingApi.identityDocument, onSuccess: refresh })
   const certificateMutation = useMutation({ mutationFn: onboardingApi.certificate, onSuccess: refresh })
   const skipCertificate = useMutation({ mutationFn: onboardingApi.skipCertificate, onSuccess: refresh })
-  const pending = mainMutation.isPending || legalMutation.isPending || selfieMutation.isPending
+  const pending = mainMutation.isPending || selfieMutation.isPending
     || documentMutation.isPending || certificateMutation.isPending || skipCertificate.isPending
-  const error = mainMutation.error || legalMutation.error || selfieMutation.error || documentMutation.error
+  const error = mainMutation.error || selfieMutation.error || documentMutation.error
     || certificateMutation.error || skipCertificate.error || status.error
 
   useEffect(() => {
@@ -203,12 +203,14 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       <Button testID="e2e.onboarding.main.submit" title="Guardar y continuar" loading={pending} onPress={() => mainMutation.mutate(main)} />
     </Card>}
 
-    {step === 'LEGAL_ACCEPTANCE' && <Card>
-      <Text style={uiStyles.cardTitle}>Documentos legales</Text>
-      <Text style={uiStyles.muted}>Debes aceptar términos, privacidad y seguridad para continuar usando TecnGo.</Text>
-      <Button title="Ver documentos" onPress={() => navigation.navigate('Legal')} />
-      <Button testID="e2e.onboarding.legal.submit" title="Aceptar y continuar" loading={pending} onPress={() => legalMutation.mutate()} />
-    </Card>}
+    {step === 'LEGAL_ACCEPTANCE' && <>
+      <Text style={uiStyles.subtitle}>Lee todos los documentos antes de continuar.</Text>
+      <LegalDocumentsContent
+        testID="e2e.onboarding.legal.submit"
+        buttonTitle="Aceptar todos y continuar"
+        onAccepted={refresh}
+      />
+    </>}
 
     {step === 'PROFILE_SELFIE' && <Card>
       <Text style={uiStyles.cardTitle}>Foto de perfil</Text>
