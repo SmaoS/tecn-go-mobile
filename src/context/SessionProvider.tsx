@@ -11,6 +11,7 @@ import { api } from '../api/client'
 import { showToast } from '../components/Toast'
 import { getStoredSession, removeStoredSession, setStoredSession } from '../services/sessionStorage'
 import { setObservedUser } from '../services/observability'
+import { normalizeSession } from '../features/auth/api'
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
@@ -19,14 +20,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     getStoredSession()
-      .then((raw) => { if (raw) setSession(JSON.parse(raw) as Session) })
+      .then(async (raw) => {
+        if (!raw) return
+        const restored = normalizeSession(JSON.parse(raw) as Session)
+        setSession(restored)
+        if (JSON.stringify(restored) !== raw) {
+          await setStoredSession(JSON.stringify(restored))
+        }
+      })
       .finally(() => setReady(true))
   }, [])
   useEffect(() => setUnauthorizedHandler(() => {
     setSession(null)
     queryClient.clear()
   }), [queryClient])
-  useEffect(() => setObservedUser(session?.userId, session?.role), [session])
+  useEffect(() => setObservedUser(session?.userId, session?.activeMode ?? session?.role), [session])
   usePushRegistration(session?.userId)
 
   async function switchMode(mode: 'CLIENT' | 'TECHNICIAN') {

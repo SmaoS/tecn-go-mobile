@@ -25,12 +25,10 @@ tags:
     id: "e2e.request.description"
 - inputText: ${E2E_REQUEST_DESCRIPTION}
 - tapOn:
-    id: "e2e.request.address"
-- inputText: ${E2E_REQUEST_ADDRESS}
-- tapOn:
     id: "e2e.request.estimatedPrice"
 - inputText: ${E2E_REQUEST_ESTIMATED_PRICE}
 - hideKeyboard
+- tapOn: "Efectivo"
 - runFlow:
     when:
       visible: "Permitir"
@@ -38,9 +36,11 @@ tags:
       - tapOn:
           text: "Mientras la app está en uso|While using the app"
           optional: true
-- extendedWaitUntil:
-    visible: "Ubicación GPS lista"
-    timeout: 20000
+- tapOn:
+    id: "e2e.request.address"
+- eraseText
+- inputText: ${E2E_REQUEST_ADDRESS}
+- hideKeyboard
 - tapOn:
     id: "e2e.request.submit"
 - extendedWaitUntil:

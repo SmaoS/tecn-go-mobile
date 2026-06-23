@@ -35,6 +35,7 @@ const linking: LinkingOptions<RootStackParamList> = {
 export function AppNavigator() {
   const { session, ready } = useSession()
   const queryClient = useQueryClient()
+  const activeRole = session?.activeMode ?? session?.role
   useEffect(() => {
     if (!session) return
     setOperationBlockedHandler((code) => {
@@ -58,7 +59,7 @@ export function AppNavigator() {
     return addNotificationListeners(sync, (data) => {
       sync(data)
       if (!navigationRef.isReady()) return
-      openNotification(navigationRef, session.role, {
+      openNotification(navigationRef, activeRole ?? session.role, {
         route: typeof data.route === 'string' ? data.route : undefined,
         requestId: typeof data.requestId === 'string' ? data.requestId : undefined,
         type: typeof data.notificationType === 'string'
@@ -66,10 +67,10 @@ export function AppNavigator() {
           : 'SERVICE_STATUS_CHANGED',
       })
     })
-  }, [queryClient, session])
+  }, [activeRole, queryClient, session])
 
   useEffect(() => {
-    if (session?.role !== 'TECHNICIAN') return
+    if (activeRole !== 'TECHNICIAN') return
     const reconcile = async (url: string | null) => {
       if (!url) return
       const parsed = new URL(url)
@@ -87,13 +88,13 @@ export function AppNavigator() {
       void reconcile(url).catch(() => undefined)
     })
     return () => subscription.remove()
-  }, [queryClient, session?.role])
+  }, [activeRole, queryClient])
 
   if (!ready) return <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center' }}><ActivityIndicator color={colors.brand} /></View>
   return <NavigationContainer ref={navigationRef} theme={theme} linking={linking}>
     {!session ? <AuthNavigator />
-      : session.role === 'CLIENT' ? <ClientNavigator />
-        : session.role === 'TECHNICIAN' ? <TechnicianNavigator />
+      : activeRole === 'CLIENT' ? <ClientNavigator />
+        : activeRole === 'TECHNICIAN' ? <TechnicianNavigator />
           : <StaffNavigator />}
   </NavigationContainer>
 }

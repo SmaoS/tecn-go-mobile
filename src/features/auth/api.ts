@@ -2,8 +2,16 @@ import { api } from '../../api/client'
 import type { Session } from '../../types'
 import { setStoredSession } from '../../services/sessionStorage'
 
+export function normalizeSession<T extends Session>(data: T): T {
+  if (data.activeMode && (data.activeMode === 'CLIENT' || data.activeMode === 'TECHNICIAN')) {
+    return { ...data, role: data.activeMode }
+  }
+  return data
+}
+
 async function persist(response: Promise<{ data: Session }>) {
-  const { data } = await response
+  const responseData = await response
+  const data = normalizeSession(responseData.data)
   await setStoredSession(JSON.stringify(data))
   return data
 }
@@ -15,7 +23,8 @@ export type LoginResult = Session & {
 }
 
 async function login(response: Promise<{ data: LoginResult }>) {
-  const { data } = await response
+  const responseData = await response
+  const data = normalizeSession(responseData.data)
   if (!data.mfaRequired) await setStoredSession(JSON.stringify(data))
   return data
 }

@@ -6,6 +6,19 @@ import { technicianApi } from '../technician/api'
 export interface Coordinates {
   latitude: number
   longitude: number
+  address?: string
+}
+
+export async function reverseGeocodeCoordinates(coordinates: Coordinates) {
+  const [place] = await Location.reverseGeocodeAsync(coordinates)
+  if (!place) return ''
+  return [
+    place.street,
+    place.streetNumber,
+    place.district,
+    place.subregion,
+    place.city,
+  ].filter(Boolean).join(', ')
 }
 
 export function useCurrentLocation() {
@@ -21,7 +34,9 @@ export function useCurrentLocation() {
         return null
       }
       const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High })
-      return { latitude: location.coords.latitude, longitude: location.coords.longitude }
+      const coordinates = { latitude: location.coords.latitude, longitude: location.coords.longitude }
+      const address = await reverseGeocodeCoordinates(coordinates).catch(() => '')
+      return { ...coordinates, address }
     } catch (reason) {
       setError(apiMessage(reason))
       return null

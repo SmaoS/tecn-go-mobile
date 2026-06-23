@@ -8,14 +8,15 @@ import { QueryState } from '../../../shared/QueryState'
 import type { RootStackParamList } from '../../../types'
 import { useCreateRequest, useServiceCategories } from '../hooks'
 import { useServiceImagePicker } from '../../files/hooks'
-import { useCurrentLocation } from '../../location/hooks'
+import { reverseGeocodeCoordinates, useCurrentLocation } from '../../location/hooks'
 import { LocationPickerModal } from '../../location/LocationPickerModal'
 import { useProfile } from '../../profile/hooks'
 import { paymentMethodLabels, requestPaymentMethods, type RequestPaymentMethod } from '../../payments/paymentMethods'
+import { formatCopCurrency } from '../../../shared/format'
 
 export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'RequestService'>) {
   const categories = useServiceCategories()
-  const [form, setForm] = useState<{ categoryId: string; description: string; address: string; latitude: string; longitude: string; estimatedPrice: string; paymentMethod: RequestPaymentMethod }>({ categoryId: '', description: '', address: '', latitude: '', longitude: '', estimatedPrice: '', paymentMethod: 'CASH' })
+  const [form, setForm] = useState<{ categoryId: string; description: string; address: string; latitude: string; longitude: string; estimatedPrice: string; paymentMethod: RequestPaymentMethod | '' }>({ categoryId: '', description: '', address: '', latitude: '', longitude: '', estimatedPrice: '', paymentMethod: '' })
   const [images, setImages] = useState<{ uri: string; name: string; mimeType: string }[]>([])
   const [mapVisible, setMapVisible] = useState(false)
   const location = useCurrentLocation()
@@ -23,12 +24,18 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
   const create = useCreateRequest(() => navigation.replace('Home'))
   const profile = useProfile()
   const selectedCategory = categories.data?.find((item) => item.id === form.categoryId)
+  const selectedPaymentMethod = form.paymentMethod || null
   const selectedCoordinates = form.latitude && form.longitude
     ? { latitude: Number(form.latitude), longitude: Number(form.longitude) }
     : null
   async function useGps() {
     const coordinates = await location.getCurrent()
-    if (coordinates) setForm((value) => ({ ...value, latitude: String(coordinates.latitude), longitude: String(coordinates.longitude) }))
+    if (coordinates) setForm((value) => ({
+      ...value,
+      latitude: String(coordinates.latitude),
+      longitude: String(coordinates.longitude),
+      address: coordinates.address || value.address || profile.data?.homeAddress || '',
+    }))
   }
   useEffect(() => { void useGps() }, [])
   function chooseImageSource() {
@@ -45,40 +52,43 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
         ? <Card><Text style={[styles.cardTitle, { color: colors.brand }]}>{selectedCategory.name}</Text><Text style={styles.muted}>{selectedCategory.description}</Text><Button title="Ver categorías" onPress={() => setForm({ ...form, categoryId: '' })} /></Card>
         : categories.data?.map((item) => <Pressable key={item.id} onPress={() => setForm({ ...form, categoryId: item.id })}><Card><Text style={styles.cardTitle}>{item.name}</Text><Text style={styles.muted}>{item.description}</Text></Card></Pressable>)}</>
     </QueryState>
-    <Card>
-      <Text style={styles.cardTitle}>Ciudad del servicio</Text>
-      <Text style={styles.muted}>{profile.data?.cityName ?? profile.data?.homeCity ?? 'No configurada en tu perfil'}</Text>
-      <Text style={styles.muted}>Se toma automáticamente de tu perfil. Puedes cambiar dirección y ubicación exacta para este servicio.</Text>
-    </Card>
     <Field testID="e2e.request.description" multiline placeholder="Describe el problema" value={form.description} onChangeText={(description) => setForm({ ...form, description })} />
-    <Field testID="e2e.request.address" placeholder="Dirección" value={form.address} onChangeText={(address) => setForm({ ...form, address })} />
-    <Text style={styles.label}>Ubicación del servicio</Text>
-    <Text style={styles.muted}>Activa la ubicación para usar tu GPS o elige manualmente el punto en el mapa.</Text>
-    <Button title={form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener ubicación GPS'} onPress={useGps} loading={location.isLocating} />
-    <Button title="Elegir ubicación en mapa" onPress={() => setMapVisible(true)} />
-    <Field testID="e2e.request.estimatedPrice" keyboardType="numeric" placeholder="Presupuesto estimado (opcional)" value={form.estimatedPrice} onChangeText={(estimatedPrice) => setForm({ ...form, estimatedPrice })} />
-    <Text style={styles.label}>¿Por dónde vas a pagar?</Text>
-    {requestPaymentMethods.map((method) => <Pressable key={method} onPress={() => setForm({ ...form, paymentMethod: method })}>
-      <Card style={form.paymentMethod === method ? { borderColor: colors.brand } : undefined}>
-        <Text style={[styles.cardTitle, form.paymentMethod === method && { color: colors.brand }]}>{paymentMethodLabels[method]}</Text>
-      </Card>
-    </Pressable>)}
-    <Button title={images.length ? `Agregar foto (${images.length}/5)` : 'Tomar foto o elegir de galería'} onPress={chooseImageSource} loading={picker.isPending} />
+    <Button title={images.length ? `Sube foto del problema (${images.length}/5)` : 'Sube foto del problema'} onPress={chooseImageSource} loading={picker.isPending} />
     {images.length > 0 && <ScrollView horizontal>{images.map((image) => <Image key={image.uri} source={{ uri: image.uri }} style={{ width: 100, height: 100, borderRadius: 12, marginRight: 8 }} />)}</ScrollView>}
+    <Field testID="e2e.request.estimatedPrice" keyboardType="numeric" placeholder="Presupuesto estimado (opcional)"
+      value={form.estimatedPrice ? formatCopCurrency(Number(form.estimatedPrice)) : ''}
+      onChangeText={(estimatedPrice) => setForm({ ...form, estimatedPrice: estimatedPrice.replace(/\D/g, '') })} />
+    <Text style={styles.label}>¿Por dónde vas a pagar?</Text>
+    {selectedPaymentMethod
+      ? <Card><Text style={[styles.cardTitle, { color: colors.brand }]}>{paymentMethodLabels[selectedPaymentMethod]}</Text>
+        <Button title="Cambiar medio de pago" onPress={() => setForm({ ...form, paymentMethod: '' })} />
+      </Card>
+      : requestPaymentMethods.map((method) => <Pressable key={method} onPress={() => setForm({ ...form, paymentMethod: method })}>
+        <Card><Text style={styles.cardTitle}>{paymentMethodLabels[method]}</Text></Card>
+      </Pressable>)}
+    <Button title="Elegir otra ubicación en mapa" onPress={() => setMapVisible(true)} />
+    <Field testID="e2e.request.address" placeholder={location.isLocating ? 'Obteniendo dirección...' : 'Dirección del servicio'}
+      value={form.address} onChangeText={(address) => setForm({ ...form, address })} />
     {(location.error || picker.error || create.error) && <Text style={styles.error}>{location.error || apiMessage(picker.error ?? create.error)}</Text>}
     {!profile.data?.cityId ? <Text style={styles.error}>Completa la ciudad en Mi perfil antes de crear una solicitud.</Text> : null}
     {!form.latitude || !form.longitude ? <Text style={styles.error}>Se requiere ubicación GPS para publicar la solicitud.</Text> : null}
     <Button testID="e2e.request.submit" title="Crear solicitud" onPress={() => {
-      if (!profile.data?.cityId || !form.latitude || !form.longitude) return
+      if (!profile.data?.cityId || !form.latitude || !form.longitude || !form.paymentMethod) return
       create.mutate({ payload: {
       ...form, cityId: profile.data.cityId, latitude: Number(form.latitude), longitude: Number(form.longitude),
       estimatedPrice: form.estimatedPrice ? Number(form.estimatedPrice) : null,
     }, images })
-    }} loading={create.isPending} />
+    }} loading={create.isPending} disabled={!form.categoryId || !form.description.trim()
+      || !form.address.trim() || !form.latitude || !form.longitude || !form.paymentMethod} />
     <LocationPickerModal
       visible={mapVisible}
       value={selectedCoordinates}
-      onSelect={(coordinates) => setForm((value) => ({ ...value, latitude: String(coordinates.latitude), longitude: String(coordinates.longitude) }))}
+      onSelect={(coordinates) => {
+        setForm((value) => ({ ...value, latitude: String(coordinates.latitude), longitude: String(coordinates.longitude) }))
+        void reverseGeocodeCoordinates(coordinates).then((address) => {
+          if (address) setForm((value) => ({ ...value, address }))
+        }).catch(() => undefined)
+      }}
       onClose={() => setMapVisible(false)}
     />
   </KeyboardAwareScreen>

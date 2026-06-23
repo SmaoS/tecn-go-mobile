@@ -43,6 +43,13 @@ jest.mock('expo-location', () => ({
     },
     timestamp: Date.now(),
   })),
+  reverseGeocodeAsync: jest.fn(async () => [{
+    street: 'Calle 10',
+    streetNumber: '20-30',
+    district: 'Centro',
+    subregion: null,
+    city: 'Villavicencio',
+  }]),
   getLastKnownPositionAsync: jest.fn(async () => null),
   watchPositionAsync: jest.fn(async () => ({ remove: jest.fn() })),
   hasServicesEnabledAsync: jest.fn(async () => true),
