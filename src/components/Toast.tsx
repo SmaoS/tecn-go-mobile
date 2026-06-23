@@ -36,7 +36,7 @@ export function ToastHost() {
 }
 
 const styles = StyleSheet.create({
-  host: { position: 'absolute', left: 14, right: 14, top: 0, zIndex: 10000 },
+  host: { position: 'absolute', left: 14, right: 14, top: '40%', zIndex: 10000 },
   toast: { alignSelf: 'center', maxWidth: 520, width: '100%', backgroundColor: '#065F2D', borderColor: colors.brand, borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 13 },
   error: { backgroundColor: '#7F1D1D', borderColor: colors.danger },
   info: { backgroundColor: '#172554', borderColor: '#60A5FA' },

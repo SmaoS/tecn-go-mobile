@@ -37,10 +37,7 @@ export function AvailableRequestsScreen({ navigation }: NativeStackScreenProps<R
       onMenu={() => setMenu(true)}
       onNotifications={() => navigation.navigate('Notifications')}
     />
-    <View style={styles.heading}>
-      <Text style={styles.title}>Solicitudes disponibles</Text>
-      <Text style={styles.subtitle}>{available ? `Ofertas en ${profile.data?.cityName ?? 'tu ciudad'}, actualizadas cada 10 segundos` : 'Modo ocupado: puedes ver ofertas, pero no recibirás avisos nuevos'}</Text>
-    </View>
+    
     {availability.error || availability.update.error
       ? <Text style={styles.error}>{apiMessage(availability.error ?? availability.update.error)}</Text>
       : requests.isPending
