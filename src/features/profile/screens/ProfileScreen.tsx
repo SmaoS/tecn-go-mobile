@@ -89,9 +89,9 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       }} />
       {current.phone && !isValidLocalPhone(current.phone) && <Text style={styles.error}>{localPhoneHint}</Text>}
       {phoneVerificationRequired && <>
-        <Button title="Enviar código al celular" onPress={() => sendPhoneOtp.mutate({ phone: current.phone!, countryId: current.countryId })} loading={sendPhoneOtp.isPending} disabled={!isValidLocalPhone(current.phone)} />
-        <Field placeholder="Código OTP" keyboardType="number-pad" value={phoneCode} onChangeText={(value) => setPhoneCode(value.replace(/\D/g, ''))} />
-        <Button title="Verificar celular" onPress={() => verifyPhoneOtp.mutate({ phone: current.phone!, code: phoneCode, countryId: current.countryId })} loading={verifyPhoneOtp.isPending} disabled={!phoneCode || !isValidLocalPhone(current.phone)} />
+        <Button title="Enviar código OTP al celular" onPress={() => sendPhoneOtp.mutate({ phone: current.phone!, countryId: current.countryId })} loading={sendPhoneOtp.isPending} disabled={!isValidLocalPhone(current.phone)} />
+        <Field placeholder="Ingresa Código OTP" keyboardType="number-pad" value={phoneCode} onChangeText={(value) => setPhoneCode(value.replace(/\D/g, ''))} />
+        <Button title="Verificar código" onPress={() => verifyPhoneOtp.mutate({ phone: current.phone!, code: phoneCode, countryId: current.countryId })} loading={verifyPhoneOtp.isPending} disabled={!phoneCode || !isValidLocalPhone(current.phone)} />
       </>}
       {!phoneVerificationRequired && current.phone && <Text style={[styles.muted, { color: colors.brand }]}>Celular verificado</Text>}
       <CatalogSelect label="País" value={current.countryId} items={countries.data} onChange={(country) => update({ countryId: country.id, countryName: country.name, departmentId: undefined, departmentName: undefined, cityId: undefined, cityName: undefined, homeCity: undefined })} />

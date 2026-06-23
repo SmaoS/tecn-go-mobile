@@ -96,7 +96,7 @@ export function RegisterScreen({ navigation, onSession }: Props) {
     <Text style={styles.label}>Tipo de cuenta</Text>
     <View style={authStyles.roleRow}>
       <Pressable style={[authStyles.roleButton, role === 'CLIENT' && authStyles.roleButtonActive]} onPress={() => setRole('CLIENT')}><Text style={[authStyles.roleText, role === 'CLIENT' && authStyles.roleTextActive]}>Cliente {role === 'CLIENT' ? '✓' : ''}</Text></Pressable>
-      <Pressable style={[authStyles.roleButton, role === 'TECHNICIAN' && authStyles.roleButtonActive]} onPress={() => setRole('TECHNICIAN')}><Text style={[authStyles.roleText, role === 'TECHNICIAN' && authStyles.roleTextActive]}>Técnico {role === 'TECHNICIAN' ? '✓' : ''}</Text></Pressable>
+      <Pressable style={[authStyles.roleButton, role === 'TECHNICIAN' && authStyles.roleButtonActive]} onPress={() => setRole('TECHNICIAN')}><Text style={[authStyles.roleText, role === 'TECHNICIAN' && authStyles.roleTextActive]}>Trabaja con nosotros {role === 'TECHNICIAN' ? '✓' : ''}</Text></Pressable>
     </View>
     <Text style={styles.label}>Forma de registro</Text>
     <View style={authStyles.roleRow}>

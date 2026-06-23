@@ -56,7 +56,7 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
       estimatedPrice: form.estimatedPrice ? Number(form.estimatedPrice) : null,
     }, images })
   }
-  return <KeyboardAwareScreen footer={<FloatingFormFooter testID="e2e.request.submit" title="Crear solicitud" onPress={submit} loading={create.isPending} disabled={submitDisabled} />}><Text style={styles.title}>Nuevo servicio</Text><Text style={styles.muted}>Los campos marcados con * son obligatorios.</Text><Text style={styles.label}>Categoría *</Text>
+  return <KeyboardAwareScreen footer={<FloatingFormFooter testID="e2e.request.submit" title="Crear solicitud" onPress={submit} loading={create.isPending} disabled={submitDisabled} />}><Text style={styles.label}>Categoría *</Text>
     <QueryState pending={categories.isPending} error={categories.error}>
       <>{selectedCategory
         ? <Card><Text style={[styles.cardTitle, { color: colors.brand }]}>{selectedCategory.name}</Text><Text style={styles.muted}>{selectedCategory.description}</Text><Button title="Ver categorías" onPress={() => setForm({ ...form, categoryId: '' })} /></Card>
