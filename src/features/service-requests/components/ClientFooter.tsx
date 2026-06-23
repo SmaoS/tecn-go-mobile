@@ -9,7 +9,7 @@ export function ClientFooter({ active, onSelect }: {
   onSelect: (tab: ClientTab) => void
 }) {
   const insets = useSafeAreaInsets()
-  return <View style={[styles.safe, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+  return <View style={[styles.safe, { paddingBottom: Math.max(insets.bottom, 28) }]}>
     <View style={styles.footer}>
       <FooterButton label="Solicitar servicio" active={active === 'request'} onPress={() => onSelect('request')} />
       <FooterButton label="Mis solicitudes" active={active === 'requests'} onPress={() => onSelect('requests')} />

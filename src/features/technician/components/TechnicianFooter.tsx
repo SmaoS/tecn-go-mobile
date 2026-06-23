@@ -9,7 +9,7 @@ export function TechnicianFooter({ active, onSelect }: {
   onSelect: (tab: TechnicianTab) => void
 }) {
   const insets = useSafeAreaInsets()
-  return <View style={[styles.safe, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+  return <View style={[styles.safe, { paddingBottom: Math.max(insets.bottom, 28) }]}>
     <View style={styles.footer}>
       <FooterButton label="Solicitudes disponibles" active={active === 'available'} onPress={() => onSelect('available')} />
       <FooterButton label="Cartera" active={active === 'earnings'} onPress={() => onSelect('earnings')} />
