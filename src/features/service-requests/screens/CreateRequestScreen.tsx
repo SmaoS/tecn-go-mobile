@@ -13,6 +13,7 @@ import { LocationPickerModal } from '../../location/LocationPickerModal'
 import { useProfile } from '../../profile/hooks'
 import { paymentMethodLabels, requestPaymentMethods, type RequestPaymentMethod } from '../../payments/paymentMethods'
 import { formatCopCurrency } from '../../../shared/format'
+import { FloatingFormFooter } from '../../../components/FloatingFormFooter'
 
 export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'RequestService'>) {
   const categories = useServiceCategories()
@@ -46,19 +47,29 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
       { text: 'Cancelar', style: 'cancel' },
     ])
   }
-  return <KeyboardAwareScreen><Text style={styles.title}>Nuevo servicio</Text><Text style={styles.label}>Categoría</Text>
+  const submitDisabled = !form.categoryId || !form.description.trim()
+    || !form.address.trim() || !form.latitude || !form.longitude || !form.paymentMethod
+  function submit() {
+    if (!profile.data?.cityId || !form.latitude || !form.longitude || !form.paymentMethod) return
+    create.mutate({ payload: {
+      ...form, cityId: profile.data.cityId, latitude: Number(form.latitude), longitude: Number(form.longitude),
+      estimatedPrice: form.estimatedPrice ? Number(form.estimatedPrice) : null,
+    }, images })
+  }
+  return <KeyboardAwareScreen footer={<FloatingFormFooter testID="e2e.request.submit" title="Crear solicitud" onPress={submit} loading={create.isPending} disabled={submitDisabled} />}><Text style={styles.title}>Nuevo servicio</Text><Text style={styles.muted}>Los campos marcados con * son obligatorios.</Text><Text style={styles.label}>Categoría *</Text>
     <QueryState pending={categories.isPending} error={categories.error}>
       <>{selectedCategory
         ? <Card><Text style={[styles.cardTitle, { color: colors.brand }]}>{selectedCategory.name}</Text><Text style={styles.muted}>{selectedCategory.description}</Text><Button title="Ver categorías" onPress={() => setForm({ ...form, categoryId: '' })} /></Card>
         : categories.data?.map((item) => <Pressable key={item.id} onPress={() => setForm({ ...form, categoryId: item.id })}><Card><Text style={styles.cardTitle}>{item.name}</Text><Text style={styles.muted}>{item.description}</Text></Card></Pressable>)}</>
     </QueryState>
+    <Text style={styles.label}>Describe el problema *</Text>
     <Field testID="e2e.request.description" multiline placeholder="Describe el problema" value={form.description} onChangeText={(description) => setForm({ ...form, description })} />
     <Button title={images.length ? `Sube foto del problema (${images.length}/5)` : 'Sube foto del problema'} onPress={chooseImageSource} loading={picker.isPending} />
     {images.length > 0 && <ScrollView horizontal>{images.map((image) => <Image key={image.uri} source={{ uri: image.uri }} style={{ width: 100, height: 100, borderRadius: 12, marginRight: 8 }} />)}</ScrollView>}
     <Field testID="e2e.request.estimatedPrice" keyboardType="numeric" placeholder="Presupuesto estimado (opcional)"
       value={form.estimatedPrice ? formatCopCurrency(Number(form.estimatedPrice)) : ''}
       onChangeText={(estimatedPrice) => setForm({ ...form, estimatedPrice: estimatedPrice.replace(/\D/g, '') })} />
-    <Text style={styles.label}>¿Por dónde vas a pagar?</Text>
+    <Text style={styles.label}>¿Por dónde vas a pagar? *</Text>
     {selectedPaymentMethod
       ? <Card><Text style={[styles.cardTitle, { color: colors.brand }]}>{paymentMethodLabels[selectedPaymentMethod]}</Text>
         <Button title="Cambiar medio de pago" onPress={() => setForm({ ...form, paymentMethod: '' })} />
@@ -67,19 +78,12 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
         <Card><Text style={styles.cardTitle}>{paymentMethodLabels[method]}</Text></Card>
       </Pressable>)}
     <Button title="Elegir otra ubicación en mapa" onPress={() => setMapVisible(true)} />
+    <Text style={styles.label}>Dirección del servicio *</Text>
     <Field testID="e2e.request.address" placeholder={location.isLocating ? 'Obteniendo dirección...' : 'Dirección del servicio'}
       value={form.address} onChangeText={(address) => setForm({ ...form, address })} />
     {(location.error || picker.error || create.error) && <Text style={styles.error}>{location.error || apiMessage(picker.error ?? create.error)}</Text>}
     {!profile.data?.cityId ? <Text style={styles.error}>Completa la ciudad en Mi perfil antes de crear una solicitud.</Text> : null}
     {!form.latitude || !form.longitude ? <Text style={styles.error}>Se requiere ubicación GPS para publicar la solicitud.</Text> : null}
-    <Button testID="e2e.request.submit" title="Crear solicitud" onPress={() => {
-      if (!profile.data?.cityId || !form.latitude || !form.longitude || !form.paymentMethod) return
-      create.mutate({ payload: {
-      ...form, cityId: profile.data.cityId, latitude: Number(form.latitude), longitude: Number(form.longitude),
-      estimatedPrice: form.estimatedPrice ? Number(form.estimatedPrice) : null,
-    }, images })
-    }} loading={create.isPending} disabled={!form.categoryId || !form.description.trim()
-      || !form.address.trim() || !form.latitude || !form.longitude || !form.paymentMethod} />
     <LocationPickerModal
       visible={mapVisible}
       value={selectedCoordinates}

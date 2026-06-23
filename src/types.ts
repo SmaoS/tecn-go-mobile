@@ -27,6 +27,7 @@ export interface Category {
 export interface CatalogItem {
   id: string
   name: string
+  phonePrefix?: string
 }
 
 export interface ServiceRequest {

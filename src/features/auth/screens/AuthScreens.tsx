@@ -9,6 +9,7 @@ import type { AppVersionCheck, RootStackParamList, Session } from '../../../type
 import { useForgotPassword, useLogin, useRegister, useRegisterByPhone, useResetPassword, useSendPhoneOtp, useVerifyAdminMfa, useVerifyPhoneOtp } from '../hooks'
 import { authApi } from '../api'
 import { AppVersionModal, checkAppVersionBeforeLogin } from '../../app-version/AppVersionGate'
+import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../../shared/phone'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login' | 'Register'> & {
   onSession: (session: Session) => void
@@ -24,9 +25,9 @@ export function LoginScreen({ navigation, onSession }: Props) {
   const [checkingVersion, setCheckingVersion] = useState(false)
   const login = useLogin()
   const verifyMfa = useVerifyAdminMfa(onSession)
-  const canLogin = identifier.trim().length > 0 && password.length > 0
+  const canLogin = (method === 'email' ? identifier.trim().length > 0 : isValidLocalPhone(identifier)) && password.length > 0
   const submitLogin = () => login.mutate(
-    { identifier: identifier.trim(), password, method },
+    { identifier: method === 'phone' ? normalizeLocalPhone(identifier) : identifier.trim(), password, method },
     { onSuccess: (result) => result.mfaRequired && result.mfaChallengeToken
       ? setMfaChallenge(result.mfaChallengeToken)
       : onSession(result) },
@@ -63,7 +64,8 @@ export function LoginScreen({ navigation, onSession }: Props) {
       <Pressable style={[authStyles.roleButton, method === 'email' && authStyles.roleButtonActive]} onPress={() => { setMethod('email'); setIdentifier('') }}><Text style={[authStyles.roleText, method === 'email' && authStyles.roleTextActive]}>Correo</Text></Pressable>
       <Pressable style={[authStyles.roleButton, method === 'phone' && authStyles.roleButtonActive]} onPress={() => { setMethod('phone'); setIdentifier('') }}><Text style={[authStyles.roleText, method === 'phone' && authStyles.roleTextActive]}>Celular</Text></Pressable>
     </View>
-    <Field testID="e2e.login.identifier" style={authStyles.baseInput} autoCapitalize="none" keyboardType={method === 'email' ? 'email-address' : 'phone-pad'} placeholder={method === 'email' ? 'Correo' : 'Celular, ej. 3001234567'} value={identifier} onChangeText={setIdentifier} />
+    <Field testID="e2e.login.identifier" style={authStyles.baseInput} autoCapitalize="none" keyboardType={method === 'email' ? 'email-address' : 'number-pad'} maxLength={method === 'phone' ? 10 : undefined} placeholder={method === 'email' ? 'Correo' : 'Celular, ej. 3001234567'} value={identifier} onChangeText={(value) => setIdentifier(method === 'phone' ? normalizeLocalPhone(value) : value)} />
+    {method === 'phone' && identifier.length > 0 && !isValidLocalPhone(identifier) && <Text style={styles.error}>{localPhoneHint}</Text>}
     <SecureField testID="e2e.login.password" style={authStyles.baseInput}  placeholder="Contraseña" value={password} onChangeText={setPassword} />
     {login.error && <Text style={styles.error}>{apiMessage(login.error)}</Text>}<Button testID="e2e.login.submit" title="Ingresar"
       onPress={() => void verifyVersionAndLogin()}
@@ -104,10 +106,11 @@ export function RegisterScreen({ navigation, onSession }: Props) {
     <Field style={authStyles.baseInput} placeholder="Nombre completo" value={form.fullName} onChangeText={(fullName) => setForm({ ...form, fullName })} />
     {method === 'email'
       ? <Field style={authStyles.baseInput} autoCapitalize="none" keyboardType="email-address" placeholder="Correo" value={form.email} onChangeText={(email) => setForm({ ...form, email })} />
-      : <><Field style={authStyles.baseInput} keyboardType="phone-pad" placeholder="Celular, ej. 3001234567" value={form.phone} onChangeText={(phone) => { setForm({ ...form, phone }); setVerificationToken('') }} />
-        <Button title="Enviar código" onPress={() => sendOtp.mutate(form.phone, { onSuccess: (data) => setOtpNotice(data.debugCode ? `Código de desarrollo: ${data.debugCode}` : 'Código enviado por SMS.') })} loading={sendOtp.isPending} disabled={!form.phone.trim()} />
+      : <><Field style={authStyles.baseInput} keyboardType="number-pad" maxLength={10} placeholder="Celular, ej. 3001234567" value={form.phone} onChangeText={(phone) => { setForm({ ...form, phone: normalizeLocalPhone(phone) }); setVerificationToken('') }} />
+        {form.phone.length > 0 && !isValidLocalPhone(form.phone) && <Text style={styles.error}>{localPhoneHint}</Text>}
+        <Button title="Enviar código" onPress={() => sendOtp.mutate(form.phone, { onSuccess: (data) => setOtpNotice(data.debugCode ? `Código de desarrollo: ${data.debugCode}` : 'Código enviado por SMS.') })} loading={sendOtp.isPending} disabled={!isValidLocalPhone(form.phone)} />
         <Field style={authStyles.baseInput} keyboardType="number-pad" maxLength={8} placeholder="Código OTP" value={otpCode} onChangeText={(value) => setOtpCode(value.replace(/\D/g, ''))} />
-        <Button title={verificationToken ? 'Celular verificado' : 'Verificar código'} onPress={() => verifyOtp.mutate({ phone: form.phone, code: otpCode }, { onSuccess: (data) => { setVerificationToken(data.verificationToken); setOtpNotice('Celular verificado correctamente.') } })} loading={verifyOtp.isPending} disabled={!otpCode || Boolean(verificationToken)} />
+        <Button title={verificationToken ? 'Celular verificado' : 'Verificar código'} onPress={() => verifyOtp.mutate({ phone: form.phone, code: otpCode }, { onSuccess: (data) => { setVerificationToken(data.verificationToken); setOtpNotice('Celular verificado correctamente.') } })} loading={verifyOtp.isPending} disabled={!otpCode || !isValidLocalPhone(form.phone) || Boolean(verificationToken)} />
         {otpNotice && <Text style={styles.muted}>{otpNotice}</Text>}
         {(sendOtp.error || verifyOtp.error) && <Text style={styles.error}>{apiMessage(sendOtp.error ?? verifyOtp.error)}</Text>}</>}
     <SecureField style={authStyles.baseInput} placeholder="Contraseña" value={form.password} onChangeText={(password) => setForm({ ...form, password })} />
@@ -121,8 +124,8 @@ export function RegisterScreen({ navigation, onSession }: Props) {
     {(register.error || registerByPhone.error) && <Text style={styles.error}>{apiMessage(register.error ?? registerByPhone.error)}</Text>}<Button title="Registrarme" onPress={() => {
       if (form.password !== form.confirmPassword) return
       if (method === 'email') register.mutate({ fullName: form.fullName, email: form.email, password: form.password, confirmPassword: form.confirmPassword, role, referralCode: referralCode.trim() || undefined })
-      else if (verificationToken) registerByPhone.mutate({ fullName: form.fullName, phone: form.phone, verificationToken, password: form.password, confirmPassword: form.confirmPassword, role, referralCode: referralCode.trim() || undefined })
-    }} loading={register.isPending || registerByPhone.isPending} disabled={method === 'phone' && !verificationToken} />
+      else if (verificationToken) registerByPhone.mutate({ fullName: form.fullName, phone: normalizeLocalPhone(form.phone), verificationToken, password: form.password, confirmPassword: form.confirmPassword, role, referralCode: referralCode.trim() || undefined })
+    }} loading={register.isPending || registerByPhone.isPending} disabled={method === 'phone' && (!verificationToken || !isValidLocalPhone(form.phone))} />
     <Pressable onPress={() => navigation.navigate('Login')}><Text style={styles.link}>Ya tengo cuenta</Text></Pressable>
   </KeyboardAwareScreen>
 }

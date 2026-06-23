@@ -16,6 +16,8 @@ import { onboardingApi, type DocumentType, type OnboardingMainData } from '../ap
 import { TechnicianProfessionalProfileOnboardingScreen } from './TechnicianProfessionalProfileOnboardingScreen'
 import { setStoredSession } from '../../../services/sessionStorage'
 import { LegalDocumentsContent } from '../../legal/components/LegalDocumentsContent'
+import { FloatingFormFooter } from '../../../components/FloatingFormFooter'
+import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../../shared/phone'
 
 const labels: Record<string, string> = {
   MAIN_DATA: 'Datos principales',
@@ -181,26 +183,43 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
     ])
   }
 
-  return <KeyboardAwareScreen>
+  const mainDisabled = !main.fullName.trim() || Boolean(main.phone) && !isValidLocalPhone(main.phone) || !main.countryId || !main.departmentId
+    || !main.cityId || !main.address.trim() || !main.documentNumber.trim()
+  return <KeyboardAwareScreen footer={step === 'MAIN_DATA'
+    ? <FloatingFormFooter
+      testID="e2e.onboarding.main.submit"
+      title="Guardar y continuar"
+      loading={pending}
+      disabled={mainDisabled}
+      onPress={() => mainMutation.mutate(main)}
+    />
+    : undefined}
+  >
     <Text style={uiStyles.title}>Completa tu inscripción</Text>
     <Text style={uiStyles.subtitle}>Paso actual: {labels[step]}</Text>
     {error && <Text style={uiStyles.error}>{apiMessage(error)}</Text>}
 
     {step === 'MAIN_DATA' && <Card>
+      <Text style={uiStyles.muted}>Los campos marcados con * son obligatorios.</Text>
+      <Text style={uiStyles.label}>Nombre completo *</Text>
       <Field testID="e2e.onboarding.fullName" placeholder="Nombre completo" value={main.fullName} onChangeText={(fullName) => setMain({ ...main, fullName })} />
-      <Field testID="e2e.onboarding.phone" placeholder="Teléfono" value={main.phone} onChangeText={(phone) => setMain({ ...main, phone })} keyboardType="phone-pad" />
+      <Text style={uiStyles.label}>Teléfono</Text>
+      <Field testID="e2e.onboarding.phone" placeholder="Teléfono" value={main.phone} onChangeText={(phone) => setMain({ ...main, phone: normalizeLocalPhone(phone) })} keyboardType="number-pad" maxLength={10} />
+      {main.phone && !isValidLocalPhone(main.phone) && <Text style={uiStyles.error}>{localPhoneHint}</Text>}
       <CatalogSelect label="País" value={main.countryId} items={countries.data} onChange={(item) => setMain({ ...main, countryId: item.id, departmentId: '', cityId: '' })} />
       <CatalogSelect label="Departamento" value={main.departmentId} items={departments.data} disabled={!main.countryId} onChange={(item) => setMain({ ...main, departmentId: item.id, cityId: '' })} />
       <CatalogSelect label="Ciudad" value={main.cityId} items={cities.data} disabled={!main.departmentId} onChange={(item) => setMain({ ...main, cityId: item.id })} />
+      <Text style={uiStyles.label}>Dirección *</Text>
       <Field testID="e2e.onboarding.address" placeholder="Dirección" value={main.address} onChangeText={(address) => setMain({ ...main, address })} />
+      <Text style={uiStyles.label}>Barrio</Text>
       <Field testID="e2e.onboarding.neighborhood" placeholder="Barrio" value={main.neighborhood} onChangeText={(neighborhood) => setMain({ ...main, neighborhood })} />
-      <Text style={uiStyles.label}>Tipo de documento</Text>
+      <Text style={uiStyles.label}>Tipo de documento *</Text>
       <View style={screenStyles.row}>
         <Choice label="Cédula" active={main.documentType === 'CC'} onPress={() => setMain({ ...main, documentType: 'CC' })} />
         <Choice label="Pasaporte" active={main.documentType === 'PASSPORT'} onPress={() => setMain({ ...main, documentType: 'PASSPORT' })} />
       </View>
+      <Text style={uiStyles.label}>Número de documento *</Text>
       <Field testID="e2e.onboarding.documentNumber" placeholder="Número de documento" value={main.documentNumber} onChangeText={(documentNumber) => setMain({ ...main, documentNumber })} />
-      <Button testID="e2e.onboarding.main.submit" title="Guardar y continuar" loading={pending} onPress={() => mainMutation.mutate(main)} />
     </Card>}
 
     {step === 'LEGAL_ACCEPTANCE' && <>

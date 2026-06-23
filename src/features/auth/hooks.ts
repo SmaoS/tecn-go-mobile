@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import type { Session } from '../../types'
-import { authApi } from './api'
+import { authApi, type PhoneOtpPayload } from './api'
 
 export const useLogin = () => useMutation({
   mutationFn: ({ identifier, password, method }: { identifier: string; password: string; method: 'email' | 'phone' }) => authApi.login(identifier, password, method),
@@ -20,7 +20,7 @@ export const useRegisterByPhone = (onSuccess: (session: Session) => void) => use
 })
 export const useSendPhoneOtp = () => useMutation({ mutationFn: authApi.sendPhoneOtp })
 export const useVerifyPhoneOtp = () => useMutation({
-  mutationFn: ({ phone, code }: { phone: string; code: string }) => authApi.verifyPhoneOtp(phone, code),
+  mutationFn: ({ phone, code, countryId }: PhoneOtpPayload & { code: string }) => authApi.verifyPhoneOtp(phone, code, countryId),
 })
 export const useForgotPassword = () => useMutation({ mutationFn: authApi.forgotPassword })
 export const useResetPassword = () => useMutation({ mutationFn: authApi.resetPassword })

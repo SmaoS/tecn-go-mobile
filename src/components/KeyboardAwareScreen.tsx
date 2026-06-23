@@ -5,6 +5,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  View,
   type StyleProp,
   type ViewStyle,
 } from 'react-native'
@@ -13,12 +14,14 @@ import { colors } from './UI'
 
 type Props = {
   children: ReactNode
+  footer?: ReactNode
   contentContainerStyle?: StyleProp<ViewStyle>
   keyboardVerticalOffset?: number
 }
 
 export function KeyboardAwareScreen({
   children,
+  footer,
   contentContainerStyle,
   keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 0,
 }: Props) {
@@ -29,7 +32,7 @@ export function KeyboardAwareScreen({
       keyboardVerticalOffset={keyboardVerticalOffset}
     >
       <ScrollView
-        contentContainerStyle={[styles.content, contentContainerStyle]}
+        contentContainerStyle={[styles.content, footer ? styles.contentWithFooter : undefined, contentContainerStyle]}
         keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
         keyboardShouldPersistTaps="handled"
         onScrollBeginDrag={Keyboard.dismiss}
@@ -37,6 +40,7 @@ export function KeyboardAwareScreen({
       >
         {children}
       </ScrollView>
+      {footer && <View style={styles.footer}>{footer}</View>}
     </KeyboardAvoidingView>
   </SafeAreaView>
 }
@@ -53,5 +57,16 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     paddingBottom: 48,
+  },
+  contentWithFooter: {
+    paddingBottom: 120,
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 14,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+    backgroundColor: 'rgba(2, 8, 23, 0.96)',
   },
 })

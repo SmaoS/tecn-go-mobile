@@ -22,6 +22,19 @@ export type LoginResult = Session & {
   mfaExpiresAt?: string
 }
 
+export type PhoneOtpPayload = {
+  phone: string
+  countryId?: string
+}
+
+function phoneOtpBody(payload: string | PhoneOtpPayload) {
+  return typeof payload === 'string' ? { phone: payload } : payload
+}
+
+function verifyPhoneOtpBody(phone: string, code: string, countryId?: string) {
+  return countryId ? { phone, code, countryId } : { phone, code }
+}
+
 async function login(response: Promise<{ data: LoginResult }>) {
   const responseData = await response
   const data = normalizeSession(responseData.data)
@@ -39,10 +52,10 @@ export const authApi = {
     persist(api.post<Session>('/v1/auth/register', payload)),
   registerByPhone: (payload: { fullName: string; phone: string; verificationToken: string; password: string; confirmPassword: string; role: 'CLIENT' | 'TECHNICIAN'; referralCode?: string }) =>
     persist(api.post<Session>('/v1/auth/register-by-phone', payload)),
-  sendPhoneOtp: (phone: string) =>
-    api.post<{ message: string; debugCode?: string }>('/v1/auth/phone/send-otp', { phone }).then(({ data }) => data),
-  verifyPhoneOtp: (phone: string, code: string) =>
-    api.post<{ verified: boolean; verificationToken: string }>('/v1/auth/phone/verify-otp', { phone, code }).then(({ data }) => data),
+  sendPhoneOtp: (payload: string | PhoneOtpPayload) =>
+    api.post<{ message: string; debugCode?: string }>('/v1/auth/phone/send-otp', phoneOtpBody(payload)).then(({ data }) => data),
+  verifyPhoneOtp: (phone: string, code: string, countryId?: string) =>
+    api.post<{ verified: boolean; verificationToken: string }>('/v1/auth/phone/verify-otp', verifyPhoneOtpBody(phone, code, countryId)).then(({ data }) => data),
   forgotPassword: (email: string) =>
     api.post<{ message: string }>('/v1/auth/forgot-password', { email }).then(({ data }) => data),
   resetPassword: (payload: { token: string; newPassword: string; confirmPassword: string }) =>

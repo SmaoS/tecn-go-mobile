@@ -17,6 +17,8 @@ import { profileApi } from '../../profile/api'
 import { showToast } from '../../../components/Toast'
 import { useSession } from '../../../context/useSession'
 import { DataRightsCard } from '../../compliance/components/DataRightsCard'
+import { FloatingFormFooter } from '../../../components/FloatingFormFooter'
+import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../../shared/phone'
 
 const empty: TechnicianProfileForm = {
   documentNumber: '', phone: '', categoryIds: [], profilePhotoUrl: '',
@@ -40,13 +42,14 @@ export function TechnicianProfileScreen() {
   const countries = useCountries()
   const departments = useDepartments(form.countryId)
   const cities = useCities(form.departmentId)
+  const selectedCountry = countries.data?.find((country) => country.id === form.countryId)
   const sendPhoneOtp = useMutation({
     mutationFn: authApi.sendPhoneOtp,
     onSuccess: (data) => showToast(data.debugCode ? `Código de desarrollo: ${data.debugCode}` : 'Código enviado por SMS', 'info'),
     onError: (error) => showToast(apiMessage(error), 'error'),
   })
   const verifyPhoneOtp = useMutation({
-    mutationFn: ({ phone, code }: { phone: string; code: string }) => authApi.verifyPhoneOtp(phone, code),
+    mutationFn: ({ phone, code, countryId }: { phone: string; code: string; countryId?: string }) => authApi.verifyPhoneOtp(phone, code, countryId),
     onSuccess: (data) => {
       setPhoneVerificationToken(data.verificationToken)
       showToast('Código OTP verificado')
@@ -58,7 +61,7 @@ export function TechnicianProfileScreen() {
     onSuccess: async () => {
       setPhoneCode('')
       setPhoneVerificationToken('')
-      setVerifiedPhone(normalizePhone(form.phone))
+      setVerifiedPhone(normalizeLocalPhone(form.phone))
       if (session) setSession({ ...session, phoneVerified: true })
       showToast('Celular verificado correctamente')
     },
@@ -67,7 +70,7 @@ export function TechnicianProfileScreen() {
   useEffect(() => {
     if (!profile.data) return
     const data = profile.data
-    if (data.phoneVerified) setVerifiedPhone(normalizePhone(data.phone))
+    if (data.phoneVerified) setVerifiedPhone(normalizeLocalPhone(data.phone))
     setForm({
       documentNumber: data.documentNumber, phone: data.phone,
       categoryIds: data.categories.map((item) => item.id),
@@ -100,28 +103,34 @@ export function TechnicianProfileScreen() {
       ? 'Documento pendiente de verificación'
       : 'Completa el documento para iniciar la verificación'
   const requiresPhoneVerification = Boolean(form.phone)
-    && normalizePhone(form.phone) !== verifiedPhone
-  return <KeyboardAwareScreen><Text style={styles.title}>Perfil técnico</Text><Text style={styles.subtitle}>{profile.data ? `Estado profesional: ${profile.data.status} · ${identityStatus}` : 'Completa tus datos para solicitar aprobación.'}</Text>
+    && normalizeLocalPhone(form.phone) !== verifiedPhone
+  const saveProfile = () => {
+    if (!form.countryId || !form.departmentId || !form.cityId) return
+    save.mutate(form, { onSuccess: () => showToast('Perfil técnico actualizado') })
+  }
+  return <KeyboardAwareScreen footer={<FloatingFormFooter title={profile.data ? 'Actualizar perfil' : 'Crear perfil'} onPress={saveProfile} loading={save.isPending} disabled={!form.countryId || !form.departmentId || !form.cityId} />}><Text style={styles.title}>Perfil técnico</Text><Text style={styles.subtitle}>{profile.data ? `Estado profesional: ${profile.data.status} · ${identityStatus}` : 'Completa tus datos para solicitar aprobación.'}</Text>
     <QueryState pending={profile.isPending || categories.isPending} error={profileError ?? categories.error}>
       <>{profile.data?.email && <><Text style={styles.label}>Correo</Text><Field value={profile.data.email} editable={false} selectTextOnFocus={false} accessibilityLabel="Correo registrado" /></>}
-        <Text style={styles.label}>Nro Documento</Text>
+        <Text style={styles.muted}>Los campos marcados con * son obligatorios.</Text>
+        <Text style={styles.label}>Nro Documento *</Text>
         <Field placeholder="Nro Documento" value={form.documentNumber} onChangeText={(documentNumber) => setForm({ ...form, documentNumber })} />
-        <Text style={styles.label}>Teléfono</Text>
-        <Field placeholder="Teléfono" value={form.phone} keyboardType="phone-pad" onChangeText={(phone) => {
-          setForm({ ...form, phone })
+        <Text style={styles.label}>Teléfono * {selectedCountry?.phonePrefix ? `(${selectedCountry.phonePrefix})` : ''}</Text>
+        <Field placeholder="Teléfono" value={form.phone} keyboardType="number-pad" maxLength={10} onChangeText={(phone) => {
+          setForm({ ...form, phone: normalizeLocalPhone(phone) })
           setPhoneCode('')
           setPhoneVerificationToken('')
         }} />
+        {form.phone && !isValidLocalPhone(form.phone) && <Text style={styles.error}>{localPhoneHint}</Text>}
         {requiresPhoneVerification && <>
-          <Button title="Enviar código OTP" onPress={() => sendPhoneOtp.mutate(form.phone)} loading={sendPhoneOtp.isPending} />
+          <Button title="Enviar código al celular" onPress={() => sendPhoneOtp.mutate({ phone: form.phone, countryId: form.countryId })} loading={sendPhoneOtp.isPending} disabled={!isValidLocalPhone(form.phone)} />
           <Field placeholder="Código OTP" keyboardType="number-pad" value={phoneCode} onChangeText={(value) => setPhoneCode(value.replace(/\D/g, ''))} />
           {!phoneVerificationToken
-            ? <Button title="Validar código" disabled={!phoneCode} loading={verifyPhoneOtp.isPending} onPress={() => verifyPhoneOtp.mutate({ phone: form.phone, code: phoneCode })} />
+            ? <Button title="Verificar celular" disabled={!phoneCode || !isValidLocalPhone(form.phone)} loading={verifyPhoneOtp.isPending} onPress={() => verifyPhoneOtp.mutate({ phone: form.phone, code: phoneCode, countryId: form.countryId })} />
             : <Button title="Confirmar celular verificado" loading={confirmPhone.isPending} onPress={() => confirmPhone.mutate()} />}
         </>}
         {!requiresPhoneVerification && <Text style={[styles.muted, { color: colors.brand }]}>Celular verificado</Text>}
-        <Text style={styles.label}>Categorías</Text>{categories.data?.map((category) => <Pressable key={category.id} onPress={() => setForm({ ...form, categoryIds: form.categoryIds.includes(category.id) ? form.categoryIds.filter((id) => id !== category.id) : [...form.categoryIds, category.id] })}><Card><Text style={[styles.cardTitle, form.categoryIds.includes(category.id) && { color: colors.brand }]}>{form.categoryIds.includes(category.id) ? '✓ ' : ''}{category.name}</Text></Card></Pressable>)}
-        <Text style={styles.label}>Experiencia laboral</Text>
+        <Text style={styles.label}>Categorías *</Text>{categories.data?.map((category) => <Pressable key={category.id} onPress={() => setForm({ ...form, categoryIds: form.categoryIds.includes(category.id) ? form.categoryIds.filter((id) => id !== category.id) : [...form.categoryIds, category.id] })}><Card><Text style={[styles.cardTitle, form.categoryIds.includes(category.id) && { color: colors.brand }]}>{form.categoryIds.includes(category.id) ? '✓ ' : ''}{category.name}</Text></Card></Pressable>)}
+        <Text style={styles.label}>Experiencia laboral *</Text>
         <Field multiline placeholder="Describe tu experiencia laboral" value={form.workExperienceDescription} onChangeText={(workExperienceDescription) => setForm({ ...form, workExperienceDescription })} />
         {!profile.data?.profilePhotoFaceValidated && <Button title={form.profilePhotoUrl ? 'Foto de perfil cargada' : 'Subir foto de perfil'} onPress={() => profileImage.mutate(undefined, { onSuccess: (url) => setForm({ ...form, profilePhotoUrl: url ?? form.profilePhotoUrl }) })} loading={profileImage.isPending} />}
         <Button title={form.documentPhotoUrl ? 'Documento de Identidad cargado' : 'Subir documento de identidad obligatorio'} onPress={() => document.mutate('DOCUMENT', { onSuccess: (url) => setForm({ ...form, documentPhotoUrl: url ?? form.documentPhotoUrl }) })} loading={document.isPending} />
@@ -136,17 +145,9 @@ export function TechnicianProfileScreen() {
         <Button title={form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener mi ubicación GPS'} onPress={useGps} loading={location.isLocating} />
         {(!form.countryId || !form.departmentId || !form.cityId) && <Text style={styles.error}>Selecciona país, departamento y ciudad.</Text>}
         {(location.error || profileImage.error || document.error || save.error) && <Text style={styles.error}>{location.error || apiMessage(profileImage.error ?? document.error ?? save.error)}</Text>}
-        <Button title={profile.data ? 'Actualizar perfil' : 'Crear perfil'} onPress={() => {
-          if (!form.countryId || !form.departmentId || !form.cityId) return
-          save.mutate(form, { onSuccess: () => showToast('Perfil técnico actualizado') })
-        }} loading={save.isPending} />
         <Button title="Modificar contraseña" onPress={() => setPasswordModal(true)} />
         <DataRightsCard />
         <PasswordChangeModal visible={passwordModal} onClose={() => setPasswordModal(false)} /></>
     </QueryState>
   </KeyboardAwareScreen>
-}
-
-function normalizePhone(value?: string) {
-  return (value ?? '').replace(/\D/g, '')
 }

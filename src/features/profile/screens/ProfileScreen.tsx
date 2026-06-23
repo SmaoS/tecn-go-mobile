@@ -17,6 +17,8 @@ import { useMutation } from '@tanstack/react-query'
 import { showToast } from '../../../components/Toast'
 import { profileApi } from '../api'
 import { DataRightsCard } from '../../compliance/components/DataRightsCard'
+import { FloatingFormFooter } from '../../../components/FloatingFormFooter'
+import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../../shared/phone'
 
 export function ProfileScreen({ session, onLogout, navigation, rootExit = false }: { session: Session; onLogout: () => void; navigation?: { navigate: (screen: 'CaptureProfilePhoto' | 'Legal') => void }; rootExit?: boolean }) {
   useDoubleBackExit(rootExit)
@@ -33,14 +35,15 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
   const countries = useCountries()
   const departments = useDepartments(current?.countryId)
   const cities = useCities(current?.departmentId)
+  const selectedCountry = countries.data?.find((country) => country.id === current?.countryId)
   const sendPhoneOtp = useMutation({
     mutationFn: authApi.sendPhoneOtp,
     onSuccess: (data) => showToast(data.debugCode ? `Código de desarrollo: ${data.debugCode}` : 'Código enviado por SMS', 'info'),
     onError: (error) => showToast(apiMessage(error), 'error'),
   })
   const verifyPhoneOtp = useMutation({
-    mutationFn: async ({ phone, code }: { phone: string; code: string }) => {
-      const verification = await authApi.verifyPhoneOtp(phone, code)
+    mutationFn: async ({ phone, code, countryId }: { phone: string; code: string; countryId?: string }) => {
+      const verification = await authApi.verifyPhoneOtp(phone, code, countryId)
       return profileApi.verifyPhone(phone, verification.verificationToken)
     },
     onSuccess: async () => {
@@ -52,6 +55,8 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
   function update(value: Partial<UserProfile>) {
     if (current) setDraft({ ...current, ...value })
   }
+  const phoneVerificationRequired = Boolean(current?.phone)
+    && (!profile.data?.phoneVerified || normalizeLocalPhone(current?.phone) !== normalizeLocalPhone(profile.data.phone))
   async function useHomeGps() {
     const coordinates = await location.getCurrent()
     if (coordinates) update({ homeLatitude: coordinates.latitude, homeLongitude: coordinates.longitude })
@@ -71,20 +76,28 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
     : current?.verificationStatus === 'PENDING_VERIFICATION'
       ? 'Documento pendiente de verificación'
       : 'Carga tu documento para iniciar la verificación'
-  return <KeyboardAwareScreen><Text style={styles.title}>Mi perfil</Text><QueryState pending={profile.isPending} error={profile.error}>
+  return <KeyboardAwareScreen footer={current ? <FloatingFormFooter title="Guardar perfil" onPress={submit} loading={save.isPending} /> : undefined}><Text style={styles.title}>Mi perfil</Text><QueryState pending={profile.isPending} error={profile.error}>
     {current && <><Card><Text style={[styles.muted, { color: colors.brand }]}>{verificationLabel}</Text><Text style={styles.muted}>Correo: {current.emailVerified ? 'verificado' : 'pendiente'} · Documentos: {current.documentsVerified ? 'verificados' : 'pendientes'}</Text><Text style={[styles.muted, { color: colors.brand }]}>★ {current.averageRating.toFixed(1)} · {current.paidServicesCount} servicios pagados</Text></Card>
       <Field value={session.email ?? current.phone ?? 'Cuenta por celular'} editable={false} selectTextOnFocus={false} accessibilityLabel="Contacto registrado" />
+      <Text style={styles.muted}>Los campos marcados con * son obligatorios.</Text>
+      <Text style={styles.label}>Nombre completo *</Text>
       <Field placeholder="Nombre completo" value={current.fullName} onChangeText={(fullName) => update({ fullName })} />
-      <Field placeholder="Teléfono" value={current.phone ?? ''} onChangeText={(phone) => update({ phone })} />
-      {!current.phoneVerified && current.phone && <>
-        <Button title="Enviar código al celular" onPress={() => sendPhoneOtp.mutate(current.phone!)} loading={sendPhoneOtp.isPending} />
+      <Text style={styles.label}>Teléfono {selectedCountry?.phonePrefix ? `(${selectedCountry.phonePrefix})` : ''}</Text>
+      <Field placeholder="Teléfono" keyboardType="number-pad" maxLength={10} value={current.phone ?? ''} onChangeText={(phone) => {
+        setPhoneCode('')
+        update({ phone: normalizeLocalPhone(phone) })
+      }} />
+      {current.phone && !isValidLocalPhone(current.phone) && <Text style={styles.error}>{localPhoneHint}</Text>}
+      {phoneVerificationRequired && <>
+        <Button title="Enviar código al celular" onPress={() => sendPhoneOtp.mutate({ phone: current.phone!, countryId: current.countryId })} loading={sendPhoneOtp.isPending} disabled={!isValidLocalPhone(current.phone)} />
         <Field placeholder="Código OTP" keyboardType="number-pad" value={phoneCode} onChangeText={(value) => setPhoneCode(value.replace(/\D/g, ''))} />
-        <Button title="Verificar celular" onPress={() => verifyPhoneOtp.mutate({ phone: current.phone!, code: phoneCode })} loading={verifyPhoneOtp.isPending} disabled={!phoneCode} />
+        <Button title="Verificar celular" onPress={() => verifyPhoneOtp.mutate({ phone: current.phone!, code: phoneCode, countryId: current.countryId })} loading={verifyPhoneOtp.isPending} disabled={!phoneCode || !isValidLocalPhone(current.phone)} />
       </>}
+      {!phoneVerificationRequired && current.phone && <Text style={[styles.muted, { color: colors.brand }]}>Celular verificado</Text>}
       <CatalogSelect label="País" value={current.countryId} items={countries.data} onChange={(country) => update({ countryId: country.id, countryName: country.name, departmentId: undefined, departmentName: undefined, cityId: undefined, cityName: undefined, homeCity: undefined })} />
       <CatalogSelect label="Departamento" value={current.departmentId} items={departments.data} disabled={!current.countryId} onChange={(department) => update({ departmentId: department.id, departmentName: department.name, cityId: undefined, cityName: undefined, homeCity: undefined })} />
       <CatalogSelect label="Ciudad" value={current.cityId} items={cities.data} disabled={!current.departmentId} onChange={(city) => update({ cityId: city.id, cityName: city.name, homeCity: city.name })} />
-      <Text style={styles.label}>Dirección de domicilio</Text>
+      <Text style={styles.label}>Dirección de domicilio *</Text>
       <Field placeholder="Dirección domicilio" value={current.homeAddress ?? ''} onChangeText={(homeAddress) => update({ homeAddress })} />
       <Text style={styles.label}>Barrio</Text>
       <Field placeholder="Barrio" value={current.homeNeighborhood ?? ''} onChangeText={(homeNeighborhood) => update({ homeNeighborhood })} />
@@ -92,11 +105,10 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       {navigation && !current.profilePhotoFaceValidated && <Button title="Tomar foto de perfil con cámara" onPress={() => navigation.navigate('CaptureProfilePhoto')} />}
       <Button title={current.documentPhotoUrl ? 'Documento cargado' : 'Subir documento obligatorio'} onPress={() => document.mutate('DOCUMENT', { onSuccess: (url) => update({ documentPhotoUrl: url ?? current.documentPhotoUrl }) })} loading={document.isPending} />
       {(location.error || save.error || profileImage.error || document.error) && <Text style={(save.error || profileImage.error || document.error) ? styles.error : styles.muted}>{save.error || profileImage.error || document.error ? apiMessage(save.error ?? profileImage.error ?? document.error) : location.error}</Text>}
-      <Button title="Guardar perfil" onPress={submit} loading={save.isPending} />      
       {!current.emailVerified && <Button title="Verificar correo" loading={verifyEmail.isPending} onPress={() => verifyEmail.mutate(undefined, { onSuccess: () => showToast('Correo de verificación enviado', 'info'), onError: (error) => showToast(apiMessage(error), 'error') })} />}</>}
       <Button title="Modificar contraseña" onPress={() => setPasswordModal(true)} />
       <DataRightsCard />
-  </QueryState><Button title="Cerrar sesión" onPress={onLogout} />
+  </QueryState>
     <PasswordChangeModal visible={passwordModal} onClose={() => setPasswordModal(false)} />
   </KeyboardAwareScreen>
 }
