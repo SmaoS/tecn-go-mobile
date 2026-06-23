@@ -18,7 +18,11 @@ jest.mock('../../location/LocationPickerModal', () => ({ LocationPickerModal: ()
 describe('CreateRequestScreen', () => {
   it('usa ciudad del perfil y coordenadas GPS al crear la solicitud', async () => {
     const mutate = jest.fn()
-    const getCurrent = jest.fn(async () => ({ latitude: 4.142, longitude: -73.626 }))
+    const getCurrent = jest.fn(async () => ({
+      latitude: 4.142,
+      longitude: -73.626,
+      address: 'Calle 10, 20-30, Centro, Villavicencio',
+    }))
     jest.mocked(useServiceCategories).mockReturnValue({
       data: [categoryFixture()],
       isPending: false,
@@ -53,10 +57,15 @@ describe('CreateRequestScreen', () => {
     />)
 
     await waitFor(() => expect(getCurrent).toHaveBeenCalled())
+    expect(view.queryByText('Ciudad del servicio')).toBeNull()
+    expect(view.queryByText('Ubicación del servicio')).toBeNull()
+    expect(view.queryByText('Obtener ubicación GPS')).toBeNull()
     fireEvent.press(view.getByText('Electricista'))
     fireEvent.changeText(view.getByPlaceholderText('Describe el problema'), 'No hay energía')
-    fireEvent.changeText(view.getByPlaceholderText('Dirección'), 'Calle 10 # 20-30')
     fireEvent.changeText(view.getByPlaceholderText('Presupuesto estimado (opcional)'), '100000')
+    expect(view.getByDisplayValue('$100.000 COP')).toBeTruthy()
+    fireEvent.press(view.getByText('Efectivo'))
+    expect(view.getByText('Cambiar medio de pago')).toBeTruthy()
     fireEvent.press(view.getByText('Crear solicitud'))
 
     expect(mutate).toHaveBeenCalledWith({
@@ -64,7 +73,7 @@ describe('CreateRequestScreen', () => {
         categoryId: 'category-electrician',
         cityId: 'city-villavicencio',
         description: 'No hay energía',
-        address: 'Calle 10 # 20-30',
+        address: 'Calle 10, 20-30, Centro, Villavicencio',
         latitude: 4.142,
         longitude: -73.626,
         estimatedPrice: 100000,

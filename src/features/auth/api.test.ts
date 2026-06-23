@@ -1,7 +1,7 @@
 import { api } from '../../api/client'
 import { setStoredSession } from '../../services/sessionStorage'
 import { sessionFixture } from '../../test/fixtures'
-import { authApi } from './api'
+import { authApi, normalizeSession } from './api'
 
 jest.mock('../../api/client', () => ({
   api: {
@@ -13,6 +13,14 @@ jest.mock('../../services/sessionStorage', () => ({ setStoredSession: jest.fn() 
 
 describe('authApi', () => {
   beforeEach(() => jest.clearAllMocks())
+
+  it('usa activeMode como rol efectivo al restaurar el login', () => {
+    expect(normalizeSession(sessionFixture({
+      role: 'TECHNICIAN',
+      roles: ['CLIENT', 'TECHNICIAN'],
+      activeMode: 'CLIENT',
+    })).role).toBe('CLIENT')
+  })
 
   it('persiste login normal pero espera MFA para cuentas administrativas', async () => {
     const session = sessionFixture()

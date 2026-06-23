@@ -141,13 +141,15 @@ En Expo managed no se incluyó ML Kit: la foto queda
 identidad ni comparación con el documento.
 
 Al crear una solicitud se pueden tomar fotos con la cámara o elegir varias desde la
-galería. La categoría se compacta después de seleccionarla. Las notificaciones
+galería. La categoría y el medio de pago se compactan después de seleccionarlos.
+La ubicación GPS se obtiene automáticamente, se resuelve una dirección aproximada y
+solo se abre el mapa cuando el cliente quiere elegir otro punto. Las notificaciones
 conservan `route` y `requestId`: términos abre la pantalla legal, `NEW_REQUEST` abre
 solicitudes disponibles y los mensajes abren el chat.
 
 ## Referidos y actualización obligatoria
 
-El técnico dispone de **Invita y gana**, con copia y Share API. La invitación incluye
+Clientes y técnicos disponen de **Invita y gana**, con copia y Share API. La invitación incluye
 la URL de Google Play definida en `EXPO_PUBLIC_PLAY_STORE_URL` y el código que debe
 digitarse durante el registro. El registro valida el código contra el backend.
 
