@@ -34,7 +34,7 @@ export function CaptureSelfieScreen({ navigation }: NativeStackScreenProps<RootS
     const photo = await camera.current?.takePictureAsync({ quality: 0.82 })
     if (!photo?.uri) {
       setCaptured(false)
-      setCountdown(3)
+      setCountdown(5)
       return
     }
     setPhotoUri(photo.uri)
@@ -43,7 +43,7 @@ export function CaptureSelfieScreen({ navigation }: NativeStackScreenProps<RootS
   function repeat() {
     setPhotoUri(undefined)
     setCaptured(false)
-    setCountdown(3)
+    setCountdown(5)
   }
 
   if (!permission?.granted) {

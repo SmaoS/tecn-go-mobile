@@ -40,7 +40,7 @@ export function CaptureIdentityDocumentScreen({ navigation, route }: NativeStack
     const photo = await camera.current?.takePictureAsync({ quality: 0.85 })
     if (!photo?.uri) {
       setCaptured(false)
-      setCountdown(3)
+      setCountdown(5)
       return
     }
     if (documentType === 'PASSPORT') {
@@ -61,14 +61,14 @@ export function CaptureIdentityDocumentScreen({ navigation, route }: NativeStack
     else setBackUri(undefined)
     setPreviewSide(undefined)
     setCaptured(false)
-    setCountdown(3)
+    setCountdown(5)
   }
 
   function usePhoto() {
     if (documentType === 'CC' && previewSide === 'front') {
       setPreviewSide(undefined)
       setCaptured(false)
-      setCountdown(3)
+      setCountdown(5)
       return
     }
     navigation.navigate('OnboardingRequired', {
@@ -93,8 +93,8 @@ export function CaptureIdentityDocumentScreen({ navigation, route }: NativeStack
       <View style={local.previewPanel}>
         <Text style={local.title}>Foto capturada correctamente.</Text>
         <Button title={documentType === 'CC' && previewSide === 'front'
-          ? 'Usar frente y capturar reverso'
-          : 'Usar foto'} onPress={usePhoto} />
+          ? 'Enviar y continuar'
+          : 'Continuar'} onPress={usePhoto} />
         <Button title="Repetir" onPress={repeat} />
       </View>
     </View>

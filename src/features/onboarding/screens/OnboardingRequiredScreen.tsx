@@ -216,8 +216,8 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       <Text style={uiStyles.cardTitle}>Foto de perfil</Text>
       <Text style={uiStyles.muted}>Ubica tu rostro dentro del óvalo. Después quedará bloqueada para cambios directos.</Text>
       <UploadStatus label="Selfie" ready={Boolean(profilePhotoUrl)} />
-      <Button title="Capturar selfie automáticamente" onPress={() => navigation.navigate('CaptureSelfie')} />
-      <Button title="Cargar desde galería" onPress={() => void pickImage('PROFILE', setProfilePhotoUrl)} />
+      <Button title="Tomar foto rostro" onPress={() => navigation.navigate('CaptureSelfie')} />
+      <Button title="Seleccionar de galería" onPress={() => void pickImage('PROFILE', setProfilePhotoUrl)} />
       <Button title="Guardar selfie" loading={pending} onPress={() => selfieMutation.mutate({ profilePhotoUrl, faceDetectionStatus: 'MANUAL_REVIEW_REQUIRED' })} />
     </Card>}
 
@@ -225,16 +225,16 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       <Text style={uiStyles.cardTitle}>{main.documentType === 'CC' ? 'Cédula de ciudadanía' : 'Pasaporte'}</Text>
       {main.documentType === 'CC' ? <>
         <UploadStatus label="Frente" ready={Boolean(frontUrl)} />
-        <Button title="Capturar frente y reverso automáticamente" onPress={() => navigation.navigate('CaptureIdentityDocument', { documentType: 'CC' })} />
+        <Button title="Tomar foto documento" onPress={() => navigation.navigate('CaptureIdentityDocument', { documentType: 'CC' })} />
         <Button title="Cargar frente desde galería/archivo" onPress={() => void pickDocument(setFrontUrl)} />
         <UploadStatus label="Reverso" ready={Boolean(backUrl)} />
         <Button title="Cargar reverso desde galería/archivo" onPress={() => void pickDocument(setBackUrl)} />
-        <Button title="Guardar documento" loading={pending} onPress={() => documentMutation.mutate({ documentType: 'CC', documentFrontUrl: frontUrl, documentBackUrl: backUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} />
+        <Button title="Continuar" loading={pending} onPress={() => documentMutation.mutate({ documentType: 'CC', documentFrontUrl: frontUrl, documentBackUrl: backUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} />
       </> : <>
         <UploadStatus label="Página principal" ready={Boolean(singleUrl)} />
-        <Button title="Capturar pasaporte automáticamente" onPress={() => navigation.navigate('CaptureIdentityDocument', { documentType: 'PASSPORT' })} />
+        <Button title="Tomar foto pasaporte" onPress={() => navigation.navigate('CaptureIdentityDocument', { documentType: 'PASSPORT' })} />
         <Button title="Cargar pasaporte desde galería/archivo" onPress={() => void pickDocument(setSingleUrl)} />
-        <Button title="Guardar documento" loading={pending} onPress={() => documentMutation.mutate({ documentType: 'PASSPORT', documentSingleUrl: singleUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} />
+        <Button title="Continuar" loading={pending} onPress={() => documentMutation.mutate({ documentType: 'PASSPORT', documentSingleUrl: singleUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} />
       </>}
     </Card>}
 
