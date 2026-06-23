@@ -1,5 +1,5 @@
-import { fireEvent, render } from '@testing-library/react-native'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { fireEvent } from '@testing-library/react-native'
+import { renderWithProviders } from '../../../test/render'
 import { useSubmitRating } from '../hooks'
 import { RatingScreen } from './RatingScreen'
 
@@ -13,10 +13,7 @@ describe('RatingScreen', () => {
       isPending: false,
       error: null,
     } as never)
-    const view = render(<SafeAreaProvider initialMetrics={{
-      frame: { x: 0, y: 0, width: 390, height: 844 },
-      insets: { top: 24, right: 0, bottom: 34, left: 0 },
-    }}>
+    const view = renderWithProviders(
       <RatingScreen
         route={{
           key: 'Rating',
@@ -24,12 +21,13 @@ describe('RatingScreen', () => {
           params: { requestId: 'request-1' },
         } as never}
         navigation={{ popToTop: jest.fn() } as never}
-      />
-    </SafeAreaProvider>)
+      />,
+    )
 
     fireEvent.press(view.getAllByText('★')[3])
+    fireEvent.press(view.getByText('Excelente servicio'))
     fireEvent.changeText(
-      view.getByPlaceholderText('Cuéntanos cómo fue la experiencia'),
+      view.getByPlaceholderText('Escribe algo personal (opcional)'),
       'Buen servicio',
     )
     fireEvent.press(view.getByText('Enviar calificación'))
@@ -37,7 +35,7 @@ describe('RatingScreen', () => {
     expect(mutate).toHaveBeenCalledWith({
       requestId: 'request-1',
       score: 4,
-      comment: 'Buen servicio',
+      comment: 'Excelente servicio. Buen servicio',
     })
   })
 })
