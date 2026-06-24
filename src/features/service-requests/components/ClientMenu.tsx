@@ -4,7 +4,7 @@ import { colors } from '../../../components/UI'
 import { PrivateImage } from '../../../components/PrivateImage'
 import type { UserProfile } from '../../../types'
 
-type ClientMenuRoute = 'Profile' | 'ClientPayments' | 'RequestHistory' | 'Legal' | 'TechnicianReferrals'
+type ClientMenuRoute = 'Profile' | 'ClientPayments' | 'RequestHistory' | 'Legal' | 'TechnicianReferrals' | 'Pqr'
 
 export function ClientMenu({ visible, profile, onClose, onNavigate, onSwitchMode, onLogout }: {
   visible: boolean
@@ -35,6 +35,7 @@ export function ClientMenu({ visible, profile, onClose, onNavigate, onSwitchMode
           <MenuItem label="Pagos" onPress={() => go('ClientPayments')} />
           <MenuItem label="Historial de solicitudes" onPress={() => go('RequestHistory')} />
           <MenuItem label="Invita amigos" onPress={() => go('TechnicianReferrals')} />
+          <MenuItem label="PQR" onPress={() => go('Pqr')} />
           <MenuItem label="Seguridad y términos" onPress={() => go('Legal')} />
         </View>
         <View style={styles.logout}>

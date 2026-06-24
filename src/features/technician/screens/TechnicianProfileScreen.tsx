@@ -16,7 +16,6 @@ import { authApi } from '../../auth/api'
 import { profileApi } from '../../profile/api'
 import { showToast } from '../../../components/Toast'
 import { useSession } from '../../../context/useSession'
-import { DataRightsCard } from '../../compliance/components/DataRightsCard'
 import { FloatingFormFooter } from '../../../components/FloatingFormFooter'
 import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../../shared/phone'
 
@@ -146,7 +145,6 @@ export function TechnicianProfileScreen() {
         {(!form.countryId || !form.departmentId || !form.cityId) && <Text style={styles.error}>Selecciona país, departamento y ciudad.</Text>}
         {(location.error || profileImage.error || document.error || save.error) && <Text style={styles.error}>{location.error || apiMessage(profileImage.error ?? document.error ?? save.error)}</Text>}
         <Button title="Modificar contraseña" onPress={() => setPasswordModal(true)} />
-        <DataRightsCard />
         <PasswordChangeModal visible={passwordModal} onClose={() => setPasswordModal(false)} /></>
     </QueryState>
   </KeyboardAwareScreen>

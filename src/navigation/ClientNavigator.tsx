@@ -21,6 +21,7 @@ import { OnboardingRequiredScreen } from '../features/onboarding/screens/Onboard
 import { CaptureSelfieScreen } from '../features/onboarding/screens/CaptureSelfieScreen'
 import { CaptureIdentityDocumentScreen } from '../features/onboarding/screens/CaptureIdentityDocumentScreen'
 import { TechnicianReferralsScreen } from '../features/technician/screens/TechnicianReferralsScreen'
+import { PqrScreen } from '../features/compliance/screens/PqrScreen'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
@@ -48,6 +49,7 @@ export function ClientNavigator() {
     <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ title: 'Notificaciones' }} />
     <Stack.Screen name="Rating" component={RatingScreen} options={{ title: 'Calificación' }} />
     <Stack.Screen name="Profile" options={{ title: 'Perfil' }}>{({ navigation }) => <ProfileScreen session={session!} onLogout={logout} navigation={navigation} />}</Stack.Screen>
+    <Stack.Screen name="Pqr" component={PqrScreen} options={{ title: 'PQR' }} />
     <Stack.Screen name="ServiceSupport" component={ServiceSupportScreen} options={{ title: 'Evidencias y soporte' }} />
     <Stack.Screen name="Legal" component={LegalScreen} options={{ title: 'Seguridad y términos' }} />
     <Stack.Screen name="CaptureProfilePhoto" component={CaptureProfilePhotoScreen} options={{ title: 'Foto de perfil' }} />

@@ -79,6 +79,8 @@ describe('technician navigation components', () => {
     expect(onNavigate).toHaveBeenCalledWith('TechnicianHome')
     fireEvent.press(menu.getByText('Productividad'))
     expect(onNavigate).toHaveBeenCalledWith('TechnicianProductivity')
+    fireEvent.press(menu.getByText('PQR'))
+    expect(onNavigate).toHaveBeenCalledWith('Pqr')
     fireEvent.press(menu.getByText('Modo cliente'))
     expect(onSwitchMode).toHaveBeenCalled()
     fireEvent.press(menu.getByText('Cerrar sesión'))

@@ -268,6 +268,7 @@ export type RootStackParamList = {
   Notifications: undefined
   Rating: { requestId: string }
   Profile: undefined
+  Pqr: undefined
   TechnicianHome: undefined
   TechnicianEntry: undefined
   TechnicianProfile: undefined

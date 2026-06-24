@@ -16,7 +16,6 @@ import { authApi } from '../../auth/api'
 import { useMutation } from '@tanstack/react-query'
 import { showToast } from '../../../components/Toast'
 import { profileApi } from '../api'
-import { DataRightsCard } from '../../compliance/components/DataRightsCard'
 import { FloatingFormFooter } from '../../../components/FloatingFormFooter'
 import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../../shared/phone'
 
@@ -76,8 +75,8 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
     : current?.verificationStatus === 'PENDING_VERIFICATION'
       ? 'Documento pendiente de verificación'
       : 'Carga tu documento para iniciar la verificación'
-  return <KeyboardAwareScreen footer={current ? <FloatingFormFooter title="Guardar perfil" onPress={submit} loading={save.isPending} /> : undefined}><Text style={styles.title}>Mi perfil</Text><QueryState pending={profile.isPending} error={profile.error}>
-    {current && <><Card><Text style={[styles.muted, { color: colors.brand }]}>{verificationLabel}</Text><Text style={styles.muted}>Correo: {current.emailVerified ? 'verificado' : 'pendiente'} · Documentos: {current.documentsVerified ? 'verificados' : 'pendientes'}</Text><Text style={[styles.muted, { color: colors.brand }]}>★ {current.averageRating.toFixed(1)} · {current.paidServicesCount} servicios pagados</Text></Card>
+  return <KeyboardAwareScreen footer={current ? <FloatingFormFooter title="Guardar perfil" onPress={submit} loading={save.isPending} /> : undefined}><QueryState pending={profile.isPending} error={profile.error}>
+    {current && <><Card><Text style={[styles.muted, { color: colors.brand }]}>{verificationLabel}</Text>{phoneVerificationRequired && current.phone && <Text style={[styles.muted, { color: colors.brand }]}>Celular pendiente de validacion OTP</Text>}<Text style={styles.muted}>Correo: {current.emailVerified ? 'verificado' : 'pendiente'} · Documentos: {current.documentsVerified ? 'verificados' : 'pendientes'}</Text><Text style={[styles.muted, { color: colors.brand }]}>★ {current.averageRating.toFixed(1)} · {current.paidServicesCount} servicios pagados</Text></Card>
       <Field value={session.email ?? current.phone ?? 'Cuenta por celular'} editable={false} selectTextOnFocus={false} accessibilityLabel="Contacto registrado" />
       <Text style={styles.muted}>Los campos marcados con * son obligatorios.</Text>
       <Text style={styles.label}>Nombre completo *</Text>
@@ -107,7 +106,6 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       {(location.error || save.error || profileImage.error || document.error) && <Text style={(save.error || profileImage.error || document.error) ? styles.error : styles.muted}>{save.error || profileImage.error || document.error ? apiMessage(save.error ?? profileImage.error ?? document.error) : location.error}</Text>}
       {!current.emailVerified && <Button title="Verificar correo" loading={verifyEmail.isPending} onPress={() => verifyEmail.mutate(undefined, { onSuccess: () => showToast('Correo de verificación enviado', 'info'), onError: (error) => showToast(apiMessage(error), 'error') })} />}</>}
       <Button title="Modificar contraseña" onPress={() => setPasswordModal(true)} />
-      <DataRightsCard />
   </QueryState>
     <PasswordChangeModal visible={passwordModal} onClose={() => setPasswordModal(false)} />
   </KeyboardAwareScreen>

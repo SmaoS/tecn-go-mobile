@@ -13,7 +13,7 @@ export function TechnicianReferralsScreen() {
   const { code, referrals, rewards } = useTechnicianReferrals()
   const { session } = useSession()
   const technicianMode = (session?.activeMode ?? session?.role) === 'TECHNICIAN'
-  return <KeyboardAwareScreen><Text style={styles.title}>Invita y gana</Text>
+  return <KeyboardAwareScreen>
     <Text style={styles.subtitle}>{technicianMode
       ? 'Invita clientes o técnicos. Cuando completen un servicio con 5 estrellas, ganas un servicio sin comisión.'
       : 'Invita amigos a descargar TecnGo y registrarse con tu código personal.'}</Text>

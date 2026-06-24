@@ -61,7 +61,8 @@ describe('client navigation components', () => {
     expect(view.getByText('/avatar-client.jpg')).toBeTruthy()
     fireEvent.press(view.getByText('Pagos'))
     expect(onClose).toHaveBeenCalled()
-    expect(onNavigate).toHaveBeenCalledWith('ClientPayments')
+    expect(onNavigate).toHaveBeenCalledWith('ClientPayments')    
+    expect(onNavigate).toHaveBeenCalledWith('Pqr')
 
     fireEvent.press(view.getByText('Modo técnico'))
     expect(onSwitchMode).toHaveBeenCalled()
