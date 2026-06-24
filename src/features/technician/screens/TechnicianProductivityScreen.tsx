@@ -14,8 +14,7 @@ export function TechnicianProductivityScreen({}: NativeStackScreenProps<RootStac
   const ratings = useTechnicianRatings(profile.data?.userId)
   const visibleRatings = (ratings.data ?? []).filter((item) => isVisibleRating(item.createdAt))
 
-  return <ScrollView style={local.screen} contentContainerStyle={local.content}>
-    <Text style={uiStyles.title}>Productividad</Text>
+  return <ScrollView style={local.screen} contentContainerStyle={local.content}>    
     <QueryState pending={profile.isPending} error={profile.error}>
       {profile.data && <Card>
         <View style={local.header}>
