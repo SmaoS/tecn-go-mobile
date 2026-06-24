@@ -4,7 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { colors } from '../../../components/UI'
 import { QueryState } from '../../../shared/QueryState'
 import { apiMessage } from '../../../shared/apiMessage'
-import { formatCopCurrency } from '../../../shared/format'
+import { formatCopCurrency, formatThousandsInput, onlyDigits } from '../../../shared/format'
 import type { RootStackParamList } from '../../../types'
 import { useRechargeTechnicianWallet, useTechnicianEarnings, useTechnicianWallet } from '../../payments/hooks'
 import { useTechnicianAvailability, useTechnicianProfile } from '../hooks'
@@ -19,7 +19,7 @@ export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<
   const [menu, setMenu] = useState(false)
   const [showMovements, setShowMovements] = useState(false)
   const [period, setPeriod] = useState<'week' | 'month'>('week')
-  const [rechargeAmount, setRechargeAmount] = useState('10000')
+  const [rechargeAmount, setRechargeAmount] = useState('20000')
   const earnings = useTechnicianEarnings()
   const { wallet, transactions } = useTechnicianWallet()
   const recharge = useRechargeTechnicianWallet()
@@ -51,8 +51,8 @@ export function TechnicianEarningsScreen({ navigation }: NativeStackScreenProps<
             <TextInput
               style={styles.input}
               keyboardType="numeric"
-              value={rechargeAmount}
-              onChangeText={(value) => setRechargeAmount(value.replace(/\D/g, ''))}
+              value={formatThousandsInput(rechargeAmount)}
+              onChangeText={(value) => setRechargeAmount(onlyDigits(value))}
               editable={wallet.data.rechargeEnabled && !recharge.isPending}
               placeholder="Valor a recargar"
               placeholderTextColor="#94a3b8"

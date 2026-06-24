@@ -16,6 +16,7 @@ import { TechnicianReferralsScreen } from '../features/technician/screens/Techni
 import { NotificationRequestScreen } from '../features/service-requests/screens/NotificationRequestScreen'
 import { TechnicianRequestHistoryScreen } from '../features/service-requests/screens/RequestHistoryScreen'
 import { TechnicianEarningsScreen } from '../features/technician/screens/TechnicianEarningsScreen'
+import { TechnicianProductivityScreen } from '../features/technician/screens/TechnicianProductivityScreen'
 import { TechnicianLocationController } from '../features/location/TechnicianLocationController'
 import { EmailConfirmationRequiredScreen } from '../features/onboarding/screens/EmailConfirmationRequiredScreen'
 import { OnboardingRequiredScreen } from '../features/onboarding/screens/OnboardingRequiredScreen'
@@ -42,6 +43,7 @@ export function TechnicianNavigator() {
     <Stack.Screen name="AvailableRequests" component={AvailableRequestsScreen} options={{ title: 'Solicitudes Disponibles' }} />
     <Stack.Screen name="TechnicianHistory" component={TechnicianRequestHistoryScreen} options={{ title: 'Historial de servicios' }} />
     <Stack.Screen name="TechnicianEarnings" component={TechnicianEarningsScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="TechnicianProductivity" component={TechnicianProductivityScreen} options={{ title: 'Productividad' }} />
     <Stack.Screen name="NotificationRequest" component={NotificationRequestScreen} options={{ title: 'Solicitud' }} />
     <Stack.Screen name="Chat" component={ChatScreen} />
     <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ title: 'Notificaciones' }} />

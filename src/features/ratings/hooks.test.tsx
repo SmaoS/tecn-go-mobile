@@ -6,12 +6,14 @@ import {
   useRatingStatus,
   useRatingStatuses,
   useSubmitRating,
+  useTechnicianRatings,
 } from './hooks'
 
 jest.mock('./api', () => ({
   ratingsApi: {
     status: jest.fn(),
     create: jest.fn(),
+    technicianRatings: jest.fn(),
   },
 }))
 
@@ -50,5 +52,15 @@ describe('rating hooks', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['ratings'] })
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ratingStatusKey('request-1') })
     expect(complete).toHaveBeenCalled()
+  })
+
+  it('consulta calificaciones del técnico cuando hay id de usuario', async () => {
+    jest.mocked(ratingsApi.technicianRatings).mockResolvedValue([{ id: 'rating-1', score: 5 }] as never)
+    const { QueryWrapper } = createQueryWrapper()
+    const hook = renderHook(() => useTechnicianRatings('user-technician-1'), { wrapper: QueryWrapper })
+
+    await waitFor(() => expect(hook.result.current.isSuccess).toBe(true))
+
+    expect(ratingsApi.technicianRatings).toHaveBeenCalledWith('user-technician-1')
   })
 })

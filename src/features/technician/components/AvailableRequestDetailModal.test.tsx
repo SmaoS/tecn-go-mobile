@@ -34,7 +34,10 @@ describe('AvailableRequestDetailModal', () => {
     />)
 
     fireEvent.changeText(view.getByPlaceholderText('Valor de la cotización'), '120000')
-    expect(view.getByDisplayValue('$120.000 COP')).toBeTruthy()
+    expect(view.getByDisplayValue('120.000')).toBeTruthy()
+    fireEvent.changeText(view.getByPlaceholderText('Valor de la cotización'), '')
+    expect(view.getByPlaceholderText('Valor de la cotización').props.value).toBe('')
+    fireEvent.changeText(view.getByPlaceholderText('Valor de la cotización'), '120000')
     fireEvent.changeText(view.getByPlaceholderText('Comentario para el cliente'), 'Incluye materiales')
     fireEvent.press(view.getByText('Enviar cotización'))
 
@@ -66,5 +69,23 @@ describe('AvailableRequestDetailModal', () => {
 
     expect(view.getByPlaceholderText('Valor de la cotización').props.value).toBe('')
     expect(view.getByPlaceholderText('Comentario para el cliente').props.value).toBe('')
+  })
+
+  it('oculta acciones de cotización cuando ya existe una cotización pendiente', () => {
+    jest.mocked(useSendQuote).mockReturnValue({
+      mutate: jest.fn(),
+      reset: jest.fn(),
+      isPending: false,
+      error: null,
+    } as never)
+    const view = render(<AvailableRequestDetailModal
+      request={serviceRequestFixture({ myPendingQuote: true })}
+      onClose={jest.fn()}
+    />)
+
+    expect(view.queryByText(/Aceptar oferta por/)).toBeNull()
+    expect(view.queryByText('Enviar cotización')).toBeNull()
+    expect(view.queryByPlaceholderText('Valor de la cotización')).toBeNull()
+    expect(view.getByText(/Ya enviaste una cotización/)).toBeTruthy()
   })
 })

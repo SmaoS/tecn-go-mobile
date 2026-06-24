@@ -12,7 +12,7 @@ import { reverseGeocodeCoordinates, useCurrentLocation } from '../../location/ho
 import { LocationPickerModal } from '../../location/LocationPickerModal'
 import { useProfile } from '../../profile/hooks'
 import { paymentMethodLabels, requestPaymentMethods, type RequestPaymentMethod } from '../../payments/paymentMethods'
-import { formatCopCurrency } from '../../../shared/format'
+import { formatThousandsInput, onlyDigits } from '../../../shared/format'
 import { FloatingFormFooter } from '../../../components/FloatingFormFooter'
 import { ActionSheet } from '../../../components/ActionSheet'
 
@@ -68,8 +68,8 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
     <Button title={images.length ? `Sube foto del problema (${images.length}/5)` : 'Sube foto del problema'} onPress={() => setImageSheetVisible(true)} loading={picker.isPending} />
     {images.length > 0 && <ScrollView horizontal>{images.map((image) => <Image key={image.uri} source={{ uri: image.uri }} style={{ width: 100, height: 100, borderRadius: 12, marginRight: 8 }} />)}</ScrollView>}
     <Field testID="e2e.request.estimatedPrice" keyboardType="numeric" placeholder="Presupuesto estimado (opcional)"
-      value={form.estimatedPrice ? formatCopCurrency(Number(form.estimatedPrice)) : ''}
-      onChangeText={(estimatedPrice) => setForm({ ...form, estimatedPrice: estimatedPrice.replace(/\D/g, '') })} />
+      value={formatThousandsInput(form.estimatedPrice)}
+      onChangeText={(estimatedPrice) => setForm({ ...form, estimatedPrice: onlyDigits(estimatedPrice) })} />
     <Text style={styles.label}>¿Por dónde vas a pagar? *</Text>
     {selectedPaymentMethod
       ? <Card><Text style={[styles.cardTitle, { color: colors.brand }]}>{paymentMethodLabels[selectedPaymentMethod]}</Text>

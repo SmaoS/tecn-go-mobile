@@ -17,6 +17,14 @@ export function useRatingStatuses(requestIds: string[]) {
   })
 }
 
+export function useTechnicianRatings(technicianUserId?: string) {
+  return useQuery({
+    queryKey: ['ratings', 'technician', technicianUserId],
+    enabled: Boolean(technicianUserId),
+    queryFn: () => ratingsApi.technicianRatings(technicianUserId!),
+  })
+}
+
 export function useSubmitRating(onSuccess: () => void) {
   const client = useQueryClient()
   return useMutation({

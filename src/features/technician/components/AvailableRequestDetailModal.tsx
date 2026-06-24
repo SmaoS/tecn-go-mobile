@@ -5,7 +5,7 @@ import { Button, colors, Field } from '../../../components/UI'
 import { PrivateImage } from '../../../components/PrivateImage'
 import { RoutePreviewMap } from '../../../components/RoutePreviewMap'
 import type { ServiceRequest } from '../../../types'
-import { formatCopCurrency, formatElapsedTime } from '../../../shared/format'
+import { formatCopCurrency, formatElapsedTime, formatThousandsInput, onlyDigits } from '../../../shared/format'
 import { apiMessage, hasApiStatus } from '../../../shared/apiMessage'
 import { useLiveCurrentLocation } from '../../location/hooks'
 import { useSendQuote } from '../hooks'
@@ -49,7 +49,7 @@ export function AvailableRequestDetailModal({ request, onClose }: {
     const target = `${destination.latitude},${destination.longitude}`
     void Linking.openURL(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${target}&travelmode=driving`)
   }
-  const formattedPrice = price ? formatCopCurrency(Number(price)) : ''
+  const formattedPrice = formatThousandsInput(price)
   return <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
     <SafeAreaView style={styles.screen}>
       <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -88,30 +88,34 @@ export function AvailableRequestDetailModal({ request, onClose }: {
             </Pressable>)}
           </ScrollView>
           : <Text style={styles.empty}>Sin imágenes adjuntas</Text>}
-        {request.estimatedPrice != null && <Button
-          title={`Aceptar oferta por ${formatCopCurrency(request.estimatedPrice)}`}
-          loading={quote.isPending}
-          onPress={() => send(request.estimatedPrice!, 'Acepto el valor estimado por el cliente')}
-        />}
-        <Text style={styles.sectionTitle}>Enviar tu oferta</Text>
-        <Field
-          testID="e2e.quote.price"
-          keyboardType="numeric"
-          placeholder="Valor de la cotización"
-          value={formattedPrice}
-          onFocus={() => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 250)}
-          onChangeText={(value) => setPrice(value.replace(/\D/g, ''))}
-        />
-        <Field
-          testID="e2e.quote.comment"
-          multiline
-          placeholder="Comentario para el cliente"
-          value={comment}
-          onFocus={() => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 250)}
-          onChangeText={setComment}
-        />
-        {pendingMessage && <Text style={styles.error}>{pendingMessage}</Text>}
-        <Button testID="e2e.quote.submit" title="Enviar cotización" loading={quote.isPending} onPress={() => send(Number(price), comment || undefined)} />
+        {request.myPendingQuote
+          ? <Text style={styles.pendingQuote}>Ya enviaste una cotización para este servicio. Podrás volver a cotizar cuando se cancele o venza.</Text>
+          : <>
+            {request.estimatedPrice != null && <Button
+              title={`Aceptar oferta por ${formatCopCurrency(request.estimatedPrice)}`}
+              loading={quote.isPending}
+              onPress={() => send(request.estimatedPrice!, 'Acepto el valor estimado por el cliente')}
+            />}
+            <Text style={styles.sectionTitle}>Enviar tu oferta</Text>
+            <Field
+              testID="e2e.quote.price"
+              keyboardType="numeric"
+              placeholder="Valor de la cotización"
+              value={formattedPrice}
+              onFocus={() => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 250)}
+              onChangeText={(value) => setPrice(onlyDigits(value))}
+            />
+            <Field
+              testID="e2e.quote.comment"
+              multiline
+              placeholder="Comentario para el cliente"
+              value={comment}
+              onFocus={() => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 250)}
+              onChangeText={setComment}
+            />
+            {pendingMessage && <Text style={styles.error}>{pendingMessage}</Text>}
+            <Button testID="e2e.quote.submit" title="Enviar cotización" loading={quote.isPending} onPress={() => send(Number(price), comment || undefined)} />
+          </>}
         <Pressable disabled={quote.isPending} onPress={onClose} style={styles.close}><Text style={styles.closeText}>Cerrar</Text></Pressable>
       </ScrollView>
       </KeyboardAvoidingView>
@@ -144,6 +148,7 @@ const styles = StyleSheet.create({
   sectionTitle: { color: colors.text, fontSize: 17, fontWeight: '900', marginTop: 22, marginBottom: 8 },
   description: { color: '#DCE6F3', lineHeight: 21 },
   empty: { color: '#94a3b8' },
+  pendingQuote: { color: colors.brand, fontWeight: '800', lineHeight: 20, marginTop: 18 },
   thumbnail: { width: 118, height: 90, borderRadius: 12, marginRight: 10 },
   error: { color: '#be123c', marginVertical: 8 },
   close: { alignItems: 'center', padding: 16, marginTop: 8 },

@@ -97,12 +97,12 @@ describe('RequestDetailScreen', () => {
     expect(navigate).toHaveBeenCalledWith('ServiceSupport', { requestId: 'request-1' })
   })
 
-  it('shows rating only after payment and while it remains pending', () => {
+  it('abre calificación automáticamente después del pago si está pendiente', () => {
     const view = renderRequest({ status: 'PAID', technicianId: 'user-technician-1' })
 
     expect(view.queryByText('Cancelar solicitud')).toBeNull()
-    fireEvent.press(view.getByText('Calificar servicio'))
     expect(navigate).toHaveBeenCalledWith('Rating', { requestId: 'request-1' })
+    expect(view.getByText('Calificar servicio')).toBeTruthy()
   })
 
   it('explains that technician confirmation is required after completion', () => {

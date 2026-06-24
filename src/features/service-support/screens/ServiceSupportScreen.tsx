@@ -4,9 +4,11 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, Card, Field, styles } from '../../../components/UI'
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
 import { apiMessage } from '../../../shared/apiMessage'
+import { formatThousandsInput, onlyDigits } from '../../../shared/format'
 import type { RootStackParamList } from '../../../types'
 import type { EvidenceType, ProofMethod } from '../api'
 import { useServiceSupport } from '../hooks'
+import { useSession } from '../../../context/useSession'
 
 const evidenceLabels: Record<EvidenceType, string> = {
   BEFORE_SERVICE: 'Antes del servicio',
@@ -19,6 +21,7 @@ const evidenceLabels: Record<EvidenceType, string> = {
 export function ServiceSupportScreen({ route }: NativeStackScreenProps<RootStackParamList, 'ServiceSupport'>) {
   const requestId = route.params.requestId
   const { evidences, proofs, action } = useServiceSupport(requestId)
+  const { session } = useSession()
   const [evidenceType, setEvidenceType] = useState<EvidenceType>('BEFORE_SERVICE')
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
@@ -44,12 +47,12 @@ export function ServiceSupportScreen({ route }: NativeStackScreenProps<RootStack
           })} />}
       </Card>)}
     </Card>
-    <Card><Text style={styles.cardTitle}>Comprobante de pago</Text>
-      <Field keyboardType="numeric" value={amount} onChangeText={setAmount} placeholder="Monto" />
+    {session?.role !== 'CLIENT' && <Card><Text style={styles.cardTitle}>Comprobante de pago</Text>
+      <Field keyboardType="numeric" value={formatThousandsInput(amount)} onChangeText={(value) => setAmount(onlyDigits(value))} placeholder="Monto" />
       <Field value={method} onChangeText={(value) => setMethod(value as ProofMethod)} placeholder="TRANSFER" autoCapitalize="characters" />
       <Button title="Elegir y subir comprobante" loading={action.isPending} onPress={() => action.mutate({ kind: 'proof', amount: Number(amount), paymentMethod: method })} />
       {proofs.data?.map((item) => <Text key={item.id} style={styles.muted}>${item.amount.toLocaleString()} · {item.status}{item.reviewComment ? ` · ${item.reviewComment}` : ''}</Text>)}
-    </Card>
+    </Card>}
     <Card><Text style={styles.cardTitle}>Reportar problema</Text><Field multiline value={report} onChangeText={setReport} placeholder="Describe lo ocurrido" />
       <Button title="Enviar denuncia" loading={action.isPending} onPress={() => action.mutate({ kind: 'report', description: report })} />
     </Card>

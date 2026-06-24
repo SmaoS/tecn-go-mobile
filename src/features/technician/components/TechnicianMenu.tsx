@@ -8,11 +8,11 @@ export function TechnicianMenu({ visible, profile, onClose, onNavigate, onSwitch
   visible: boolean
   profile?: TechnicianProfile
   onClose: () => void
-  onNavigate: (screen: 'TechnicianProfile' | 'TechnicianHome' | 'TechnicianReferrals' | 'Legal') => void
+  onNavigate: (screen: 'TechnicianProfile' | 'TechnicianHome' | 'TechnicianProductivity' | 'TechnicianReferrals' | 'Legal') => void
   onSwitchMode?: () => void
   onLogout: () => void
 }) {
-  function go(screen: 'TechnicianProfile' | 'TechnicianHome' | 'TechnicianReferrals' | 'Legal') {
+  function go(screen: 'TechnicianProfile' | 'TechnicianHome' | 'TechnicianProductivity' | 'TechnicianReferrals' | 'Legal') {
     onClose()
     onNavigate(screen)
   }
@@ -30,6 +30,7 @@ export function TechnicianMenu({ visible, profile, onClose, onNavigate, onSwitch
         </Pressable>
         <View style={styles.menu}>
           <MenuItem label="Servicios Asignados" onPress={() => go('TechnicianHome')} />
+          <MenuItem label="Productividad" onPress={() => go('TechnicianProductivity')} />
           <MenuItem label="Invita conocidos" onPress={() => go('TechnicianReferrals')} />
           <MenuItem label="Compromisos y términos" onPress={() => go('Legal')} />
         </View>

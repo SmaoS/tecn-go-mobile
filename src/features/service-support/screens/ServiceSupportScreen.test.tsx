@@ -1,6 +1,8 @@
-import { fireEvent, render } from '@testing-library/react-native'
+import { fireEvent } from '@testing-library/react-native'
 import { ServiceSupportScreen } from './ServiceSupportScreen'
 import { useServiceSupport } from '../hooks'
+import { renderWithProviders } from '../../../test/render'
+import { sessionFixture } from '../../../test/fixtures'
 
 jest.mock('../hooks', () => ({ useServiceSupport: jest.fn() }))
 
@@ -31,12 +33,13 @@ describe('ServiceSupportScreen', () => {
     } as never)
   })
 
-  function renderScreen() {
-    return render(
+  function renderScreen(role: 'CLIENT' | 'TECHNICIAN' = 'TECHNICIAN') {
+    return renderWithProviders(
       <ServiceSupportScreen
         route={{ params: { requestId: 'request-1' } } as never}
         navigation={{} as never}
       />,
+      { session: sessionFixture({ role, activeMode: role, roles: [role] }) },
     )
   }
 
@@ -78,6 +81,20 @@ describe('ServiceSupportScreen', () => {
     expect(mutate).toHaveBeenCalledWith({
       kind: 'report',
       description: 'Cobro no autorizado',
+    })
+  })
+
+  it('oculta comprobantes de pago para clientes y mantiene evidencias/denuncias', () => {
+    const view = renderScreen('CLIENT')
+
+    expect(view.queryByText('Comprobante de pago')).toBeNull()
+    expect(view.getByText('Evidencias')).toBeTruthy()
+    fireEvent.changeText(view.getByPlaceholderText('Describe lo ocurrido'), 'No reconozco el cobro')
+    fireEvent.press(view.getByText('Enviar denuncia'))
+
+    expect(mutate).toHaveBeenCalledWith({
+      kind: 'report',
+      description: 'No reconozco el cobro',
     })
   })
 })

@@ -130,6 +130,7 @@ export function technicianProfileFixture(
 ): TechnicianProfile {
   return {
     id: 'technician-profile-1',
+    userId: 'user-technician-1',
     fullName: 'Técnico TecnGo',
     email: 'tecnico@tecngo.test',
     documentNumber: '123456789',

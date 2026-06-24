@@ -64,6 +64,7 @@ export interface ServiceRequest {
   images: ServiceRequestImage[]
   cityId?: string
   cityName?: string
+  myPendingQuote?: boolean
 }
 
 export interface ServiceRequestImage {
@@ -141,6 +142,7 @@ export interface PageResponse<T> {
 
 export interface TechnicianProfile {
   id: string
+  userId?: string
   fullName: string
   email: string
   documentNumber: string
@@ -214,6 +216,18 @@ export interface UserProfile {
   profilePhotoFaceValidated?: boolean
 }
 
+export interface RatingResponse {
+  id: string
+  serviceRequestId: string
+  raterId: string
+  raterName: string
+  ratedUserId: string
+  ratedUserName: string
+  score: number
+  comment?: string
+  createdAt: string
+}
+
 export interface UserVerification {
   id: string
   fullName: string
@@ -260,6 +274,7 @@ export type RootStackParamList = {
   AvailableRequests: undefined
   TechnicianHistory: undefined
   TechnicianEarnings: undefined
+  TechnicianProductivity: undefined
   ServiceSupport: { requestId: string }
   Legal: { required?: boolean } | undefined
   CaptureProfilePhoto: undefined

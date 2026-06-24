@@ -1,9 +1,16 @@
-import { formatCopCurrency, formatElapsedTime } from './format'
+import { formatCopCurrency, formatElapsedTime, formatThousandsInput, onlyDigits } from './format'
 
 describe('formatos compartidos', () => {
   it('formatea valores en pesos colombianos', () => {
     expect(formatCopCurrency(100000)).toBe('$100.000 COP')
     expect(formatCopCurrency(undefined)).toBe('Sin estimado')
+  })
+
+  it('formatea entradas monetarias solo con separador de miles', () => {
+    expect(formatThousandsInput('100000')).toBe('100.000')
+    expect(formatThousandsInput('$100.000 COP')).toBe('100.000')
+    expect(formatThousandsInput('')).toBe('')
+    expect(onlyDigits('120.000 COP')).toBe('120000')
   })
 
   it('resume el tiempo transcurrido', () => {

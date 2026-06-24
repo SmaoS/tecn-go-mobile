@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { ScrollView, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, Card, colors, styles } from '../../../components/UI'
@@ -20,6 +21,13 @@ export function RequestDetailScreen({ route, navigation }: NativeStackScreenProp
   const location = useTechnicianLocation(item)
   const action = useRequestAction(item.id)
   const ratingStatus = useRatingStatus(item.id, item.status === 'PAID')
+  const openedRating = useRef(false)
+
+  useEffect(() => {
+    if (openedRating.current || item.status !== 'PAID' || !ratingStatus.data || ratingStatus.data.rated) return
+    openedRating.current = true
+    navigation.navigate('Rating', { requestId: item.id })
+  }, [item.id, item.status, navigation, ratingStatus.data])
 
   return <KeyboardAwareScreen><QueryState pending={request.isPending || quotes.isPending} error={request.error ?? quotes.error ?? ratingStatus.error}>
     <Text style={styles.title}>{item.categoryName}</Text><Card><Text style={styles.cardTitle}>{requestStatusLabels[item.status]}</Text><Text style={styles.muted}>{item.description}</Text><Text style={styles.muted}>{item.address}</Text></Card>

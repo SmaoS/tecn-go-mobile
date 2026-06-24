@@ -30,7 +30,9 @@ export function AvailableRequestItem({ request, onPress, onAccept, accepting = f
       <Text numberOfLines={1} style={styles.address}>{request.address}</Text>
       <Text numberOfLines={1} style={styles.category}>{request.categoryName}</Text>
       <Text numberOfLines={1} style={styles.payment}>Pago: {paymentMethodLabels[request.requestedPaymentMethod] ?? request.requestedPaymentMethod}</Text>
-      {request.estimatedPrice != null && <Pressable
+      {request.myPendingQuote
+        ? <Text style={styles.pendingQuote}>Cotización enviada. Espera respuesta o vencimiento.</Text>
+        : request.estimatedPrice != null && <Pressable
         disabled={accepting}
         onPress={(event) => {
           event.stopPropagation()
@@ -68,6 +70,7 @@ const styles = StyleSheet.create({
   accept: { alignSelf: 'flex-start', backgroundColor: colors.brand, borderRadius: 10, marginTop: 10, paddingHorizontal: 10, paddingVertical: 8 },
   acceptDisabled: { opacity: 0.5 },
   acceptText: { color: colors.bg, fontSize: 12, fontWeight: '900' },
+  pendingQuote: { color: colors.brand, fontSize: 12, fontWeight: '800', marginTop: 10 },
   imageWrap: { position: 'absolute', right: 0, bottom: 0 },
   thumbnail: { width: 54, height: 42, borderRadius: 8 },
   imageCount: { position: 'absolute', right: 3, bottom: 3, color: '#fff', backgroundColor: 'rgba(15,23,42,.75)', borderRadius: 8, paddingHorizontal: 5, fontSize: 10, fontWeight: '800' },
