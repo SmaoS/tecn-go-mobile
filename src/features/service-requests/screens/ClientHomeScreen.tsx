@@ -32,9 +32,7 @@ export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStac
   const recentRequests = (requests.data ?? []).slice(0, 5)
   return <View style={screenStyles.screen}>
     <ClientHeader unread={unread.data ?? 0} onMenu={() => setMenu(true)} onNotifications={() => navigation.navigate('Notifications')} />
-    <ScrollView contentContainerStyle={screenStyles.content}>
-      <Text style={screenStyles.title}>Solicita un servicio</Text>
-      <Text style={screenStyles.subtitle}>Encuentra ayuda técnica confiable cerca de ti.</Text>
+    <ScrollView contentContainerStyle={screenStyles.content}>      
       <Button title="Solicitar servicio" onPress={() => navigation.navigate('RequestService')} />
       <Pressable onPress={() => navigation.navigate('NearbyTechnicians')}><Text style={screenStyles.nearby}>Ver técnicos cercanos</Text></Pressable>
       {(recentQuotes.data?.length ?? 0) > 0 && <><Text style={screenStyles.sectionLabel}>Cotizaciones recientes</Text>

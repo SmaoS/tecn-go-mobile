@@ -9,8 +9,7 @@ import { requestStatusLabels } from '../status'
 
 export function ClientRequestHistoryScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'RequestHistory'>) {
   const requests = useClientRequestHistory()
-  return <HistoryList
-    title="Historial de solicitudes"
+  return <HistoryList    
     requests={requests}
     onOpen={(request) => navigation.navigate('RequestDetail', { request })}
   />
@@ -18,22 +17,19 @@ export function ClientRequestHistoryScreen({ navigation }: NativeStackScreenProp
 
 export function TechnicianRequestHistoryScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'TechnicianHistory'>) {
   const requests = useAssignedRequestHistory()
-  return <HistoryList
-    title="Historial de servicios"
+  return <HistoryList    
     requests={requests}
     onOpen={(request) => navigation.navigate('NotificationRequest', { requestId: request.id })}
   />
 }
 
-function HistoryList({ title, requests, onOpen }: {
-  title: string
+function HistoryList({  requests, onOpen }: {  
   requests: ReturnType<typeof useClientRequestHistory>
   onOpen: (request: NonNullable<ReturnType<typeof useClientRequestHistory>['data']>[number]) => void
 }) {
   const { width } = useWindowDimensions()
   const cardWidth = width >= 700 ? '48.5%' : '100%'
-  return <KeyboardAwareScreen>
-    <Text style={styles.title}>{title}</Text>
+  return <KeyboardAwareScreen>    
     <Text style={styles.subtitle}>Servicios pagados o cancelados.</Text>
     <QueryState pending={requests.isPending} error={requests.error} empty={requests.data?.length === 0} emptyText="Aún no hay servicios en el historial.">
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>

@@ -40,7 +40,7 @@ export function TechnicianNavigator() {
     <Stack.Screen name="TechnicianHome" component={TechnicianHomeScreen} options={{ headerShown: false }} />
     <Stack.Screen name="TechnicianProfile" component={TechnicianProfileScreen} options={{ title: 'Perfil técnico' }} />
     <Stack.Screen name="AvailableRequests" component={AvailableRequestsScreen} options={{ title: 'Solicitudes Disponibles' }} />
-    <Stack.Screen name="TechnicianHistory" component={TechnicianRequestHistoryScreen} options={{ title: 'Historial' }} />
+    <Stack.Screen name="TechnicianHistory" component={TechnicianRequestHistoryScreen} options={{ title: 'Historial de servicios' }} />
     <Stack.Screen name="TechnicianEarnings" component={TechnicianEarningsScreen} options={{ headerShown: false }} />
     <Stack.Screen name="NotificationRequest" component={NotificationRequestScreen} options={{ title: 'Solicitud' }} />
     <Stack.Screen name="Chat" component={ChatScreen} />
