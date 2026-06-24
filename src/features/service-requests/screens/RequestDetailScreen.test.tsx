@@ -1,5 +1,6 @@
-import { fireEvent, render } from '@testing-library/react-native'
+import { fireEvent } from '@testing-library/react-native'
 import { quoteFixture, serviceRequestFixture } from '../../../test/fixtures'
+import { renderWithProviders } from '../../../test/render'
 import { RequestDetailScreen } from './RequestDetailScreen'
 import {
   useRequestAction,
@@ -54,7 +55,7 @@ describe('RequestDetailScreen', () => {
       isPending: false,
       error: null,
     } as never)
-    return render(
+    return renderWithProviders(
       <RequestDetailScreen
         route={{ params: { request } } as never}
         navigation={{ navigate } as never}

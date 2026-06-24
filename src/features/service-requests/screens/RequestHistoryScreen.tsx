@@ -1,4 +1,4 @@
-import { Pressable, Text, useWindowDimensions, View } from 'react-native'
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Card, colors, styles } from '../../../components/UI'
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
@@ -38,8 +38,8 @@ function HistoryList({ title, requests, onOpen }: {
     <QueryState pending={requests.isPending} error={requests.error} empty={requests.data?.length === 0} emptyText="Aún no hay servicios en el historial.">
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {requests.data?.map((item) => <Pressable key={item.id} style={{ width: cardWidth }} onPress={() => onOpen(item)}>
-          <Card style={{ height: '100%' }}>
-            <Text style={styles.cardTitle}>{item.categoryName}</Text>
+          <Card style={screenStyles.card}>
+            <Text style={styles.cardTitle} numberOfLines={1}>{item.categoryName}</Text>
             <Text style={styles.muted}>{new Date(item.createdAt).toLocaleDateString()}</Text>
             <Text style={[styles.muted, { color: colors.brand }]}>{requestStatusLabels[item.status]}</Text>
             {item.finalPrice != null && <Text style={styles.cardTitle}>${item.finalPrice.toLocaleString()}</Text>}
@@ -49,3 +49,10 @@ function HistoryList({ title, requests, onOpen }: {
     </QueryState>
   </KeyboardAwareScreen>
 }
+
+const screenStyles = StyleSheet.create({
+  card: {
+    marginBottom: 0,
+    minHeight: 112,
+  },
+})
