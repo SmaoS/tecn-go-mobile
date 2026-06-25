@@ -75,7 +75,7 @@ export function LoginScreen({ navigation, onSession }: Props) {
     <AppVersionModal check={versionCheck} onContinue={() => {
       setVersionCheck(undefined)
       submitLogin()
-    }} />
+    }} continueLabel="Continuar e ingresar" />
   </KeyboardAwareScreen>
 }
 

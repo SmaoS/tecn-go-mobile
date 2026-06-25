@@ -1,6 +1,7 @@
 import Constants from 'expo-constants'
 import { Linking, Platform } from 'react-native'
 import { fireEvent, render } from '@testing-library/react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { api } from '../../api/client'
 import { AppVersionModal, checkAppVersionBeforeLogin } from './AppVersionGate'
 import type { AppVersionCheck } from '../../types'
@@ -19,8 +20,9 @@ const check: AppVersionCheck = {
 describe('AppVersionGate', () => {
   const originalOS = Platform.OS
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks()
+    await AsyncStorage.clear()
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'android' })
     process.env.EXPO_PUBLIC_ENFORCE_VERSION_CHECK = 'true'
     jest.spyOn(api, 'get')
@@ -60,11 +62,11 @@ describe('AppVersionGate', () => {
     const view = render(<AppVersionModal check={check} onContinue={onContinue} />)
 
     fireEvent.press(view.getByText('Actualizar'))
-    fireEvent.press(view.getByText('Continuar e ingresar'))
+    fireEvent.press(view.getByText('Más tarde'))
 
     expect(openUrl).toHaveBeenCalledWith(check.updateUrl)
     expect(onContinue).toHaveBeenCalled()
     view.rerender(<AppVersionModal check={{ ...check, forceUpdate: true }} onContinue={onContinue} />)
-    expect(view.queryByText('Continuar e ingresar')).toBeNull()
+    expect(view.queryByText('Más tarde')).toBeNull()
   })
 })

@@ -6,6 +6,7 @@ import { queryClient } from './src/lib/queryClient'
 import { AppNavigator } from './src/navigation/AppNavigator'
 import { ToastHost } from './src/components/Toast'
 import { initializeObservability, Sentry } from './src/services/observability'
+import { AppVersionController } from './src/features/app-version/AppVersionController'
 
 initializeObservability()
 
@@ -15,6 +16,7 @@ function App() {
       <SessionProvider>
         <StatusBar style="light" />
         <AppNavigator />
+        <AppVersionController />
         <ToastHost />
       </SessionProvider>
     </SafeAreaProvider>

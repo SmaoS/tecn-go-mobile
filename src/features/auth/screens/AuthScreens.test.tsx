@@ -1,4 +1,5 @@
 import { act, fireEvent, render } from '@testing-library/react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { LoginScreen, RegisterScreen } from './AuthScreens'
 import {
   useLogin,
@@ -32,6 +33,17 @@ const mutation = () => ({
   error: null,
 })
 
+const renderWithSafeArea = (children: React.ReactElement) => render(
+  <SafeAreaProvider
+    initialMetrics={{
+      frame: { x: 0, y: 0, width: 390, height: 844 },
+      insets: { top: 0, left: 0, right: 0, bottom: 0 },
+    }}
+  >
+    {children}
+  </SafeAreaProvider>,
+)
+
 describe('auth screens', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -47,7 +59,7 @@ describe('auth screens', () => {
     const login = mutation()
     jest.mocked(useLogin).mockReturnValue(login as never)
     const navigation = { navigate: jest.fn() }
-    const view = render(<LoginScreen
+    const view = renderWithSafeArea(<LoginScreen
       navigation={navigation as never}
       route={{ key: 'Login', name: 'Login' } as never}
       onSession={jest.fn()}
@@ -66,7 +78,7 @@ describe('auth screens', () => {
   it('bloquea registro celular hasta verificar OTP', () => {
     const registerPhone = mutation()
     jest.mocked(useRegisterByPhone).mockReturnValue(registerPhone as never)
-    const view = render(<RegisterScreen
+    const view = renderWithSafeArea(<RegisterScreen
       navigation={{ navigate: jest.fn() } as never}
       route={{ key: 'Register', name: 'Register' } as never}
       onSession={jest.fn()}

@@ -1,41 +1,30 @@
-import Constants from 'expo-constants'
-import { Linking, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native'
-import { api } from '../../api/client'
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { colors } from '../../components/UI'
 import type { AppVersionCheck } from '../../types'
+import { checkAppVersion, getCurrentAppVersion, openStore } from './VersionCheckService'
 
 export async function checkAppVersionBeforeLogin() {
-  const enforceVersionCheck = process.env.EXPO_PUBLIC_ENFORCE_VERSION_CHECK !== 'false'
-  if (!enforceVersionCheck || Platform.OS !== 'android' && Platform.OS !== 'ios') return undefined
-  const currentVersion = Constants.expoConfig?.version ?? '1.0.0'
-  const platform = Platform.OS === 'ios' ? 'IOS' : 'ANDROID'
-  try {
-    const { data } = await api.get<AppVersionCheck>('/v1/app-version/check', {
-      params: { platform, currentVersion },
-    })
-    return data.updateRequired ? data : undefined
-  } catch (reason) {
-    console.warn('App version check failed; continuing with login.', reason)
-    return undefined
-  }
+  return checkAppVersion()
 }
 
 export function AppVersionModal({
   check,
   onContinue,
+  continueLabel = 'Más tarde',
 }: {
   check?: AppVersionCheck
   onContinue: () => void
+  continueLabel?: string
 }) {
-  const currentVersion = Constants.expoConfig?.version ?? '1.0.0'
+  const currentVersion = getCurrentAppVersion()
   return <Modal visible={Boolean(check)} transparent animationType="fade" onRequestClose={() => {
     if (!check?.forceUpdate) onContinue()
   }}>
     <View style={styles.overlay}><View style={styles.card}><Text style={styles.title}>{check?.forceUpdate ? 'Actualización requerida' : 'Actualización disponible'}</Text>
       <Text style={styles.message}>{check?.message}</Text>
       <Text style={styles.detail}>Instalada: {currentVersion} · mínima: {check?.minimumSupportedVersion}</Text>
-      <Pressable style={styles.primary} onPress={() => check?.updateUrl && void Linking.openURL(check.updateUrl)}><Text style={styles.primaryText}>Actualizar</Text></Pressable>
-      {!check?.forceUpdate && <Pressable style={styles.secondary} onPress={onContinue}><Text style={styles.secondaryText}>Continuar e ingresar</Text></Pressable>}
+      <Pressable style={styles.primary} onPress={() => void openStore(check)}><Text style={styles.primaryText}>Actualizar</Text></Pressable>
+      {!check?.forceUpdate && <Pressable style={styles.secondary} onPress={onContinue}><Text style={styles.secondaryText}>{continueLabel}</Text></Pressable>}
     </View></View>
   </Modal>
 }
