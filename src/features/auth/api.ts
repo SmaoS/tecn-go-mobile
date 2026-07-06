@@ -48,7 +48,7 @@ export const authApi = {
       method === 'email' ? { email: identifier, password } : { phone: identifier, password })),
   verifyAdminMfa: (challengeToken: string, code: string) =>
     persist(api.post<Session>('/v1/auth/mfa/verify', { challengeToken, code })),
-  register: (payload: { fullName: string; email: string; password: string; confirmPassword: string; role: 'CLIENT' | 'TECHNICIAN'; referralCode?: string }) =>
+  register: (payload: { fullName: string; email: string; confirmEmail: string; password: string; confirmPassword: string; role: 'CLIENT' | 'TECHNICIAN'; referralCode?: string }) =>
     persist(api.post<Session>('/v1/auth/register', payload)),
   registerByPhone: (payload: { fullName: string; phone: string; verificationToken: string; password: string; confirmPassword: string; role: 'CLIENT' | 'TECHNICIAN'; referralCode?: string }) =>
     persist(api.post<Session>('/v1/auth/register-by-phone', payload)),

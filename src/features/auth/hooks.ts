@@ -11,7 +11,7 @@ export const useVerifyAdminMfa = (onSuccess: (session: Session) => void) => useM
   onSuccess,
 })
 export const useRegister = (onSuccess: (session: Session) => void) => useMutation({
-  mutationFn: (payload: { fullName: string; email: string; password: string; confirmPassword: string; role: 'CLIENT' | 'TECHNICIAN'; referralCode?: string }) => authApi.register(payload),
+  mutationFn: (payload: { fullName: string; email: string; confirmEmail: string; password: string; confirmPassword: string; role: 'CLIENT' | 'TECHNICIAN'; referralCode?: string }) => authApi.register(payload),
   onSuccess,
 })
 export const useRegisterByPhone = (onSuccess: (session: Session) => void) => useMutation({

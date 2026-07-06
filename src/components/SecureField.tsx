@@ -7,6 +7,8 @@ export function SecureField(props: TextInputProps) {
   return <View style={styles.container}>
     <Field
       {...props}
+      autoCapitalize={props.autoCapitalize ?? 'none'}
+      autoCorrect={props.autoCorrect ?? false}
       secureTextEntry={!visible}
       selectionColor={colors.brand}
       cursorColor={colors.brand}
