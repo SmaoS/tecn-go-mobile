@@ -16,3 +16,4 @@ GoogleService-Info.plist
 sentry.properties
 **/sentry.properties
 .env.sentry-build-plugin
+android/
