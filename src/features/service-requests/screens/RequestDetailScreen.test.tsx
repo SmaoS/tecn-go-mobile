@@ -72,7 +72,7 @@ describe('RequestDetailScreen', () => {
     const view = renderRequest({ status: 'QUOTE_PENDING' })
 
     expect(view.getByText('Técnico TecnGo')).toBeTruthy()
-    expect(view.getByText('✓ Certificado')).toBeTruthy()
+    expect(view.getByText('✓ Titulado')).toBeTruthy()
     expect(view.getByText('$120.000 COP')).toBeTruthy()
     expect(view.getByText('/tech-avatar.jpg')).toBeTruthy()
 

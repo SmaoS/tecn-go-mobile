@@ -17,6 +17,7 @@ export function AvailableRequestItem({ request, onPress, onAccept, accepting = f
         ? <PrivateImage url={request.clientProfilePhotoUrl} style={styles.avatar} />
         : <View style={[styles.avatar, styles.avatarFallback]}><Text style={styles.initial}>{request.clientName.charAt(0)}</Text></View>}
       <Text numberOfLines={1} style={styles.clientName}>{request.clientName}</Text>
+      {request.clientDocumentsVerified && <Text style={styles.verified}>✓ Verificado</Text>}
       <Text style={styles.meta}>★ {request.clientAverageRating.toFixed(1)}</Text>
       <Text style={styles.meta}>{request.clientPaidServicesCount} pagados</Text>
       <Text style={styles.elapsed}>{formatElapsedTime(request.createdAt)}</Text>
@@ -58,6 +59,7 @@ const styles = StyleSheet.create({
   initial: { color: colors.brand, fontSize: 20, fontWeight: '900' },
   clientName: { color: colors.text, fontWeight: '800', marginTop: 6, maxWidth: 96 },
   meta: { color: colors.muted, fontSize: 11, marginTop: 2 },
+  verified: { color: colors.brand, fontSize: 11, fontWeight: '900', marginTop: 2 },
   elapsed: { color: colors.brand, fontSize: 11, fontWeight: '800', marginTop: 5 },
   main: { flex: 1, paddingLeft: 14, minHeight: 124 },
   topLine: { flexDirection: 'row', justifyContent: 'space-between' },

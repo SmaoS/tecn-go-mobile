@@ -72,6 +72,7 @@ export function AvailableRequestDetailModal({ request, onClose }: {
             : <View style={[styles.avatar, styles.fallback]}><Text style={styles.initial}>{request.clientName.charAt(0)}</Text></View>}
           <View style={styles.summaryText}>
             <Text style={styles.name}>{request.clientName}</Text>
+            {request.clientDocumentsVerified && <Text style={styles.verified}>✓ Verificado</Text>}
             <Text style={styles.meta}>★ {request.clientAverageRating.toFixed(1)} · {request.clientPaidServicesCount} pagados · {formatElapsedTime(request.createdAt)}</Text>
             <Text style={styles.price}>{formatCopCurrency(request.estimatedPrice)}</Text>
             <Text style={styles.address}>{request.address}</Text>
@@ -141,6 +142,7 @@ const styles = StyleSheet.create({
   initial: { color: colors.brand, fontSize: 24, fontWeight: '900' },
   summaryText: { flex: 1, marginLeft: 14 },
   name: { color: colors.text, fontSize: 18, fontWeight: '900' },
+  verified: { color: colors.brand, fontWeight: '900', marginTop: 3 },
   meta: { color: colors.muted, fontSize: 12, marginTop: 4 },
   price: { color: colors.text, fontSize: 26, fontWeight: '900', marginTop: 8 },
   address: { color: '#DCE6F3', marginTop: 5 },

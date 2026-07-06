@@ -12,6 +12,8 @@ import { showToast } from '../components/Toast'
 import { getStoredSession, removeStoredSession, setStoredSession } from '../services/sessionStorage'
 import { setObservedUser } from '../services/observability'
 import { normalizeSession } from '../features/auth/api'
+import { pushRegistrationApi } from '../features/notifications/registration'
+import { resetPushRegistrationCache } from '../features/notifications/usePushRegistration'
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
@@ -31,6 +33,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       .finally(() => setReady(true))
   }, [])
   useEffect(() => setUnauthorizedHandler(() => {
+    resetPushRegistrationCache()
     setSession(null)
     queryClient.clear()
   }), [queryClient])
@@ -80,12 +83,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       }
     }
     try {
+      await pushRegistrationApi.unregister()
+    } catch {
+      // Logout continues if push token cleanup is unavailable.
+    }
+    try {
       await api.post('/v1/auth/logout')
     } catch {
       // Local logout must continue when the backend is unavailable.
     }
     await removeStoredSession()
     queryClient.clear()
+    resetPushRegistrationCache()
     setSession(null)
   }
 

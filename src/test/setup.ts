@@ -53,6 +53,7 @@ jest.mock('expo-location', () => ({
   getLastKnownPositionAsync: jest.fn(async () => null),
   watchPositionAsync: jest.fn(async () => ({ remove: jest.fn() })),
   hasServicesEnabledAsync: jest.fn(async () => true),
+  enableNetworkProviderAsync: jest.fn(async () => undefined),
 }))
 
 jest.mock('expo-notifications', () => ({

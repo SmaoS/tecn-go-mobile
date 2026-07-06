@@ -14,6 +14,7 @@ import { CatalogSelect } from '../../catalogs/CatalogSelect'
 import { useCities, useCountries, useDepartments } from '../../catalogs/hooks'
 import { authApi } from '../../auth/api'
 import { profileApi } from '../../profile/api'
+import { useProfile } from '../../profile/hooks'
 import { showToast } from '../../../components/Toast'
 import { useSession } from '../../../context/useSession'
 import { FloatingFormFooter } from '../../../components/FloatingFormFooter'
@@ -28,6 +29,7 @@ const empty: TechnicianProfileForm = {
 
 export function TechnicianProfileScreen() {
   const profile = useTechnicianProfile()
+  const userProfile = useProfile()
   const categories = useTechnicianCategories()
   const [form, setForm] = useState(empty)
   const [passwordModal, setPasswordModal] = useState(false)
@@ -82,6 +84,28 @@ export function TechnicianProfileScreen() {
       departmentId: data.departmentId ?? '', cityId: data.cityId ?? '',
     })
   }, [profile.data])
+  useEffect(() => {
+    if (profile.data || !userProfile.data) return
+    const data = userProfile.data
+    setForm((current) => ({
+      ...current,
+      documentNumber: current.documentNumber || data.documentNumber || '',
+      phone: current.phone || data.phone || '',
+      profilePhotoUrl: current.profilePhotoUrl || data.profilePhotoUrl || '',
+      documentPhotoUrl: current.documentPhotoUrl || data.documentPhotoUrl || '',
+      certificatePhotoUrl: current.certificatePhotoUrl || data.certificatePhotoUrl || '',
+      workExperienceDescription: current.workExperienceDescription || data.workExperienceDescription || '',
+      homeAddress: current.homeAddress || data.homeAddress || '',
+      homeLatitude: current.homeLatitude || String(data.homeLatitude ?? ''),
+      homeLongitude: current.homeLongitude || String(data.homeLongitude ?? ''),
+      homeCity: current.homeCity || data.homeCity || '',
+      homeNeighborhood: current.homeNeighborhood || data.homeNeighborhood || '',
+      countryId: current.countryId || data.countryId || '',
+      departmentId: current.departmentId || data.departmentId || '',
+      cityId: current.cityId || data.cityId || '',
+    }))
+    if (data.phoneVerified && data.phone) setVerifiedPhone(normalizeLocalPhone(data.phone))
+  }, [profile.data, userProfile.data])
   
   const save = useSaveTechnicianProfile(Boolean(profile.data))
   async function useGps() {
@@ -107,12 +131,17 @@ export function TechnicianProfileScreen() {
     if (!form.countryId || !form.departmentId || !form.cityId) return
     save.mutate(form, { onSuccess: () => showToast('Perfil técnico actualizado') })
   }
-  return <KeyboardAwareScreen footer={<FloatingFormFooter title={profile.data ? 'Actualizar perfil' : 'Crear perfil'} onPress={saveProfile} loading={save.isPending} disabled={!form.countryId || !form.departmentId || !form.cityId} />}><Text style={styles.title}>Perfil técnico</Text><Text style={styles.subtitle}>{profile.data ? `Estado profesional: ${profile.data.status} · ${identityStatus}` : 'Completa tus datos para solicitar aprobación.'}</Text>
-    <QueryState pending={profile.isPending || categories.isPending} error={profileError ?? categories.error}>
+  const uploadPending = profileImage.isPending || document.isPending
+  const saveDisabled = uploadPending || !form.documentPhotoUrl || !form.countryId || !form.departmentId || !form.cityId
+    || !form.documentNumber.trim() || !form.phone.trim() || !isValidLocalPhone(form.phone)
+    || form.categoryIds.length === 0 || !form.workExperienceDescription.trim()
+  return <KeyboardAwareScreen footer={<FloatingFormFooter title={profile.data ? 'Actualizar perfil' : 'Crear perfil'} onPress={saveProfile} loading={save.isPending || uploadPending} disabled={saveDisabled} />}><Text style={styles.title}>Perfil técnico</Text><Text style={styles.subtitle}>{profile.data ? `Estado profesional: ${profile.data.status} · ${identityStatus}` : 'Completa tus datos para solicitar aprobación.'}</Text>
+    <QueryState pending={profile.isPending || userProfile.isPending || categories.isPending} error={profileError ?? userProfile.error ?? categories.error}>
       <>{profile.data?.email && <><Text style={styles.label}>Correo</Text><Field value={profile.data.email} editable={false} selectTextOnFocus={false} accessibilityLabel="Correo registrado" /></>}
         <Text style={styles.muted}>Los campos marcados con * son obligatorios.</Text>
         <Text style={styles.label}>Nro Documento *</Text>
-        <Field placeholder="Nro Documento" value={form.documentNumber} onChangeText={(documentNumber) => setForm({ ...form, documentNumber })} />
+        <Field placeholder="Nro Documento" value={form.documentNumber} editable={!userProfile.data?.documentNumber && !profile.data?.documentNumber} selectTextOnFocus={false} onChangeText={(documentNumber) => setForm({ ...form, documentNumber })} />
+        {userProfile.data?.documentNumber && !profile.data?.documentNumber && <Text style={styles.muted}>Tomado del perfil de cliente.</Text>}
         <Text style={styles.label}>Teléfono * {selectedCountry?.phonePrefix ? `(${selectedCountry.phonePrefix})` : ''}</Text>
         <Field placeholder="Teléfono" value={form.phone} keyboardType="number-pad" maxLength={10} onChangeText={(phone) => {
           setForm({ ...form, phone: normalizeLocalPhone(phone) })
@@ -133,7 +162,8 @@ export function TechnicianProfileScreen() {
         <Field multiline placeholder="Describe tu experiencia laboral" value={form.workExperienceDescription} onChangeText={(workExperienceDescription) => setForm({ ...form, workExperienceDescription })} />
         {!profile.data?.profilePhotoFaceValidated && <Button title={form.profilePhotoUrl ? 'Foto de perfil cargada' : 'Subir foto de perfil'} onPress={() => profileImage.mutate(undefined, { onSuccess: (url) => setForm({ ...form, profilePhotoUrl: url ?? form.profilePhotoUrl }) })} loading={profileImage.isPending} />}
         <Button title={form.documentPhotoUrl ? 'Documento de Identidad cargado' : 'Subir documento de identidad obligatorio'} onPress={() => document.mutate('DOCUMENT', { onSuccess: (url) => setForm({ ...form, documentPhotoUrl: url ?? form.documentPhotoUrl }) })} loading={document.isPending} />
-        <Button title={form.certificatePhotoUrl ? 'Certificado De estudio cargado' : 'Subir certificado de estudio opcional'} onPress={() => document.mutate('CERTIFICATE', { onSuccess: (url) => setForm({ ...form, certificatePhotoUrl: url ?? form.certificatePhotoUrl }) })} loading={document.isPending} />
+        <Text style={styles.muted}>Subir un certificado puede darte ventaja frente a otros técnicos cuando el cliente compara cotizaciones.</Text>
+        <Button title={form.certificatePhotoUrl ? 'Certificado de estudio cargado' : 'Subir certificado de estudio opcional'} onPress={() => document.mutate('CERTIFICATE', { onSuccess: (url) => setForm({ ...form, certificatePhotoUrl: url ?? form.certificatePhotoUrl }) })} loading={document.isPending} />
         <CatalogSelect label="País" value={form.countryId} items={countries.data} onChange={(country) => setForm({ ...form, countryId: country.id, departmentId: '', cityId: '', homeCity: '' })} />
         <CatalogSelect label="Departamento" value={form.departmentId} items={departments.data} disabled={!form.countryId} onChange={(department) => setForm({ ...form, departmentId: department.id, cityId: '', homeCity: '' })} />
         <CatalogSelect label="Ciudad" value={form.cityId} items={cities.data} disabled={!form.departmentId} onChange={(city) => setForm({ ...form, cityId: city.id, homeCity: city.name })} />

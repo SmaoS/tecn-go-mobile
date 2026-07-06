@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Image, Pressable, ScrollView, Text } from 'react-native'
+import { Pressable, ScrollView, Text } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, Card, Field, styles, colors } from '../../../components/UI'
 import { KeyboardAwareScreen } from '../../../components/KeyboardAwareScreen'
@@ -15,6 +15,7 @@ import { paymentMethodLabels, requestPaymentMethods, type RequestPaymentMethod }
 import { formatThousandsInput, onlyDigits } from '../../../shared/format'
 import { FloatingFormFooter } from '../../../components/FloatingFormFooter'
 import { ActionSheet } from '../../../components/ActionSheet'
+import { LoadingImage } from '../../../components/LoadingImage'
 
 export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'RequestService'>) {
   const categories = useServiceCategories()
@@ -49,7 +50,7 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
     ]
   }
   const submitDisabled = !form.categoryId || !form.description.trim()
-    || !form.address.trim() || !form.latitude || !form.longitude || !form.paymentMethod
+    || !form.address.trim() || !form.latitude || !form.longitude || !form.paymentMethod || picker.isPending
   function submit() {
     if (!profile.data?.cityId || !form.latitude || !form.longitude || !form.paymentMethod) return
     create.mutate({ payload: {
@@ -57,7 +58,7 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
       estimatedPrice: form.estimatedPrice ? Number(form.estimatedPrice) : null,
     }, images })
   }
-  return <KeyboardAwareScreen footer={<FloatingFormFooter testID="e2e.request.submit" title="Crear solicitud" onPress={submit} loading={create.isPending} disabled={submitDisabled} />}><Text style={styles.label}>Categoría *</Text>
+  return <KeyboardAwareScreen footer={<FloatingFormFooter testID="e2e.request.submit" title="Crear solicitud" onPress={submit} loading={create.isPending || picker.isPending} disabled={submitDisabled} />}><Text style={styles.label}>Categoría *</Text>
     <QueryState pending={categories.isPending} error={categories.error}>
       <>{selectedCategory
         ? <Card><Text style={[styles.cardTitle, { color: colors.brand }]}>{selectedCategory.name}</Text><Text style={styles.muted}>{selectedCategory.description}</Text><Button title="Ver categorías" onPress={() => setForm({ ...form, categoryId: '' })} /></Card>
@@ -66,7 +67,7 @@ export function CreateRequestScreen({ navigation }: NativeStackScreenProps<RootS
     <Text style={styles.label}>Describe el problema *</Text>
     <Field testID="e2e.request.description" multiline placeholder="Describe el problema" value={form.description} onChangeText={(description) => setForm({ ...form, description })} />
     <Button title={images.length ? `Sube foto del problema (${images.length}/5)` : 'Sube foto del problema'} onPress={() => setImageSheetVisible(true)} loading={picker.isPending} />
-    {images.length > 0 && <ScrollView horizontal>{images.map((image) => <Image key={image.uri} source={{ uri: image.uri }} style={{ width: 100, height: 100, borderRadius: 12, marginRight: 8 }} />)}</ScrollView>}
+    {images.length > 0 && <ScrollView horizontal>{images.map((image) => <LoadingImage key={image.uri} source={{ uri: image.uri }} style={{ width: 100, height: 100, borderRadius: 12, marginRight: 8 }} />)}</ScrollView>}
     <Field testID="e2e.request.estimatedPrice" keyboardType="numeric" placeholder="Presupuesto estimado (opcional)"
       value={formatThousandsInput(form.estimatedPrice)}
       onChangeText={(estimatedPrice) => setForm({ ...form, estimatedPrice: onlyDigits(estimatedPrice) })} />

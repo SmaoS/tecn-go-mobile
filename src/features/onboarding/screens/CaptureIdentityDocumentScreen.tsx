@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, colors, Screen, styles } from '../../../components/UI'
 import type { RootStackParamList } from '../../../types'
+import { LoadingImage } from '../../../components/LoadingImage'
 
 export function CaptureIdentityDocumentScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'CaptureIdentityDocument'>) {
   const camera = useRef<CameraView>(null)
@@ -89,12 +90,12 @@ export function CaptureIdentityDocumentScreen({ navigation, route }: NativeStack
 
   if (previewUri) {
     return <View style={local.container}>
-      <Image source={{ uri: previewUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      <LoadingImage source={{ uri: previewUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
       <View style={local.previewPanel}>
         <Text style={local.title}>Foto capturada correctamente.</Text>
         <Button title={documentType === 'CC' && previewSide === 'front'
-          ? 'Enviar y continuar'
-          : 'Continuar'} onPress={usePhoto} />
+          ? 'Usar frente y capturar reverso'
+          : 'Usar foto'} onPress={usePhoto} />
         <Button title="Repetir" onPress={repeat} />
       </View>
     </View>

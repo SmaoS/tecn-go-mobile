@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, colors } from '../../../components/UI'
@@ -32,9 +32,23 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
   const [paymentRequest, setPaymentRequest] = useState<ServiceRequest>()
   const [reportRequest, setReportRequest] = useState<ServiceRequest>()
   const [ratingRequestId, setRatingRequestId] = useState<string>()
+  const ratingTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const paidIds = (requests.data ?? []).filter((item) => item.status === 'PAID').map((item) => item.id)
   const ratingStatuses = useRatingStatuses(paidIds)
   const { logout, session, switchMode } = useSession()
+
+  useEffect(() => () => {
+    if (ratingTimer.current) clearTimeout(ratingTimer.current)
+  }, [])
+
+  function openRatingAfterPayment(requestId: string) {
+    setPaymentRequest(undefined)
+    if (ratingTimer.current) clearTimeout(ratingTimer.current)
+    ratingTimer.current = setTimeout(() => {
+      setRatingRequestId(requestId)
+      ratingTimer.current = null
+    }, 350)
+  }
 
   function next(item: ServiceRequest) {
     const states: Partial<Record<RequestStatus, RequestStatus>> = {
@@ -100,8 +114,7 @@ export function TechnicianHomeScreen({ navigation }: NativeStackScreenProps<Root
           paymentMethod: paymentRequest.requestedPaymentMethod,
         }, {
           onSuccess: () => {
-            setPaymentRequest(undefined)
-            setRatingRequestId(requestId)
+            openRatingAfterPayment(requestId)
             showToast('Servicio cerrado. Ahora puedes calificar al cliente.')
           },
         })

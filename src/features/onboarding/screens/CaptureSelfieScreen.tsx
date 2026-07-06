@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, colors, Screen, styles } from '../../../components/UI'
 import type { RootStackParamList } from '../../../types'
+import { LoadingImage } from '../../../components/LoadingImage'
 
 export function CaptureSelfieScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'CaptureSelfie'>) {
   const camera = useRef<CameraView>(null)
@@ -56,7 +57,7 @@ export function CaptureSelfieScreen({ navigation }: NativeStackScreenProps<RootS
 
   if (photoUri) {
     return <View style={local.container}>
-      <Image source={{ uri: photoUri }} style={StyleSheet.absoluteFill} />
+      <LoadingImage source={{ uri: photoUri }} style={StyleSheet.absoluteFill} />
       <View style={local.previewPanel}>
         <Text style={local.title}>Foto capturada correctamente.</Text>
         <Button title="Usar foto" onPress={() => navigation.navigate('OnboardingRequired', {

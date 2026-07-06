@@ -39,11 +39,13 @@ export interface ServiceRequest {
   clientProfilePhotoUrl?: string
   clientAverageRating: number
   clientPaidServicesCount: number
+  clientDocumentsVerified?: boolean
   technicianProfilePhotoUrl?: string
   technicianAverageRating?: number
   technicianCompletedServicesCount: number
   technicianExperienceDescription?: string
   technicianCategories: string[]
+  technicianDocumentsVerified?: boolean
   certifiedTechnician?: boolean
   categoryId: string
   categoryName: string
@@ -87,6 +89,7 @@ export interface ServiceQuote {
   technicianCompletedServicesCount: number
   technicianExperienceDescription?: string
   technicianCategories: string[]
+  technicianDocumentsVerified?: boolean
   certifiedTechnician?: boolean
   price: number
   description?: string
@@ -278,7 +281,7 @@ export type RootStackParamList = {
   TechnicianProductivity: undefined
   ServiceSupport: { requestId: string }
   Legal: { required?: boolean } | undefined
-  CaptureProfilePhoto: undefined
+  CaptureProfilePhoto: { purpose?: 'PROFILE_UPDATE' | 'SELFIE_CHANGE_REQUEST' } | undefined
   TechnicianReferrals: undefined
   ChatModeration: undefined
 }

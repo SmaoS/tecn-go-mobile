@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Button, Card, Field, colors, styles as uiStyles } from '../../../components/UI'
@@ -13,13 +13,13 @@ import { useCities, useCountries, useDepartments } from '../../catalogs/hooks'
 import { useProfile } from '../../profile/hooks'
 import { pickAndUploadEvidence, pickAndUploadImageAsset, uploadAsset } from '../../../services/files'
 import { onboardingApi, type DocumentType, type OnboardingMainData } from '../api'
-import { TechnicianProfessionalProfileOnboardingScreen } from './TechnicianProfessionalProfileOnboardingScreen'
 import { setStoredSession } from '../../../services/sessionStorage'
 import { LegalDocumentsContent } from '../../legal/components/LegalDocumentsContent'
 import { FloatingFormFooter } from '../../../components/FloatingFormFooter'
 import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../../shared/phone'
 import { ActionSheet, type ActionSheetOption } from '../../../components/ActionSheet'
 import { showToast } from '../../../components/Toast'
+import { useTechnicianCategories } from '../../technician/hooks'
 
 const labels: Record<string, string> = {
   MAIN_DATA: 'Datos principales',
@@ -34,6 +34,7 @@ const labels: Record<string, string> = {
 export function OnboardingRequiredScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'OnboardingRequired'>) {
   const queryClient = useQueryClient()
   const { session, setSession } = useSession()
+  const scrollRef = useRef<ScrollView | null>(null)
   const profile = useProfile()
   const draftKey = session?.userId ? `tecngo.onboarding.main.${session.userId}` : undefined
   const status = useQuery({
@@ -63,6 +64,8 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
   const [backUrl, setBackUrl] = useState('')
   const [singleUrl, setSingleUrl] = useState('')
   const [certificateUrl, setCertificateUrl] = useState('')
+  const [professional, setProfessional] = useState({ categoryIds: [] as string[], workExperienceDescription: '' })
+  const [fileUploading, setFileUploading] = useState(false)
   const [processedSelfieUri, setProcessedSelfieUri] = useState<string>()
   const [processedDocumentKey, setProcessedDocumentKey] = useState<string>()
   const [actionSheet, setActionSheet] = useState<{
@@ -71,6 +74,7 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
     options: ActionSheetOption[]
   }>()
   const step = status.data?.currentStep ?? 'MAIN_DATA'
+  const categories = useTechnicianCategories()
 
   useEffect(() => {
     if (!draftKey) {
@@ -114,12 +118,13 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
   })
   const selfieMutation = useMutation({ mutationFn: onboardingApi.profileSelfie, onSuccess: refresh })
   const documentMutation = useMutation({ mutationFn: onboardingApi.identityDocument, onSuccess: refresh })
+  const professionalMutation = useMutation({ mutationFn: onboardingApi.professionalProfile, onSuccess: refresh })
   const certificateMutation = useMutation({ mutationFn: onboardingApi.certificate, onSuccess: refresh })
   const skipCertificate = useMutation({ mutationFn: onboardingApi.skipCertificate, onSuccess: refresh })
-  const pending = mainMutation.isPending || selfieMutation.isPending
-    || documentMutation.isPending || certificateMutation.isPending || skipCertificate.isPending
+  const pending = fileUploading || mainMutation.isPending || selfieMutation.isPending
+    || documentMutation.isPending || professionalMutation.isPending || certificateMutation.isPending || skipCertificate.isPending
   const error = mainMutation.error || selfieMutation.error || documentMutation.error
-    || certificateMutation.error || skipCertificate.error || status.error
+    || professionalMutation.error || certificateMutation.error || skipCertificate.error || status.error
 
   useEffect(() => {
     if (status.data?.onboardingCompleted) {
@@ -136,12 +141,14 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
     const selfieUri = route.params?.selfieUri
     if (!selfieUri || processedSelfieUri === selfieUri || selfieMutation.isPending) return
     setProcessedSelfieUri(selfieUri)
+    setFileUploading(true)
     void uploadAsset({ uri: selfieUri, name: `selfie-${Date.now()}.jpg`, mimeType: 'image/jpeg' }, 'PROFILE')
       .then((url) => selfieMutation.mutate({
         profilePhotoUrl: url,
         faceDetectionStatus: route.params?.faceDetectionStatus ?? 'MANUAL_REVIEW_REQUIRED',
       }))
       .catch((err) => showToast(apiMessage(err), 'error'))
+      .finally(() => setFileUploading(false))
   }, [processedSelfieUri, route.params?.faceDetectionStatus, route.params?.selfieUri, selfieMutation])
 
   useEffect(() => {
@@ -152,6 +159,7 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
     if ((!singleUri && (!frontUri || !backUri)) || processedDocumentKey === key || documentMutation.isPending) return
     setProcessedDocumentKey(key)
     async function uploadDocuments() {
+      setFileUploading(true)
       if (singleUri) {
         const single = await uploadAsset({ uri: singleUri, name: `passport-${Date.now()}.jpg`, mimeType: 'image/jpeg' }, 'DOCUMENT')
         documentMutation.mutate({
@@ -171,15 +179,53 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       }
     }
     void uploadDocuments().catch((err) => showToast(apiMessage(err), 'error'))
+      .finally(() => setFileUploading(false))
   }, [documentMutation, processedDocumentKey, route.params?.documentBackUri, route.params?.documentFrontUri, route.params?.documentSingleUri, route.params?.identityDocumentCaptureStatus])
+
+  async function uploadAndSet(promise: Promise<string | undefined>, setUrl: (url: string) => void) {
+    setFileUploading(true)
+    try {
+      const url = await promise
+      if (url) setUrl(url)
+    } catch (err) {
+      showToast(apiMessage(err), 'error')
+    } finally {
+      setFileUploading(false)
+    }
+  }
+
+  async function uploadAndSaveCertificate(promise: Promise<string | undefined>) {
+    setFileUploading(true)
+    try {
+      const url = await promise
+      if (url) {
+        setCertificateUrl(url)
+        certificateMutation.mutate(url)
+      }
+    } catch (err) {
+      showToast(apiMessage(err), 'error')
+    } finally {
+      setFileUploading(false)
+    }
+  }
 
   async function pickImage(kind: 'PROFILE' | 'DOCUMENT' | 'CERTIFICATE', setUrl: (url: string) => void) {
     setActionSheet({
       title: 'Seleccionar archivo',
       message: 'Elige cómo quieres cargar la imagen.',
       options: [
-        { label: 'Tomar foto con cámara', onPress: () => void pickAndUploadImageAsset(kind, 'camera').then((url) => url && setUrl(url)).catch((err) => showToast(apiMessage(err), 'error')) },
-        { label: 'Seleccionar de galería', onPress: () => void pickAndUploadImageAsset(kind, 'gallery').then((url) => url && setUrl(url)).catch((err) => showToast(apiMessage(err), 'error')) },
+        {
+          label: 'Tomar foto con cámara',
+          onPress: () => kind === 'CERTIFICATE'
+            ? void uploadAndSaveCertificate(pickAndUploadImageAsset(kind, 'camera'))
+            : void uploadAndSet(pickAndUploadImageAsset(kind, 'camera'), setUrl),
+        },
+        {
+          label: 'Seleccionar de galería',
+          onPress: () => kind === 'CERTIFICATE'
+            ? void uploadAndSaveCertificate(pickAndUploadImageAsset(kind, 'gallery'))
+            : void uploadAndSet(pickAndUploadImageAsset(kind, 'gallery'), setUrl),
+        },
       ],
     })
   }
@@ -189,16 +235,17 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       title: 'Documento',
       message: 'Puedes tomar una foto, elegir de galería o seleccionar un PDF.',
       options: [
-        { label: 'Tomar foto con cámara', onPress: () => void pickAndUploadImageAsset('DOCUMENT', 'camera').then((url) => url && setUrl(url)).catch((err) => showToast(apiMessage(err), 'error')) },
-        { label: 'Seleccionar de galería', onPress: () => void pickAndUploadImageAsset('DOCUMENT', 'gallery').then((url) => url && setUrl(url)).catch((err) => showToast(apiMessage(err), 'error')) },
-        { label: 'PDF o archivo', onPress: () => void pickAndUploadEvidence('DOCUMENT').then((url) => url && setUrl(url)).catch((err) => showToast(apiMessage(err), 'error')) },
+        { label: 'Tomar foto con cámara', onPress: () => void uploadAndSet(pickAndUploadImageAsset('DOCUMENT', 'camera'), setUrl) },
+        { label: 'Seleccionar de galería', onPress: () => void uploadAndSet(pickAndUploadImageAsset('DOCUMENT', 'gallery'), setUrl) },
+        { label: 'PDF o archivo', onPress: () => void uploadAndSet(pickAndUploadEvidence('DOCUMENT'), setUrl) },
       ],
     })
   }
 
   const mainDisabled = !main.fullName.trim() || Boolean(main.phone) && !isValidLocalPhone(main.phone) || !main.countryId || !main.departmentId
     || !main.cityId || !main.address.trim() || !main.documentNumber.trim()
-  return <KeyboardAwareScreen footer={step === 'MAIN_DATA'
+  const professionalValid = professional.categoryIds.length > 0 && professional.workExperienceDescription.trim().length >= 30
+  const footer = step === 'MAIN_DATA'
     ? <FloatingFormFooter
       testID="e2e.onboarding.main.submit"
       title="Guardar y continuar"
@@ -206,7 +253,18 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       disabled={mainDisabled}
       onPress={() => mainMutation.mutate(main)}
     />
-    : undefined}
+    : step === 'TECHNICIAN_PROFESSIONAL_PROFILE'
+      ? <FloatingFormFooter
+        title="Continuar"
+        loading={pending}
+        disabled={!professionalValid}
+        onPress={() => professionalMutation.mutate({
+          categoryIds: professional.categoryIds,
+          workExperienceDescription: professional.workExperienceDescription.trim(),
+        })}
+      />
+      : undefined
+  return <KeyboardAwareScreen scrollRef={scrollRef} footer={footer}
   >
     <Text style={uiStyles.title}>Completa tu inscripción</Text>
     <Text style={uiStyles.subtitle}>Paso actual: {labels[step]}</Text>
@@ -240,6 +298,7 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       <LegalDocumentsContent
         testID="e2e.onboarding.legal.submit"
         buttonTitle="Aceptar todos y continuar"
+        onJumpToEnd={() => scrollRef.current?.scrollToEnd({ animated: true })}
         onAccepted={refresh}
       />
     </>}
@@ -248,37 +307,71 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       <Text style={uiStyles.cardTitle}>Foto de perfil</Text>
       <Text style={uiStyles.muted}>Ubica tu rostro dentro del óvalo. Después quedará bloqueada para cambios directos.</Text>
       <UploadStatus label="Selfie" ready={Boolean(profilePhotoUrl)} />
-      <Button title="Tomar foto rostro" onPress={() => navigation.navigate('CaptureSelfie')} />
-      <Button title="Seleccionar de galería" onPress={() => void pickImage('PROFILE', setProfilePhotoUrl)} />
-      <Button title="Guardar selfie" loading={pending} onPress={() => selfieMutation.mutate({ profilePhotoUrl, faceDetectionStatus: 'MANUAL_REVIEW_REQUIRED' })} />
+      <Button title="Tomar foto rostro" onPress={() => navigation.navigate('CaptureSelfie')} disabled={pending} />
+      <Button title="Seleccionar de galería" onPress={() => void pickImage('PROFILE', setProfilePhotoUrl)} loading={fileUploading} />
+      <Button title="Guardar selfie" loading={pending} disabled={!profilePhotoUrl} onPress={() => selfieMutation.mutate({ profilePhotoUrl, faceDetectionStatus: 'MANUAL_REVIEW_REQUIRED' })} />
     </Card>}
 
     {step === 'IDENTITY_DOCUMENT' && <Card>
       <Text style={uiStyles.cardTitle}>{main.documentType === 'CC' ? 'Cédula de ciudadanía' : 'Pasaporte'}</Text>
       {main.documentType === 'CC' ? <>
         <UploadStatus label="Frente" ready={Boolean(frontUrl)} />
-        <Button title="Tomar foto documento" onPress={() => navigation.navigate('CaptureIdentityDocument', { documentType: 'CC' })} />
-        <Button title="Cargar frente desde galería/archivo" onPress={() => void pickDocument(setFrontUrl)} />
+        <Button title="Tomar foto documento" onPress={() => navigation.navigate('CaptureIdentityDocument', { documentType: 'CC' })} disabled={pending} />
+        <Button title="Cargar frente desde galería/archivo" onPress={() => void pickDocument(setFrontUrl)} loading={fileUploading} />
         <UploadStatus label="Reverso" ready={Boolean(backUrl)} />
-        <Button title="Cargar reverso desde galería/archivo" onPress={() => void pickDocument(setBackUrl)} />
-        <Button title="Continuar" loading={pending} onPress={() => documentMutation.mutate({ documentType: 'CC', documentFrontUrl: frontUrl, documentBackUrl: backUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} />
+        <Button title="Cargar reverso desde galería/archivo" onPress={() => void pickDocument(setBackUrl)} loading={fileUploading} />
+        <Button title="Continuar" loading={pending} disabled={!frontUrl || !backUrl} onPress={() => documentMutation.mutate({ documentType: 'CC', documentFrontUrl: frontUrl, documentBackUrl: backUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} />
       </> : <>
         <UploadStatus label="Página principal" ready={Boolean(singleUrl)} />
-        <Button title="Tomar foto pasaporte" onPress={() => navigation.navigate('CaptureIdentityDocument', { documentType: 'PASSPORT' })} />
-        <Button title="Cargar pasaporte desde galería/archivo" onPress={() => void pickDocument(setSingleUrl)} />
-        <Button title="Continuar" loading={pending} onPress={() => documentMutation.mutate({ documentType: 'PASSPORT', documentSingleUrl: singleUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} />
+        <Button title="Tomar foto pasaporte" onPress={() => navigation.navigate('CaptureIdentityDocument', { documentType: 'PASSPORT' })} disabled={pending} />
+        <Button title="Cargar pasaporte desde galería/archivo" onPress={() => void pickDocument(setSingleUrl)} loading={fileUploading} />
+        <Button title="Continuar" loading={pending} disabled={!singleUrl} onPress={() => documentMutation.mutate({ documentType: 'PASSPORT', documentSingleUrl: singleUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} />
       </>}
     </Card>}
 
-    {step === 'TECHNICIAN_PROFESSIONAL_PROFILE'
-      && <TechnicianProfessionalProfileOnboardingScreen onComplete={refresh} />}
+    {step === 'TECHNICIAN_PROFESSIONAL_PROFILE' && <Card>
+      <Text style={uiStyles.cardTitle}>Completa tu perfil técnico</Text>
+      <Text style={uiStyles.muted}>Cuéntale a los clientes qué servicios realizas, tu experiencia y especialidad.</Text>
+      <Text style={screenStyles.label}>Categorías de servicios</Text>
+      {categories.isPending && <Text style={uiStyles.muted}>Cargando categorías...</Text>}
+      {categories.error && <Text style={uiStyles.error}>{apiMessage(categories.error)}</Text>}
+      <View style={screenStyles.categories}>
+        {categories.data?.map((category) => {
+          const active = professional.categoryIds.includes(category.id)
+          return <Pressable
+            key={category.id}
+            style={[screenStyles.category, active && screenStyles.categoryActive]}
+            onPress={() => setProfessional((current) => ({
+              ...current,
+              categoryIds: active
+                ? current.categoryIds.filter((id) => id !== category.id)
+                : [...current.categoryIds, category.id],
+            }))}
+          >
+            <Text style={[screenStyles.categoryText, active && screenStyles.categoryTextActive]}>
+              {active ? '✓ ' : ''}{category.name}
+            </Text>
+          </Pressable>
+        })}
+      </View>
+      <Field
+        multiline
+        numberOfLines={6}
+        maxLength={1000}
+        placeholder="Describe tu experiencia"
+        value={professional.workExperienceDescription}
+        onChangeText={(workExperienceDescription) => setProfessional({ ...professional, workExperienceDescription })}
+        style={screenStyles.experience}
+      />
+      <Text style={uiStyles.muted}>{professional.workExperienceDescription.trim().length}/1000 · mínimo 30 caracteres</Text>
+    </Card>}
 
     {step === 'TECHNICIAN_CERTIFICATE' && <Card>
       <Text style={uiStyles.cardTitle}>Certificado técnico</Text>
       <Text style={uiStyles.muted}>Si tienes certificado de estudio o experiencia, cárgalo ahora. También puedes continuar sin certificado.</Text>
       <UploadStatus label="Certificado" ready={Boolean(certificateUrl)} />
-      <Button title="Cargar certificado" onPress={() => void pickImage('CERTIFICATE', setCertificateUrl)} />
-      <Button title="Guardar certificado" loading={pending} onPress={() => certificateMutation.mutate(certificateUrl)} />
+      <Button title="Cargar certificado" onPress={() => void pickImage('CERTIFICATE', setCertificateUrl)} loading={fileUploading} />
+      <Button title="Guardar certificado" loading={pending} disabled={!certificateUrl} onPress={() => certificateMutation.mutate(certificateUrl)} />
       <Button title="No tengo certificado ahora" loading={pending} onPress={() => skipCertificate.mutate()} />
     </Card>}
     <ActionSheet
@@ -310,6 +403,13 @@ const screenStyles = StyleSheet.create({
   choiceActive: { borderColor: colors.brand, backgroundColor: '#063A18' },
   choiceText: { color: colors.muted, fontWeight: '800' },
   choiceTextActive: { color: colors.brand },
+  label: { color: colors.text, fontWeight: '800', marginBottom: 10, marginTop: 18 },
+  categories: { gap: 8, marginBottom: 14 },
+  category: { borderColor: colors.border, borderRadius: 12, borderWidth: 1, padding: 12 },
+  categoryActive: { backgroundColor: '#063A18', borderColor: colors.brand },
+  categoryText: { color: colors.muted, fontWeight: '700' },
+  categoryTextActive: { color: colors.brand },
+  experience: { minHeight: 130, textAlignVertical: 'top' },
   uploadRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 },
   uploadLabel: { color: colors.text, fontWeight: '800' },
   uploadState: { color: colors.muted, fontWeight: '800' },

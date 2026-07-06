@@ -42,7 +42,7 @@ export function ClientHomeScreen({ navigation }: NativeStackScreenProps<RootStac
             {quote.technicianProfilePhotoUrl
               ? <PrivateImage url={quote.technicianProfilePhotoUrl} style={{ width: 44, height: 44, borderRadius: 22 }} />
               : <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center' }}><Text style={styles.cardTitle}>{quote.technicianName.charAt(0)}</Text></View>}
-            <View style={{ flex: 1 }}><Text style={styles.cardTitle} numberOfLines={1}>{quote.technicianName}</Text>{quote.certifiedTechnician && <Text style={{ color: colors.brand, fontWeight: '900', fontSize: 12 }}>✓ Certificado</Text>}<Text style={styles.muted} numberOfLines={1}>{request.categoryName}</Text><Text style={[styles.cardTitle, { color: colors.brand }]}>{formatCopCurrency(quote.price)}</Text></View>
+            <View style={{ flex: 1 }}><Text style={styles.cardTitle} numberOfLines={1}>{quote.technicianName}</Text><View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>{quote.technicianDocumentsVerified && <Text style={{ color: colors.brand, fontWeight: '900', fontSize: 12 }}>✓ Verificado</Text>}{quote.certifiedTechnician && <Text style={{ color: colors.brand, fontWeight: '900', fontSize: 12 }}>✓ Titulado</Text>}</View><Text style={styles.muted} numberOfLines={1}>{request.categoryName}</Text><Text style={[styles.cardTitle, { color: colors.brand }]}>{formatCopCurrency(quote.price)}</Text></View>
           </View></Card>
         </Pressable>)}
       </View>

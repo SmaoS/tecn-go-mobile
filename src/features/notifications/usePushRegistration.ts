@@ -5,6 +5,10 @@ import { pushRegistrationApi } from './registration'
 
 let lastRegistration: string | null = null
 
+export function resetPushRegistrationCache() {
+  lastRegistration = null
+}
+
 export function usePushRegistration(userId?: string) {
   useEffect(() => {
     if (!userId) return

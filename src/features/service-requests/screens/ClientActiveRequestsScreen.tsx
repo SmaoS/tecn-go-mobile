@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Card, colors, styles as uiStyles } from '../../../components/UI'
@@ -10,6 +10,7 @@ import { useUnreadNotifications } from '../../notifications/hooks'
 import { useProfile } from '../../profile/hooks'
 import { requestStatusLabels } from '../status'
 import { useClientRequests } from '../hooks'
+import { useRatingStatuses } from '../../ratings/hooks'
 import { ClientFooter } from '../components/ClientFooter'
 import { ClientHeader } from '../components/ClientHeader'
 import { ClientMenu } from '../components/ClientMenu'
@@ -25,13 +26,24 @@ export function ClientActiveRequestsScreen({ navigation }: NativeStackScreenProp
   const { logout, session, switchMode } = useSession()
   const { width } = useWindowDimensions()
   const cardWidth = width >= 700 ? '48.5%' : '100%'
+  const paidIds = (requests.data ?? []).filter((item) => item.status === 'PAID').map((item) => item.id)
+  const ratingStatuses = useRatingStatuses(paidIds)
+  const openedRating = useRef(false)
+
+  useEffect(() => {
+    if (openedRating.current || !ratingStatuses.data) return
+    const requestId = paidIds.find((id) => ratingStatuses.data?.[id] === false)
+    if (!requestId) return
+    openedRating.current = true
+    navigation.navigate('Rating', { requestId })
+  }, [navigation, paidIds, ratingStatuses.data])
 
   return <View style={screenStyles.screen}>
     <ClientHeader unread={unread.data ?? 0} onMenu={() => setMenu(true)} onNotifications={() => navigation.navigate('Notifications')} />
     <ScrollView contentContainerStyle={screenStyles.content}>
       <Text style={screenStyles.title}>Mis solicitudes activas</Text>
       <Text style={screenStyles.subtitle}>Seguimiento de servicios en curso y cotizaciones pendientes.</Text>
-      <QueryState pending={requests.isPending} error={requests.error} empty={requests.data?.length === 0} emptyText="No tienes solicitudes activas.">
+      <QueryState pending={requests.isPending || (paidIds.length > 0 && ratingStatuses.isPending)} error={requests.error ?? ratingStatuses.error} empty={requests.data?.length === 0} emptyText="No tienes solicitudes activas.">
         <View style={screenStyles.grid}>
           {requests.data?.map((item) => <Pressable key={item.id} style={{ width: cardWidth }} onPress={() => navigation.navigate('RequestDetail', { request: item })}>
             <Card style={screenStyles.compactCard}>

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode, type RefObject } from 'react'
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -17,6 +17,7 @@ type Props = {
   footer?: ReactNode
   contentContainerStyle?: StyleProp<ViewStyle>
   keyboardVerticalOffset?: number
+  scrollRef?: RefObject<ScrollView | null>
 }
 
 export function KeyboardAwareScreen({
@@ -24,6 +25,7 @@ export function KeyboardAwareScreen({
   footer,
   contentContainerStyle,
   keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 0,
+  scrollRef,
 }: Props) {
   const insets = useSafeAreaInsets()
   const [keyboardVisible, setKeyboardVisible] = useState(false)
@@ -49,6 +51,7 @@ export function KeyboardAwareScreen({
       keyboardVerticalOffset={keyboardVerticalOffset}
     >
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={[styles.content, { paddingBottom: contentBottomPadding }, contentContainerStyle]}
         keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
         keyboardShouldPersistTaps="handled"

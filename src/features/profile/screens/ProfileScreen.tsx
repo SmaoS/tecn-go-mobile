@@ -61,7 +61,9 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
     if (coordinates) update({ homeLatitude: coordinates.latitude, homeLongitude: coordinates.longitude })
   }
   function submit() {
-    if (!current?.documentPhotoUrl) { showToast('El documento es obligatorio', 'error'); return }
+    if (!current) return
+    const documentRequired = session.role === 'TECHNICIAN'
+    if (documentRequired && !current.documentPhotoUrl) { showToast('El documento es obligatorio para técnicos', 'error'); return }
     if (!current.countryId || !current.departmentId || !current.cityId) {
       showToast('Selecciona país, departamento y ciudad', 'error')
       return
@@ -75,7 +77,14 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
     : current?.verificationStatus === 'PENDING_VERIFICATION'
       ? 'Documento pendiente de verificación'
       : 'Carga tu documento para iniciar la verificación'
-  return <KeyboardAwareScreen footer={current ? <FloatingFormFooter title="Guardar perfil" onPress={submit} loading={save.isPending} /> : undefined}><QueryState pending={profile.isPending} error={profile.error}>
+  const uploadPending = profileImage.isPending || document.isPending
+  const documentRequired = session.role === 'TECHNICIAN'
+  return <KeyboardAwareScreen footer={current ? <FloatingFormFooter
+    title="Guardar perfil"
+    onPress={submit}
+    loading={save.isPending || uploadPending}
+    disabled={(documentRequired && !current.documentPhotoUrl) || uploadPending}
+  /> : undefined}><QueryState pending={profile.isPending} error={profile.error}>
     {current && <><Card><Text style={[styles.muted, { color: colors.brand }]}>{verificationLabel}</Text>{phoneVerificationRequired && current.phone && <Text style={[styles.muted, { color: colors.brand }]}>Celular pendiente de validacion OTP</Text>}<Text style={styles.muted}>Correo: {current.emailVerified ? 'verificado' : 'pendiente'} · Documentos: {current.documentsVerified ? 'verificados' : 'pendientes'}</Text><Text style={[styles.muted, { color: colors.brand }]}>★ {current.averageRating.toFixed(1)} · {current.paidServicesCount} servicios pagados</Text></Card>
       <Field value={session.email ?? current.phone ?? 'Cuenta por celular'} editable={false} selectTextOnFocus={false} accessibilityLabel="Contacto registrado" />
       <Text style={styles.muted}>Los campos marcados con * son obligatorios.</Text>
@@ -102,7 +111,7 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       <Field placeholder="Barrio" value={current.homeNeighborhood ?? ''} onChangeText={(homeNeighborhood) => update({ homeNeighborhood })} />
       <Button title={current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'} onPress={useHomeGps} loading={location.isLocating} />      
       {navigation && !current.profilePhotoFaceValidated && <Button title="Tomar foto de perfil con cámara" onPress={() => navigation.navigate('CaptureProfilePhoto')} />}
-      <Button title={current.documentPhotoUrl ? 'Documento cargado' : 'Subir documento obligatorio'} onPress={() => document.mutate('DOCUMENT', { onSuccess: (url) => update({ documentPhotoUrl: url ?? current.documentPhotoUrl }) })} loading={document.isPending} />
+      <Button title={current.documentPhotoUrl ? 'Documento cargado' : documentRequired ? 'Subir documento obligatorio' : 'Subir documento opcional'} onPress={() => document.mutate('DOCUMENT', { onSuccess: (url) => update({ documentPhotoUrl: url ?? current.documentPhotoUrl }) })} loading={document.isPending} />
       {(location.error || save.error || profileImage.error || document.error) && <Text style={(save.error || profileImage.error || document.error) ? styles.error : styles.muted}>{save.error || profileImage.error || document.error ? apiMessage(save.error ?? profileImage.error ?? document.error) : location.error}</Text>}
       {!current.emailVerified && <Button title="Verificar correo" loading={verifyEmail.isPending} onPress={() => verifyEmail.mutate(undefined, { onSuccess: () => showToast('Correo de verificación enviado', 'info'), onError: (error) => showToast(apiMessage(error), 'error') })} />}</>}
       <Button title="Modificar contraseña" onPress={() => setPasswordModal(true)} />

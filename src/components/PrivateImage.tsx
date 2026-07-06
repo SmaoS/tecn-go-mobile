@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Image, type ImageProps } from 'react-native'
+import { ActivityIndicator, Image, StyleSheet, View, type ImageProps } from 'react-native'
 import { File, Paths } from 'expo-file-system'
 import { api } from '../api/client'
 import { useSession } from '../context/useSession'
+import { colors } from './UI'
 
 function resolveUrl(url: string) {
   if (/^https?:\/\//.test(url)) return url
@@ -20,9 +21,11 @@ function cacheKey(value: string) {
 export function PrivateImage({ url, ...props }: Omit<ImageProps, 'source'> & { url: string }) {
   const { session } = useSession()
   const [localUri, setLocalUri] = useState<string>()
+  const [imageLoaded, setImageLoaded] = useState(false)
 
   useEffect(() => {
     let active = true
+    setImageLoaded(false)
 
     async function load() {
       if (!url) {
@@ -63,5 +66,34 @@ export function PrivateImage({ url, ...props }: Omit<ImageProps, 'source'> & { u
   }, [session?.token, url])
 
   if (!localUri) return null
-  return <Image {...props} source={{ uri: localUri }} />
+  return <View style={[privateImageStyles.wrapper, props.style]}>
+    {!imageLoaded && <View style={privateImageStyles.loader}>
+      <ActivityIndicator color={colors.brand} />
+    </View>}
+    <Image
+      {...props}
+      source={{ uri: localUri }}
+      style={[StyleSheet.absoluteFill, props.style]}
+      onLoad={(event) => {
+        props.onLoad?.(event)
+      }}
+      onLoadEnd={() => {
+        setImageLoaded(true)
+        props.onLoadEnd?.()
+      }}
+    />
+  </View>
 }
+
+const privateImageStyles = StyleSheet.create({
+  wrapper: {
+    overflow: 'hidden',
+    backgroundColor: colors.card,
+  },
+  loader: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.card,
+  },
+})

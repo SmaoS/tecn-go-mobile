@@ -1,5 +1,4 @@
 import { fireEvent, waitFor } from '@testing-library/react-native'
-import { Share } from 'react-native'
 import { renderWithProviders } from '../../../test/render'
 import { DataRightsCard } from './DataRightsCard'
 import { complianceApi } from '../api'
@@ -7,8 +6,10 @@ import { showToast } from '../../../components/Toast'
 
 jest.mock('../api', () => ({
   complianceApi: {
-    exportMine: jest.fn(),
+    requestExport: jest.fn(),
+    exportRequests: jest.fn(),
     requestAnonymization: jest.fn(),
+    profileSelfieChangeRequests: jest.fn(),
   },
 }))
 jest.mock('../../../components/Toast', () => ({ showToast: jest.fn() }))
@@ -16,22 +17,18 @@ jest.mock('../../../components/Toast', () => ({ showToast: jest.fn() }))
 describe('DataRightsCard', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' })
+    jest.mocked(complianceApi.exportRequests).mockResolvedValue([])
+    jest.mocked(complianceApi.profileSelfieChangeRequests).mockResolvedValue([])
   })
 
-  it('exports and shares the current user data', async () => {
-    jest.mocked(complianceApi.exportMine).mockResolvedValue({ fullName: 'Cliente TecnGo' } as never)
+  it('requests a reviewed data export', async () => {
+    jest.mocked(complianceApi.requestExport).mockResolvedValue({ status: 'PENDING' } as never)
     const view = renderWithProviders(<DataRightsCard />)
 
-    fireEvent.press(view.getByText('Exportar mis datos'))
+    fireEvent.press(view.getByText('Solicitar exportación de mis datos'))
 
-    await view.findByText('Exportar mis datos')
-    expect(complianceApi.exportMine).toHaveBeenCalled()
-    await expect(Share.share).toHaveBeenCalledWith(expect.objectContaining({
-      title: 'Mis datos de TecnGo',
-      message: expect.stringContaining('Cliente TecnGo'),
-    }))
-    expect(showToast).toHaveBeenCalledWith('Copia de datos generada')
+    await waitFor(() => expect(complianceApi.requestExport).toHaveBeenCalled())
+    expect(showToast).toHaveBeenCalledWith('Solicitud creada. Te enviaremos el archivo al correo')
   })
 
   it('requires confirmation before requesting anonymization', async () => {
@@ -44,5 +41,14 @@ describe('DataRightsCard', () => {
     expect(view.getByText(/administrador/)).toBeTruthy()
     fireEvent.press(view.getByText('Enviar solicitud'))
     await waitFor(() => expect(complianceApi.requestAnonymization).toHaveBeenCalled())
+  })
+
+  it('opens selfie change capture from PQR action', async () => {
+    const onCaptureSelfie = jest.fn()
+    const view = renderWithProviders(<DataRightsCard onCaptureSelfie={onCaptureSelfie} />)
+
+    fireEvent.press(view.getByText('Solicitar cambio de selfie'))
+
+    expect(onCaptureSelfie).toHaveBeenCalled()
   })
 })

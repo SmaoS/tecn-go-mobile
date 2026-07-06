@@ -1,5 +1,6 @@
 import * as Location from 'expo-location'
 import { useCallback, useEffect, useState } from 'react'
+import { Linking, Platform } from 'react-native'
 import { apiMessage } from '../../shared/apiMessage'
 import { technicianApi } from '../technician/api'
 
@@ -32,6 +33,21 @@ export function useCurrentLocation() {
       if (!permission.granted) {
         setError('Permiso de ubicación denegado')
         return null
+      }
+      const servicesEnabled = await Location.hasServicesEnabledAsync()
+      if (!servicesEnabled) {
+        if (Platform.OS === 'android') {
+          try {
+            await Location.enableNetworkProviderAsync()
+          } catch {
+            setError('Activa el GPS del dispositivo para crear la solicitud.')
+            return null
+          }
+        } else {
+          setError('Activa la ubicación del dispositivo para crear la solicitud.')
+          void Linking.openSettings().catch(() => undefined)
+          return null
+        }
       }
       const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High })
       const coordinates = { latitude: location.coords.latitude, longitude: location.coords.longitude }

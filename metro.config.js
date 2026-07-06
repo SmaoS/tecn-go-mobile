@@ -1,6 +1,7 @@
 const { getDefaultConfig } = require('expo/metro-config')
-const { getSentryExpoConfig } = require('@sentry/react-native/metro')
+const { withSentryConfig } = require('@sentry/react-native/metro')
 
-const config = getSentryExpoConfig(__dirname);
+const config = getDefaultConfig(__dirname)
+const uploadSourcemaps = process.env.SENTRY_UPLOAD_SOURCEMAPS === 'true'
 
-module.exports = config;
+module.exports = uploadSourcemaps ? withSentryConfig(config) : config

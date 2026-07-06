@@ -11,9 +11,17 @@ import { useSession } from './useSession'
 import { SessionProvider } from './SessionProvider'
 import { sessionFixture } from '../test/fixtures'
 import { showToast } from '../components/Toast'
+import { pushRegistrationApi } from '../features/notifications/registration'
+import { resetPushRegistrationCache } from '../features/notifications/usePushRegistration'
 
 jest.mock('../features/notifications/usePushRegistration', () => ({
   usePushRegistration: jest.fn(),
+  resetPushRegistrationCache: jest.fn(),
+}))
+jest.mock('../features/notifications/registration', () => ({
+  pushRegistrationApi: {
+    unregister: jest.fn(async () => undefined),
+  },
 }))
 jest.mock('../services/observability', () => ({
   setObservedUser: jest.fn(),
@@ -136,8 +144,10 @@ describe('SessionProvider', () => {
     await waitFor(() => expect(view.getByTestId('role').props.children).toBe('NONE'))
     expect(locationTrackingService.stopTracking).toHaveBeenCalledWith(false)
     expect(technicianApi.location).toHaveBeenCalledWith(expect.objectContaining({ online: false }))
+    expect(pushRegistrationApi.unregister).toHaveBeenCalled()
     expect(sessionStorage.removeStoredSession).toHaveBeenCalled()
     expect(view.clear).toHaveBeenCalled()
+    expect(resetPushRegistrationCache).toHaveBeenCalled()
   })
 
   it('limpia sesión y caché cuando el interceptor informa un 401', async () => {
@@ -150,5 +160,6 @@ describe('SessionProvider', () => {
 
     expect(view.getByTestId('role').props.children).toBe('NONE')
     expect(view.clear).toHaveBeenCalled()
+    expect(resetPushRegistrationCache).toHaveBeenCalled()
   })
 })
