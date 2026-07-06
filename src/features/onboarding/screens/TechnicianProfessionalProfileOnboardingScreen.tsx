@@ -18,8 +18,7 @@ export function TechnicianProfessionalProfileOnboardingScreen({ onComplete }: {
   })
   const valid = categoryIds.length > 0 && experience.trim().length >= 30
 
-  return <Card>
-    <Text style={styles.cardTitle}>Completa tu perfil técnico</Text>
+  return <Card>    
     <Text style={styles.muted}>Cuéntale a los clientes qué servicios realizas, tu experiencia y especialidad.</Text>
     <Text style={screenStyles.label}>Categorías de servicios</Text>
     {categories.isPending && <Text style={styles.muted}>Cargando categorías...</Text>}

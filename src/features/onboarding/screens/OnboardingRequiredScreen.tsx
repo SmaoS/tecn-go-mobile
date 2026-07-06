@@ -265,8 +265,7 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       />
       : undefined
   return <KeyboardAwareScreen scrollRef={scrollRef} footer={footer}
-  >
-    <Text style={uiStyles.title}>Completa tu inscripción</Text>
+  >    
     <Text style={uiStyles.subtitle}>Paso actual: {labels[step]}</Text>
     {error && <Text style={uiStyles.error}>{apiMessage(error)}</Text>}
 
@@ -329,8 +328,7 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       </>}
     </Card>}
 
-    {step === 'TECHNICIAN_PROFESSIONAL_PROFILE' && <Card>
-      <Text style={uiStyles.cardTitle}>Completa tu perfil técnico</Text>
+    {step === 'TECHNICIAN_PROFESSIONAL_PROFILE' && <Card>      
       <Text style={uiStyles.muted}>Cuéntale a los clientes qué servicios realizas, tu experiencia y especialidad.</Text>
       <Text style={screenStyles.label}>Categorías de servicios</Text>
       {categories.isPending && <Text style={uiStyles.muted}>Cargando categorías...</Text>}
