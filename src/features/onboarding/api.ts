@@ -32,6 +32,8 @@ export type IdentityDocumentPayload =
 export const onboardingApi = {
   status: () => api.get<OnboardingStatus>('/v1/users/me/onboarding-status').then(({ data }) => data),
   resendEmail: () => api.post('/v1/auth/send-email-verification'),
+  updateEmail: (payload: { email: string; confirmEmail: string }) =>
+    api.put<{ message: string; email: string; emailVerified: boolean }>('/v1/auth/email', payload).then(({ data }) => data),
   mainData: (payload: OnboardingMainData) => api.put('/v1/users/me/onboarding/main-data', payload),
   legalAcceptance: () => api.post('/v1/users/me/onboarding/legal-acceptance'),
   profileSelfie: (payload: { profilePhotoUrl: string; faceDetectionStatus?: FaceDetectionStatus }) => api.post<OnboardingStatus>('/v1/users/me/onboarding/profile-selfie', payload).then(({ data }) => data),
