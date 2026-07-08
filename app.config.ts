@@ -3,6 +3,10 @@ import { existsSync } from 'node:fs'
 
 export default ({ config }: ConfigContext) => {
   const googleServicesFile = process.env.GOOGLE_SERVICES_JSON
+  const universalLinkHosts = (process.env.EXPO_PUBLIC_UNIVERSAL_LINK_HOSTS || 'tecn-go.com,www.tecn-go.com')
+    .split(',')
+    .map((host: string) => host.trim())
+    .filter(Boolean)
   const sentryUploadEnabled = process.env.SENTRY_UPLOAD_SOURCEMAPS === 'true'
   const sentryConfigured = Boolean(
     process.env.SENTRY_AUTH_TOKEN
@@ -27,6 +31,12 @@ export default ({ config }: ConfigContext) => {
     ],
     ios: {
       ...config.ios,
+      associatedDomains: [
+        ...new Set([
+          ...(config.ios?.associatedDomains ?? []),
+          ...universalLinkHosts.map((host: string) => `applinks:${host}`),
+        ]),
+      ],
       config: {
         ...config.ios?.config,
         googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
@@ -35,6 +45,35 @@ export default ({ config }: ConfigContext) => {
     android: {
       ...config.android,
       ...(googleServicesFile && existsSync(googleServicesFile) ? { googleServicesFile } : {}),
+      intentFilters: [
+        ...(config.android?.intentFilters ?? []),
+        ...universalLinkHosts.flatMap((host: string) => [
+          {
+            action: 'VIEW',
+            autoVerify: true,
+            data: [{ scheme: 'https', host, pathPrefix: '/app' }],
+            category: ['BROWSABLE', 'DEFAULT'],
+          },
+          {
+            action: 'VIEW',
+            autoVerify: true,
+            data: [{ scheme: 'https', host, pathPrefix: '/reset-password' }],
+            category: ['BROWSABLE', 'DEFAULT'],
+          },
+          {
+            action: 'VIEW',
+            autoVerify: true,
+            data: [{ scheme: 'https', host, pathPrefix: '/verificar-correo' }],
+            category: ['BROWSABLE', 'DEFAULT'],
+          },
+          {
+            action: 'VIEW',
+            autoVerify: true,
+            data: [{ scheme: 'https', host, pathPrefix: '/abrir-app' }],
+            category: ['BROWSABLE', 'DEFAULT'],
+          },
+        ]),
+      ],
       config: {
         ...config.android?.config,
         googleMaps: {
