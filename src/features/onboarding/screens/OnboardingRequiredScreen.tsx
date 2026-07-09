@@ -307,7 +307,7 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       <Text style={uiStyles.muted}>Ubica tu rostro dentro del óvalo. Después quedará bloqueada para cambios directos.</Text>
       <UploadStatus label="Selfie" ready={Boolean(profilePhotoUrl)} />
       <Button title="Tomar foto rostro" onPress={() => navigation.navigate('CaptureSelfie')} disabled={pending} />
-      <Button title="Seleccionar de galería" onPress={() => void pickImage('PROFILE', setProfilePhotoUrl)} loading={fileUploading} />
+      <Button title="Seleccionar de galería" onPress={() => void pickImage('PROFILE', setProfilePhotoUrl)} loading={fileUploading} disabled={pending}  />
       <Button title="Guardar selfie" loading={pending} disabled={!profilePhotoUrl} onPress={() => selfieMutation.mutate({ profilePhotoUrl, faceDetectionStatus: 'MANUAL_REVIEW_REQUIRED' })} />
     </Card>}
 
@@ -316,9 +316,9 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
       {main.documentType === 'CC' ? <>
         <UploadStatus label="Frente" ready={Boolean(frontUrl)} />
         <Button title="Tomar foto documento" onPress={() => navigation.navigate('CaptureIdentityDocument', { documentType: 'CC' })} disabled={pending} />
-        <Button title="Cargar frente desde galería/archivo" onPress={() => void pickDocument(setFrontUrl)} loading={fileUploading} />
+        <Button title="Cargar frente desde galería/archivo" onPress={() => void pickDocument(setFrontUrl)} loading={fileUploading} disabled={pending} />
         <UploadStatus label="Reverso" ready={Boolean(backUrl)} />
-        <Button title="Cargar reverso desde galería/archivo" onPress={() => void pickDocument(setBackUrl)} loading={fileUploading} />
+        <Button title="Cargar reverso desde galería/archivo" onPress={() => void pickDocument(setBackUrl)} loading={fileUploading} disabled={pending} />
         <Button title="Continuar" loading={pending} disabled={!frontUrl || !backUrl} onPress={() => documentMutation.mutate({ documentType: 'CC', documentFrontUrl: frontUrl, documentBackUrl: backUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} />
       </> : <>
         <UploadStatus label="Página principal" ready={Boolean(singleUrl)} />
