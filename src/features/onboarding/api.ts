@@ -34,14 +34,17 @@ export const onboardingApi = {
   resendEmail: () => api.post('/v1/auth/send-email-verification'),
   updateEmail: (payload: { email: string; confirmEmail: string }) =>
     api.put<{ message: string; email: string; emailVerified: boolean }>('/v1/auth/email', payload).then(({ data }) => data),
-  mainData: (payload: OnboardingMainData) => api.put('/v1/users/me/onboarding/main-data', payload),
+  mainData: (payload: OnboardingMainData) =>
+    api.put<OnboardingStatus>('/v1/users/me/onboarding/main-data', payload).then(({ data }) => data),
   legalAcceptance: () => api.post('/v1/users/me/onboarding/legal-acceptance'),
   profileSelfie: (payload: { profilePhotoUrl: string; faceDetectionStatus?: FaceDetectionStatus }) => api.post<OnboardingStatus>('/v1/users/me/onboarding/profile-selfie', payload).then(({ data }) => data),
-  identityDocument: (payload: IdentityDocumentPayload) => api.post('/v1/users/me/onboarding/identity-document', payload),
+  identityDocument: (payload: IdentityDocumentPayload) =>
+    api.post<OnboardingStatus>('/v1/users/me/onboarding/identity-document', payload).then(({ data }) => data),
   professionalProfile: (payload: { categoryIds: string[]; workExperienceDescription: string }) =>
     api.put<OnboardingStatus>('/v1/technicians/me/onboarding/professional-profile', payload).then(({ data }) => data),
-  certificate: (certificateUrl: string) => api.post('/v1/technicians/me/onboarding/certificate', { certificateUrl }),
-  skipCertificate: () => api.post('/v1/technicians/me/onboarding/skip-certificate'),
-  complete: () => api.put('/v1/users/me/onboarding/complete'),
+  certificate: (certificateUrl: string) =>
+    api.post<OnboardingStatus>('/v1/technicians/me/onboarding/certificate', { certificateUrl }).then(({ data }) => data),
+  skipCertificate: () => api.post<OnboardingStatus>('/v1/technicians/me/onboarding/skip-certificate').then(({ data }) => data),
+  complete: () => api.put<OnboardingStatus>('/v1/users/me/onboarding/complete').then(({ data }) => data),
   autoComplete: () => api.post<OnboardingStatus>('/v1/users/me/onboarding/auto-complete').then(({ data }) => data),
 }
