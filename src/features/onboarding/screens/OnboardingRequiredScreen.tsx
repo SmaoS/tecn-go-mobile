@@ -112,6 +112,11 @@ export function OnboardingRequiredScreen({ navigation, route }: NativeStackScree
   const mainMutation = useMutation({
     mutationFn: onboardingApi.mainData,
     onSuccess: async () => {
+      if (session && main.fullName.trim() !== session.fullName) {
+        const next = { ...session, fullName: main.fullName.trim() }
+        setSession(next)
+        await setStoredSession(JSON.stringify(next))
+      }
       if (draftKey) await AsyncStorage.removeItem(draftKey)
       await refresh()
     },

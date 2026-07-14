@@ -18,14 +18,19 @@ import { showToast } from '../../../components/Toast'
 import { profileApi } from '../api'
 import { FloatingFormFooter } from '../../../components/FloatingFormFooter'
 import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../../shared/phone'
+import { useSession } from '../../../context/useSession'
+import { setStoredSession } from '../../../services/sessionStorage'
 
 export function ProfileScreen({ session, onLogout, navigation, rootExit = false }: { session: Session; onLogout: () => void; navigation?: { navigate: (screen: 'CaptureProfilePhoto' | 'Legal') => void }; rootExit?: boolean }) {
   useDoubleBackExit(rootExit)
+  const { setSession } = useSession()
   const profile = useProfile()
   const save = useSaveProfile()
   const [draft, setDraft] = useState<UserProfile | null>(null)
   const [passwordModal, setPasswordModal] = useState(false)
   const [phoneCode, setPhoneCode] = useState('')
+  const [emailForm, setEmailForm] = useState({ email: session.email ?? '', confirmEmail: '' })
+  const [editingEmail, setEditingEmail] = useState(false)
   const location = useCurrentLocation()
   const profileImage = useProfileImageUpload()
   const document = useDocumentUpload()
@@ -51,6 +56,19 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
     },
     onError: (error) => showToast(apiMessage(error), 'error'),
   })
+  const updateEmail = useMutation({
+    mutationFn: profileApi.updateEmail,
+    onSuccess: async (data) => {
+      const next = { ...session, email: data.email, emailVerified: data.emailVerified }
+      setSession(next)
+      await setStoredSession(JSON.stringify(next))
+      setEmailForm({ email: data.email, confirmEmail: '' })
+      setEditingEmail(false)
+      await profile.refetch()
+      showToast('Correo actualizado. Revisa tu bandeja para verificarlo.', 'info')
+    },
+    onError: (error) => showToast(apiMessage(error), 'error'),
+  })
   function update(value: Partial<UserProfile>) {
     if (current) setDraft({ ...current, ...value })
   }
@@ -69,7 +87,19 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       return
     }
     save.mutate(current, {
-      onSuccess: () => { setDraft(null); showToast('Perfil actualizado') },
+      onSuccess: async (saved) => {
+        const next = {
+          ...session,
+          fullName: saved.fullName,
+          email: saved.email || session.email,
+          emailVerified: saved.emailVerified,
+          phoneVerified: saved.phoneVerified,
+        }
+        setSession(next)
+        await setStoredSession(JSON.stringify(next))
+        setDraft(null)
+        showToast('Perfil actualizado')
+      },
     })
   }
   const verificationLabel = current?.verificationStatus === 'VERIFIED'
@@ -90,6 +120,38 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       <Text style={styles.muted}>Los campos marcados con * son obligatorios.</Text>
       <Text style={styles.label}>Nombre completo *</Text>
       <Field placeholder="Nombre completo" value={current.fullName} onChangeText={(fullName) => update({ fullName })} />
+      <Text style={styles.label}>Correo electrónico</Text>
+      {!editingEmail ? <>
+        <Field value={current.email || session.email || 'Sin correo registrado'} editable={false} selectTextOnFocus={false} accessibilityLabel="Correo registrado" />
+        <Button title={(current.email || session.email) ? 'Modificar correo' : 'Registrar correo opcional'} onPress={() => {
+          setEmailForm({ email: current.email || session.email || '', confirmEmail: '' })
+          setEditingEmail(true)
+        }} />
+      </> : <>
+        <Field
+          placeholder="Correo"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          value={emailForm.email}
+          onChangeText={(email) => setEmailForm({ ...emailForm, email })}
+        />
+        <Field
+          placeholder="Confirmar correo"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          value={emailForm.confirmEmail}
+          onChangeText={(confirmEmail) => setEmailForm({ ...emailForm, confirmEmail })}
+        />
+        {emailForm.confirmEmail && emailForm.email.trim().toLowerCase() !== emailForm.confirmEmail.trim().toLowerCase()
+          && <Text style={styles.error}>Los correos no coinciden</Text>}
+        <Button
+          title="Actualizar correo y enviar verificación"
+          loading={updateEmail.isPending}
+          disabled={!emailForm.email.trim() || emailForm.email.trim().toLowerCase() !== emailForm.confirmEmail.trim().toLowerCase()}
+          onPress={() => updateEmail.mutate(emailForm)}
+        />
+        <Button title="Cancelar cambio de correo" onPress={() => setEditingEmail(false)} />
+      </>}
       <Text style={styles.label}>Teléfono {selectedCountry?.phonePrefix ? `(${selectedCountry.phonePrefix})` : ''}</Text>
       <Field placeholder="Teléfono" keyboardType="number-pad" maxLength={10} value={current.phone ?? ''} onChangeText={(phone) => {
         setPhoneCode('')
@@ -113,7 +175,7 @@ export function ProfileScreen({ session, onLogout, navigation, rootExit = false 
       {navigation && !current.profilePhotoFaceValidated && <Button title="Tomar foto de perfil con cámara" onPress={() => navigation.navigate('CaptureProfilePhoto')} />}
       <Button title={current.documentPhotoUrl ? 'Documento cargado' : documentRequired ? 'Subir documento obligatorio' : 'Subir documento opcional'} onPress={() => document.mutate('DOCUMENT', { onSuccess: (url) => update({ documentPhotoUrl: url ?? current.documentPhotoUrl }) })} loading={document.isPending} />
       {(location.error || save.error || profileImage.error || document.error) && <Text style={(save.error || profileImage.error || document.error) ? styles.error : styles.muted}>{save.error || profileImage.error || document.error ? apiMessage(save.error ?? profileImage.error ?? document.error) : location.error}</Text>}
-      {!current.emailVerified && <Button title="Verificar correo" loading={verifyEmail.isPending} onPress={() => verifyEmail.mutate(undefined, { onSuccess: () => showToast('Correo de verificación enviado', 'info'), onError: (error) => showToast(apiMessage(error), 'error') })} />}</>}
+      {!editingEmail && !current.emailVerified && (current.email || session.email) && <Button title="Verificar correo" loading={verifyEmail.isPending} onPress={() => verifyEmail.mutate(undefined, { onSuccess: () => showToast('Correo de verificación enviado', 'info'), onError: (error) => showToast(apiMessage(error), 'error') })} />}</>}
       <Button title="Modificar contraseña" onPress={() => setPasswordModal(true)} />
   </QueryState>
     <PasswordChangeModal visible={passwordModal} onClose={() => setPasswordModal(false)} />

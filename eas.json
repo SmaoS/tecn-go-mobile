@@ -22,6 +22,19 @@
         "buildType": "apk"
       }
     },
+    "simulator": {
+      "distribution": "internal",
+      "environment": "preview",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.tecn-go.com/api",
+        "EXPO_PUBLIC_ENFORCE_VERSION_CHECK": "false",
+        "EXPO_PUBLIC_APP_ENVIRONMENT": "simulator",
+        "SENTRY_UPLOAD_SOURCEMAPS": "false"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
     "production": {
       "autoIncrement": true,
       "environment": "production",

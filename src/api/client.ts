@@ -4,7 +4,9 @@ import { captureClientError, Sentry } from '../services/observability'
 
 export { SESSION_KEY }
 
-const apiUrl = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '')
+const apiUrl = (process.env.EXPO_PUBLIC_API_URL
+  ?? (process.env.EXPO_PUBLIC_APP_ENVIRONMENT === 'production' ? undefined : 'https://api.tecn-go.com/api'))
+  ?.replace(/\/$/, '')
 if (!apiUrl) throw new Error('EXPO_PUBLIC_API_URL is required')
 
 let unauthorizedHandler: (() => void) | undefined
